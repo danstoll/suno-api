@@ -122,6 +122,12 @@ class SunoApi {
 
   public async init(): Promise<SunoApi> {
     //await this.getClerkLatestVersion();
+    const captchaMode = (process.env.MANUAL_CAPTCHA || '').toLowerCase().trim();
+    if (captchaMode === 'true' || captchaMode === '1' || captchaMode === 'yes') {
+      logger.info('CAPTCHA mode: MANUAL — every captcha will open a visible browser for human solving');
+    } else if (captchaMode === 'fallback') {
+      logger.info('CAPTCHA mode: FALLBACK — automatic first, manual on error');
+    }
     await this.getAuthToken();
     await this.keepAlive();
     return this;
@@ -361,15 +367,39 @@ class SunoApi {
   }
 
   /**
-   * Checks for CAPTCHA verification and solves the CAPTCHA if needed
-   * @returns {string|null} hCaptcha token. If no verification is required, returns null
+   * Public CAPTCHA dispatcher. Routes to the automatic flow, the manual flow, or
+   * the fallback flow (try auto, on error use manual) based on MANUAL_CAPTCHA.
+   *
+   *   MANUAL_CAPTCHA unset / false → automatic only (original gcui-art behavior)
+   *   MANUAL_CAPTCHA=true          → manual only (skip auto entirely)
+   *   MANUAL_CAPTCHA=fallback      → try auto, fall back to manual on any error
    */
   public async getCaptcha(): Promise<string|null> {
-    // Manual mode: defer to the human-in-the-loop flow. Set MANUAL_CAPTCHA=true in .env.
-    if (yn(process.env.MANUAL_CAPTCHA, { default: false })) {
+    const mode = (process.env.MANUAL_CAPTCHA || '').toLowerCase().trim();
+    if (mode === 'true' || mode === '1' || mode === 'yes') {
       return this.getCaptchaManual();
     }
+    if (mode === 'fallback') {
+      try {
+        return await this.getCaptchaAuto();
+      } catch (e: any) {
+        logger.warn({ err: e?.message ?? String(e) },
+          'Automatic CAPTCHA failed — falling back to MANUAL mode');
+        return this.getCaptchaManual();
+      }
+    }
+    return this.getCaptchaAuto();
+  }
 
+  /**
+   * Automated CAPTCHA flow: launches a headless browser, navigates the Suno web UI,
+   * and uses 2Captcha to solve any hCaptcha challenge. Fragile to UI changes —
+   * known to break against Suno v5.5+ where `.custom-textarea` no longer exists.
+   * Use MANUAL_CAPTCHA=true or MANUAL_CAPTCHA=fallback to opt into the manual flow.
+   *
+   * @returns {string|null} hCaptcha token. If no verification is required, returns null.
+   */
+  private async getCaptchaAuto(): Promise<string|null> {
     if (!await this.captchaRequired())
       return null;
 
