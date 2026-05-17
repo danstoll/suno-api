@@ -301,10 +301,75 @@ class SunoApi {
   }
 
   /**
+   * Manual CAPTCHA mode: opens a visible browser, lets the human user fill the Suno
+   * web UI and click Create themselves. We just hijack the /api/generate/v2 request
+   * to steal the hCaptcha token from it. Works with any Suno UI version (no DOM
+   * selectors needed). Triggered by env var MANUAL_CAPTCHA=true.
+   */
+  public async getCaptchaManual(): Promise<string|null> {
+    if (!await this.captchaRequired())
+      return null;
+
+    logger.info('CAPTCHA required. Opening VISIBLE browser for manual solve...');
+    // Force the browser to be visible even if BROWSER_HEADLESS=true is set.
+    const prevHeadless = process.env.BROWSER_HEADLESS;
+    process.env.BROWSER_HEADLESS = 'false';
+    const browser = await this.launchBrowser();
+    process.env.BROWSER_HEADLESS = prevHeadless;
+
+    const page = await browser.newPage();
+    await page.goto('https://suno.com/create', { waitUntil: 'domcontentloaded', timeout: 0 });
+    try { await page.bringToFront(); } catch {} // force window to front on macOS
+
+    logger.info('=================================================================');
+    logger.info('ACTION REQUIRED IN THE BROWSER:');
+    logger.info('  1. Fill the Suno UI (anything: description, lyrics, style, ...)');
+    logger.info('  2. Click the "Create" button');
+    logger.info('  3. Solve any hCaptcha that appears');
+    logger.info('The browser will close automatically once the token is captured.');
+    logger.info('=================================================================');
+
+    return new Promise<string>((resolve, reject) => {
+      let captured = false;
+      page.route('**/api/generate/v2/**', async (route: any) => {
+        if (captured) {
+          try { await route.continue(); } catch {}
+          return;
+        }
+        captured = true;
+        try {
+          const request = route.request();
+          const auth = request.headers().authorization;
+          if (auth) this.currentToken = auth.split('Bearer ').pop();
+          const body = request.postDataJSON();
+          const token = body?.token;
+          logger.info(`hCaptcha token captured (length=${token?.length}). Closing browser.`);
+          try { await route.abort(); } catch {}
+          try { await browser.browser()?.close(); } catch {}
+          if (!token) reject(new Error('No token field in intercepted /api/generate/v2 body'));
+          else resolve(token);
+        } catch (err: any) {
+          reject(err);
+        }
+      });
+      // No timeout — let the user take as long as they need.
+      // Detect browser closed by user as a cancel.
+      browser.on('close', () => {
+        if (!captured) reject(new Error('Browser closed by user before captcha solved'));
+      });
+    });
+  }
+
+  /**
    * Checks for CAPTCHA verification and solves the CAPTCHA if needed
    * @returns {string|null} hCaptcha token. If no verification is required, returns null
    */
   public async getCaptcha(): Promise<string|null> {
+    // Manual mode: defer to the human-in-the-loop flow. Set MANUAL_CAPTCHA=true in .env.
+    if (yn(process.env.MANUAL_CAPTCHA, { default: false })) {
+      return this.getCaptchaManual();
+    }
+
     if (!await this.captchaRequired())
       return null;
 
