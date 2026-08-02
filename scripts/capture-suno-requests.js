@@ -34,8 +34,10 @@
   const INCLUDE = /suno\.(com|ai)\/api\//i;
   const EXCLUDE = /datadoghq|braze|stratovibe|agg-receiver|sentry|segment|posthog|google|intercom/i;
 
-  // Endpoints that fire constantly and carry nothing useful.
-  const BORING = /\/api\/billing\/|usage-plan|nudge-check|\/status\/$|waveform-aggregates|warmup-audio-features|\/rum\b/i;
+  // Endpoints that fire constantly and carry nothing useful. Several of these
+  // are POSTs, so this has to apply regardless of method or the interesting
+  // write gets buried under a hundred housekeeping calls.
+  const BORING = /\/api\/billing\/|usage-plan|nudge-check|\/status\/$|waveform-aggregates|warmup-audio-features|downbeats_streaming|mango\/rights|\/rum\b/i;
 
   const SECRET_KEY = /^(authorization|cookie|token|session|jwt|api[_-]?key|secret|password|bearer|access[_-]?token|refresh[_-]?token)$/i;
   const JWT_LIKE = /^ey[A-Za-z0-9_-]{8,}\./;
@@ -69,8 +71,6 @@
 
   function wanted(url, method) {
     if (!url || !INCLUDE.test(url) || EXCLUDE.test(url)) return false;
-    // Always keep writes; skip the chatty read-only polling.
-    if (method && method.toUpperCase() !== 'GET') return true;
     return !BORING.test(url);
   }
 
@@ -85,20 +85,31 @@
   window.fetch = async function (input, init) {
     const url = typeof input === 'string' ? input : input?.url;
     const method = (init?.method || (typeof input === 'object' && input?.method) || 'GET').toUpperCase();
+
+    // Snapshot the request body BEFORE dispatching. Once fetch() consumes a
+    // Request its body is locked and a later clone().text() yields nothing —
+    // which is exactly how an earlier version of this script recorded every
+    // payload as null.
+    let reqBody = null;
+    if (wanted(url, method) && method !== 'GET') {
+      try {
+        const raw = init?.body;
+        if (typeof raw === 'string') reqBody = raw;
+        else if (raw instanceof URLSearchParams) reqBody = raw.toString();
+        else if (raw instanceof Blob) reqBody = await raw.text();
+        else if (raw) reqBody = '<non-text body>';
+        else if (input && typeof input === 'object' && typeof input.clone === 'function') {
+          reqBody = await input.clone().text();
+        }
+      } catch (err) {
+        reqBody = `<unreadable body: ${err?.message}>`;
+      }
+    }
+
     const res = await origFetch.apply(this, arguments);
 
     try {
       if (wanted(url, method)) {
-        let reqBody = init?.body;
-        // fetch(new Request(url, {method, body})) puts the body on the Request,
-        // not on init — reading only init.body silently loses the payload,
-        // which is the entire point of this script.
-        if (reqBody === undefined && typeof input === 'object' && input && typeof input.clone === 'function') {
-          try { reqBody = await input.clone().text(); } catch { /* opaque/consumed */ }
-        }
-        if (reqBody instanceof URLSearchParams) reqBody = reqBody.toString();
-        if (typeof reqBody !== 'string') reqBody = reqBody ? '<non-text body>' : null;
-
         let resBody = null;
         try {
           const ct = res.headers.get('content-type') || '';
