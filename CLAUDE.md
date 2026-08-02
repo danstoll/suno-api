@@ -280,6 +280,28 @@ Exposed as `POST /api/replace_section`. Use it over `extend_audio` when changing
 something **in place** — extend regenerates everything past its cut point and
 cannot keep the tail.
 
+**Verified end-to-end against the live API on 2026-08-02.** Replacing 29–40s of
+a 122s track returned `task: "infill"`, `infill: true`, and every window field
+echoed back unchanged. Cost 4 credits — cheaper than a full generation.
+
+> **It returns ONLY the window, not the finished song.** An 11s replacement came
+> back as a 14.8s clip: the window plus the 2s of lead-in and lead-out from
+> `include_history_s` / `include_future_s`. Suno's web client reassembles on the
+> client side; an API caller must do the same:
+>
+> ```bash
+> node scripts/splice-infill.mjs \
+>   --source <original-id> --infill <result-id> --start 29 --end 40
+> ```
+>
+> Those 2s margins overlap the original either side, which is exactly what a
+> crossfade needs. Verified: 122.28s in, 122.28s out, continuous level across
+> both joins with no dropout. `--crossfade 0` for hard cuts, `--lead N` if you
+> changed `include_history_s`.
+
+One quirk: clips created this way come back tagged `source: "android"` in their
+history. Cosmetic, but it is not something this fork sets.
+
 ### Studio's Replace Section is a TWO-step flow
 
 Editing inside Studio is not one call:

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # fade-out.mjs output (audio artifacts, not source)
 faded/
+
+# splice-infill.mjs output (audio artifacts, not source)
+spliced/
