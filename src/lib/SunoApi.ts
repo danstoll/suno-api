@@ -960,6 +960,55 @@ class SunoApi {
 
     return response.data;
   }
+
+  /**
+   * Authenticated passthrough to any Suno API path.
+   *
+   * Suno ships endpoints far faster than this wrapper gains routes for them —
+   * Studio, the v3 song editor, covers, hooks and personas all live on paths
+   * with no typed method here. Rather than guess at payloads and add a
+   * half-verified route per feature, this exposes the authenticated client
+   * directly so an unwrapped endpoint can be called (and discovered) without a
+   * code change.
+   *
+   * Hardening: the host is fixed to BASE_URL and the path must begin with
+   * `/api/`. The caller supplies only a path, never a URL, so this cannot be
+   * pointed at an arbitrary host — it is not an open proxy.
+   *
+   * @param path   Suno API path, e.g. '/api/project/default'
+   * @param method HTTP method. Defaults to GET.
+   * @param body   JSON body, for non-GET methods.
+   */
+  public async raw(
+    path: string,
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
+    body?: any
+  ): Promise<{ status: number; data: any }> {
+    await this.keepAlive(false);
+
+    if (!path.startsWith('/api/')) {
+      throw new Error(`Path must start with /api/ — got '${path}'`);
+    }
+    // Defence in depth: reject anything that could escape the fixed host.
+    if (path.includes('://') || path.startsWith('//')) {
+      throw new Error('Path must be a bare path, not a URL.');
+    }
+
+    const url = `${SunoApi.BASE_URL}${path}`;
+    logger.info(`raw ${method} ${url}`);
+
+    const response = await this.client.request({
+      url,
+      method,
+      data: body,
+      timeout: 30000,
+      // Report Suno's status rather than throwing, so callers can see 404/403
+      // while probing which endpoints exist.
+      validateStatus: () => true
+    });
+
+    return { status: response.status, data: response.data };
+  }
 }
 
 export const sunoApi = async (cookie?: string) => {

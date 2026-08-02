@@ -153,6 +153,89 @@ after a Suno release, try setting `SUNO_MODEL` to the previous codename.
 `queued → streaming → complete`, and produced a playable 4.4MB MP3. The codename
 came from third-party docs originally; this confirms Suno itself accepts it.
 
+## Suno's API surface (fork research, 2026-08-02)
+
+Upstream wraps roughly the 2024 clip API. Suno has since grown a second, larger
+surface. Mapped live against a Premier account:
+
+### Two surfaces, not one
+
+| | Clip API | Studio API |
+|---|---|---|
+| Base | `/api/generate/*`, `/api/feed/v2`, `/api/clip/*` | `/api/studio/project/{id}` |
+| Model | immutable generated clips | versioned DAW document |
+| Units | **seconds** | **beats** (`seconds = beats / timing.bps`) |
+| Wrapped here? | yes | read-only, via `/api/studio_project` |
+
+A Studio project's `state` holds `tracks[] → clips[] + takeLanes[]`, warp
+markers, per-track EQ and signal chains, `timeSignatureChanges`, and
+`metadata.usedReplaceSection`. Any clip with `metadata.type` of `studio_export`
+or `edit_v3_export` carries the `studio_project_id` that opens it.
+
+Clip `metadata.type` values seen in the wild: `gen`, `concat`, `upsample`,
+`studio_export`, `edit_v3_export`, `rendered_context_window`.
+
+### Capability discovery — start here
+
+`GET /api/session` is authoritative for what the account can do. Do not track
+Suno's changelog by hand; ask the API.
+
+- **`models[]`** — every `mv` value with `capabilities`, `features`,
+  `allowed_condition_combinations` and `max_lengths`. This is where
+  `SUNO_MODEL` values come from.
+- **`flags[]`** — 56 feature gates, including the ones that matter here:
+  `edit-mode-infill`, `edit-mode-extend`, `edit-mode-fade`, `crop-remove`,
+  `under-over-painting`, `song-duration-control`, `control-sliders`,
+  `create-projects`, `editing-stems`, `generative-stems`, `vocal-gender-toggle`.
+
+Useful limits it reports: v5+ models accept `prompt` 5000 / `tags` 1000 /
+`title` 100 chars; v4 and v3.5 only `prompt` 3000 / `tags` 200.
+
+> **`chirp-goose` (v6) exists** and is listed for this account, but Suno
+> describes it as *"Early access model"*. The default stays `chirp-fenix`
+> deliberately — early-access models change without notice. Try it with
+> `SUNO_MODEL=chirp-goose`; revert if generations get strange.
+
+### Replace Section is a condition, not an endpoint
+
+The thing to know for implementing it: **`infill` is a generation *condition*,
+not a separate route.** `allowed_condition_combinations` lists `["infill"]`,
+`["persona","infill"]`, `["cover","infill"]`, plus `underpaint`/`overpaint`.
+Model `capabilities` further distinguish `infill`, `infill_intro`,
+`infill_outro`, `artist_infill`, `cover_infill`. Regular clips carry
+`metadata.infill = false`, so the flag rides on the normal generate payload.
+
+**Not implemented, and not guessed.** The exact field names (window start/end,
+context window) are unconfirmed, and shipping a fabricated payload would be
+worse than shipping nothing. To finish it: open Suno, run Replace Section on a
+song, and capture the `/api/generate/v2/` request body from DevTools → Network.
+Then the shape is known and the route is ~30 lines.
+
+### Reaching what isn't wrapped
+
+`/api/raw` is an authenticated passthrough, added so a new Suno endpoint no
+longer requires a code change to reach:
+
+```bash
+curl "http://localhost:3060/api/raw?path=/api/session/"
+curl -X POST http://localhost:3060/api/raw \
+  -H 'Content-Type: application/json' \
+  -d '{"path":"/api/...","method":"POST","body":{}}'
+```
+
+It reports Suno's status in `suno_status` rather than throwing, so a `404` is a
+usable probe result. The host is pinned to `BASE_URL` and the path must begin
+with `/api/`, so it cannot be aimed elsewhere — it is not an open proxy. GET
+cannot mutate: a non-GET method must be named explicitly in a POST body.
+
+### Confirmed present but still unwrapped
+
+From clip `action_config.actions`: `remaster`, `remix_cover`,
+`remix_reuse_style`, `create_hook`, `download_as_video`, `edit_song_details`.
+Remaster's shape is already visible in existing clips
+(`task: "upsample"`, `upsample_clip_id`, `edited_clip_id`), so it is the
+easiest next one to add.
+
 ## CLI usage (`sunocli.sh`)
 
 Wrapper over the endpoints below. `BASE=http://localhost:3060`.
