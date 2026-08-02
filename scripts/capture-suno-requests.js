@@ -90,6 +90,12 @@
     try {
       if (wanted(url, method)) {
         let reqBody = init?.body;
+        // fetch(new Request(url, {method, body})) puts the body on the Request,
+        // not on init — reading only init.body silently loses the payload,
+        // which is the entire point of this script.
+        if (reqBody === undefined && typeof input === 'object' && input && typeof input.clone === 'function') {
+          try { reqBody = await input.clone().text(); } catch { /* opaque/consumed */ }
+        }
         if (reqBody instanceof URLSearchParams) reqBody = reqBody.toString();
         if (typeof reqBody !== 'string') reqBody = reqBody ? '<non-text body>' : null;
 
@@ -153,8 +159,19 @@
     },
     dump() { console.log(json()); return json(); },
     copy() {
-      copy(json()); // DevTools built-in
-      console.log(`[capture] ${entries.length} entries copied to clipboard.`);
+      const text = json();
+      // The DevTools `copy()` built-in is not always reachable from inside a
+      // pasted closure, so fall back rather than silently throwing.
+      try {
+        // eslint-disable-next-line no-undef
+        copy(text);
+        console.log(`[capture] ${entries.length} entries copied to clipboard.`);
+        return;
+      } catch { /* fall through */ }
+      navigator.clipboard?.writeText(text).then(
+        () => console.log(`[capture] ${entries.length} entries copied to clipboard.`),
+        () => { console.warn('[capture] clipboard blocked — use __sunoCapture.save() instead.'); console.log(text); }
+      );
     },
     save() {
       const blob = new Blob([json()], { type: 'application/json' });
