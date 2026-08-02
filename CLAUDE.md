@@ -153,6 +153,42 @@ after a Suno release, try setting `SUNO_MODEL` to the previous codename.
 `queued → streaming → complete`, and produced a playable 4.4MB MP3. The codename
 came from third-party docs originally; this confirms Suno itself accepts it.
 
+## Endings cut abruptly — fix locally, not with credits
+
+A recurring Suno fault: tracks run at full level to the last second or two and
+then stop, instead of resolving. Measured on a real 188s track — steady
+−13 to −16 dB until 185s, then −19 → −27 → −33. That is a truncation.
+
+Writing "fades gentle" into a section marker does nothing; markers are treated
+as text, not as mix instructions. Regenerating just rolls a different song and
+costs credits. Fix it in post:
+
+```bash
+node scripts/fade-out.mjs --clip <clip-id> --seconds 7
+node scripts/fade-out.mjs --file track.mp3 --analyze   # measure only
+```
+
+It downloads the clip, prints a per-second RMS bar chart before and after so
+the fade is visible rather than assumed, preserves the source bitrate, and
+writes to `faded/` (gitignored).
+
+Curve choice matters more than length — measured across a 7s fade:
+
+| curve | behaviour |
+|---|---|
+| `qsin` | holds ~3s, eases out, silent exactly at the end — **default** |
+| `tri` | audibly starts pulling down almost immediately |
+| `losi` | like `qsin`, harder drop at the very end |
+| `cub` | too fast, ~2s of dead air |
+| `exp` | far too fast — silent 4s early, so the song just stops sooner |
+
+Ballads want 6–8s, upbeat 3–4s.
+
+Suno does have a native fade (`edit-mode-fade` is in the account flags, and
+Studio state carries `songFadeInBeats` / `songFadeOutBeats`), but that means
+writing a Studio project version. Local post-processing is deterministic, free,
+and works on every track including ones already exported.
+
 ## Suno's API surface (fork research, 2026-08-02)
 
 Upstream wraps roughly the 2024 clip API. Suno has since grown a second, larger
