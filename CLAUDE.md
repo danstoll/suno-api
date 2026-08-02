@@ -15,42 +15,61 @@ unmaintained (see upstream issues [#262](https://github.com/gcui-art/suno-api/is
 "still maintaining?"). The published docs site `suno.gcui.art` no longer resolves.
 Suno ships breaking changes faster than upstream merges them, so we maintain our own.
 
-## Deployment — native on the Mac, not Docker
+## Deployment — local dev on the Windows PC
 
-**Host:** `10.0.0.70` (Mac, homelab) · **Port:** `3060` · **Process manager:** PM2
-
-```bash
-pm2 start ecosystem.config.js
-pm2 save
-pm2 logs suno-api
-```
-
-Register the startup hook as the **logged-in user**, not a system LaunchDaemon:
+**Current setup.** Runs on the PC you're sitting at, port `3060`:
 
 ```bash
-pm2 startup   # then run the command it prints
+cd F:\Projects\DaddyWombat\suno-api
+npm run dev -- -p 3060
 ```
 
-### Why not Docker
+Verify: `curl http://localhost:3060/api/get_limit` → returns your credit balance.
 
-This app drives a real Chromium (Playwright) to clear Suno's hCaptcha. In a
-headless container that flow is a dead end unless `TWOCAPTCHA_KEY` is funded —
-and our manual-captcha fallback needs a **visible window**, which a container
-(or a system LaunchDaemon) cannot provide.
+### Why local, and not the homelab Mac
 
-`docker-compose.yml` is kept working for isolated/throwaway runs and is
-correct (2GB cap, `3060:3000`, runtime `env_file`), but it is the secondary path.
-If you switch to it, stop the native process first — both want port 3060.
+The deciding constraint is **who clicks the captcha**, not native-vs-container.
 
-> If a `suno-api` container from the **upstream** image is still running on the
-> Mac, stop and remove it before starting the native process. The upstream image
-> has the old cookie baked into its layers.
+This app drives a real Chromium (Playwright) to clear Suno's hCaptcha. Two ways
+that resolves: `TWOCAPTCHA_KEY` (currently blank), or a human clicking a visible
+browser window. The homelab Mac (`10.0.0.70`) sits in the garage with **Screen
+Sharing disabled**, so there is no one to click and no way to reach the screen —
+the manual fallback is unreachable there, exactly as it would be in a headless
+container. Running on the PC puts the browser in front of a human.
+
+### Moving it back to the Mac later
+
+Two things have to be true first — pick either:
+
+1. **Fund `TWOCAPTCHA_KEY`** (~$3/1000 solves). Fully unattended, no GUI needed.
+   This is the right answer for an always-on garage box.
+2. **Enable Screen Sharing** on the Mac, then VNC in to solve captchas by hand.
+   Free, but you're on the hook whenever one fires.
+
+Then `ecosystem.config.js` (PM2) is ready to go — start it via
+`launchctl asuser $(id -u danstoll)` so it lands in the GUI session, not a
+system LaunchDaemon, or the manual-captcha window can never appear.
+`docker-compose.yml` also still works (2GB cap, `3060:3000`, runtime `env_file`)
+but inherits the same captcha dead end.
+
+> The old upstream container on the Mac has been **stopped and removed**. Its
+> image (`suno-api-suno-api:latest`, 6.24GB) still exists and has a **cookie
+> baked into its layers** — delete it:
+> `docker rmi suno-api-suno-api:latest`
+
+### How often does the captcha actually fire?
+
+Rarely, in practice. `captchaRequired()` short-circuits on a warm session, so a
+valid cookie usually generates with no browser launch at all. The thing that
+actually expires is the **cookie** — and rotating that is a DevTools job done in
+a browser, which is a PC task regardless of where the service runs.
 
 ## Configuration
 
 All config lives in `.env` in the repo root (never committed — see `.gitignore`).
-On the Mac the existing file is at `~/docker/suno-api/.env`; copy or symlink it
-next to the checkout.
+A copy of the working cookie also lives on the Mac at
+`/Users/danstoll/docker/suno-api/.env`, left in place as a fallback. Both copies
+go stale together — rotating one means rotating the other.
 
 | Var | Purpose |
 |-----|---------|
@@ -80,8 +99,9 @@ id", or every call erroring after previously working.
    ```
    SUNO_COOKIE='<paste the whole cookie string here>'
    ```
-7. Restart: `pm2 restart suno-api`
-8. Verify: `curl http://10.0.0.70:3060/api/get_limit` should return your quota.
+7. Restart the dev server (Ctrl-C, then `npm run dev -- -p 3060`). Next.js reads
+   `.env` at boot, so an edit alone does nothing.
+8. Verify: `curl http://localhost:3060/api/get_limit` should return your quota.
 
 Notes:
 - Quote the value. Cookie strings contain `;` and `=`, which break an unquoted `.env` line.
@@ -117,9 +137,14 @@ per-request `model` field overrides the default. An unrecognised `mv` is rejecte
 by Suno rather than silently downgraded — if generation starts failing right
 after a Suno release, try setting `SUNO_MODEL` to the previous codename.
 
+**Verified against the live API on 2026-08-02**: `POST /api/generate` returned
+`"model_name":"chirp-fenix"` echoed back by Suno, ran through
+`queued → streaming → complete`, and produced a playable 4.4MB MP3. The codename
+came from third-party docs originally; this confirms Suno itself accepts it.
+
 ## CLI usage (`sunocli.sh`)
 
-Wrapper over the endpoints below. `BASE=http://10.0.0.70:3060`.
+Wrapper over the endpoints below. `BASE=http://localhost:3060`.
 
 | Command | Endpoint | Notes |
 |---------|----------|-------|
@@ -142,7 +167,7 @@ Also available, not wrapped by the CLI: `/api/generate_lyrics`,
 `/api/generate_stems`, `/api/get_aligned_lyrics`, `/api/clip`, `/api/persona`,
 and an OpenAI-compatible `/v1/chat/completions`.
 
-Interactive docs: `http://10.0.0.70:3060/docs` (Swagger UI, served by the app).
+Interactive docs: `http://localhost:3060/docs` (Swagger UI, served by the app).
 
 ## Fork changes vs upstream
 
