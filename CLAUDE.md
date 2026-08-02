@@ -95,7 +95,18 @@ id", or every call erroring after previously working.
 4. In **Headers → Request Headers**, find the **`Cookie`** header.
 5. Copy its **entire** value — the whole string, not just one key. It must
    include the Clerk session entries (`__client`, `__session`, ...).
-6. Put it in `.env`, single-quoted, on one line:
+6. Put it in `.env`. Easiest — with the value still on your clipboard, run:
+
+   ```powershell
+   .\scripts\rotate-cookie.ps1
+   ```
+
+   That writes clipboard → `.env` directly, so the cookie is never echoed into a
+   terminal, a shell history, or an AI transcript. It validates the paste, keeps
+   one `.env.bak`, and prints only the length.
+
+   To do it by hand instead, single-quoted on one line:
+
    ```
    SUNO_COOKIE='<paste the whole cookie string here>'
    ```

@@ -28,6 +28,8 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+# rotate-cookie.ps1 writes this; it holds the previous live cookie
+.env.bak
 
 # vercel
 .vercel
