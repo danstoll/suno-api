@@ -189,6 +189,31 @@ Studio state carries `songFadeInBeats` / `songFadeOutBeats`), but that means
 writing a Studio project version. Local post-processing is deterministic, free,
 and works on every track including ones already exported.
 
+## Rate limiting, and how to clear it
+
+Suno throttles on **pacing, not quota**. A captcha wall appeared after roughly
+fifteen back-to-back generations while the account was only 3.5% through its
+monthly credits. `/api/c/check` starts returning `required: true` and every
+generate call is blocked behind a challenge.
+
+**The fix that works: make one song by hand in the Suno web UI.** Within
+seconds `/api/c/check` flips back to `required: false` and the API runs
+unblocked. Verified 2026-08-02 after ~90 minutes of being stuck.
+
+Things that do **not** clear it, all tested:
+
+- **Waiting.** 90 minutes with no change.
+- **A fresh cookie.** Full logout/login, new Clerk `client_id`, new session —
+  auth fine, still `required: true`. The throttle is account-level, not
+  session-level, so cookie rotation is not the lever.
+- **A funded `TWOCAPTCHA_KEY`.** The browser is never challenged; only the API
+  client is. There is no captcha in the page for a solver to solve, so the
+  automatic flow reports *"No hCaptcha request occurred within 1 minute."*
+
+**Prevention is cheaper than any of it.** `make-track.mjs --pace N` (default 30s)
+spaces the generate calls out. Firing three calls per track with no gap is what
+triggers the wall in the first place.
+
 ## Suno's API surface (fork research, 2026-08-02)
 
 Upstream wraps roughly the 2024 clip API. Suno has since grown a second, larger

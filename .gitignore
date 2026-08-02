@@ -45,3 +45,6 @@ faded/
 
 # splice-infill.mjs output (audio artifacts, not source)
 spliced/
+
+# archive-track.mjs temp downloads
+.archive-*.mp3

@@ -3,6 +3,7 @@ import UserAgent from 'user-agents';
 import pino from 'pino';
 import yn from 'yn';
 import { isPage, sleep, waitForRequests } from '@/lib/utils';
+import { record, settle } from '@/lib/activity';
 import * as cookie from 'cookie';
 import { randomUUID } from 'node:crypto';
 import { Solver } from '@2captcha/captcha-solver';
@@ -99,6 +100,17 @@ class SunoApi {
   private solver = new Solver(process.env.TWOCAPTCHA_KEY + '');
   private ghostCursorEnabled = yn(process.env.BROWSER_GHOST_CURSOR, { default: false });
   private cursor?: Cursor;
+
+  /**
+   * Seconds to wait for Suno's captcha requirement to relax before escalating
+   * to a solver or a human. Suno raises the challenge when a client generates
+   * too fast, and drops it again on its own — so waiting is usually the whole
+   * fix. Set CAPTCHA_WAIT_MAX_S=0 to disable and escalate immediately.
+   */
+  private static CAPTCHA_WAIT_MAX_S = Number(process.env.CAPTCHA_WAIT_MAX_S ?? 600);
+  /** hCaptcha tokens are short-lived; keep well inside their validity. */
+  private static TOKEN_REUSE_MS = 100_000;
+  private capturedToken?: { token: string; at: number };
 
   constructor(cookies: string) {
     this.userAgent = new UserAgent(/Macintosh/).random().toString(); // Usually Mac systems get less amount of CAPTCHAs
@@ -236,6 +248,37 @@ class SunoApi {
   }
 
   /**
+   * Return the first of `selectors` that actually becomes visible.
+   *
+   * The captcha flow has to drive Suno's web UI, and Suno redesigns it without
+   * notice — betting the whole flow on one hardcoded class name is how this
+   * fork ended up broken for five months. Trying candidates in order means a
+   * redesign costs one new entry in a list rather than a dead feature.
+   *
+   * @param label used in the error, so a failure says WHICH element was missing
+   */
+  private async firstVisible(page: Page, selectors: string[], label: string, timeoutMs = 20000): Promise<Locator> {
+    const deadline = Date.now() + timeoutMs;
+    let lastErr = '';
+    while (Date.now() < deadline) {
+      for (const sel of selectors) {
+        try {
+          const loc = page.locator(sel).first();
+          if (await loc.isVisible({ timeout: 500 })) {
+            logger.info(`matched ${label} via "${sel}"`);
+            return loc;
+          }
+        } catch (e: any) { lastErr = e?.message ?? String(e); }
+      }
+      await sleep(0.5);
+    }
+    throw new Error(
+      `Could not find the ${label} — tried: ${selectors.join(', ')}. ` +
+      `Suno has probably changed its UI again; add the new selector to this list. ${lastErr}`
+    );
+  }
+
+  /**
    * Clicks on a locator or XY vector. This method is made because of the difference between ghost-cursor-playwright and Playwright methods
    */
   private async click(target: Locator|Page, position?: { x: number, y: number }): Promise<void> {
@@ -355,7 +398,10 @@ class SunoApi {
 
     return new Promise<string>((resolve, reject) => {
       let captured = false;
-      page.route('**/api/generate/v2/**', async (route: any) => {
+      // Regex, not a glob: the real URL ends at "/api/generate/v2-web/" with
+      // nothing after the trailing slash, so a glob ending in "/**" never
+      // matches it. This also covers both /v2/ and /v2-web/.
+      page.route(/\/api\/generate\/v2/, async (route: any) => {
         if (captured) {
           try { await route.continue(); } catch {}
           return;
@@ -393,20 +439,111 @@ class SunoApi {
    *   MANUAL_CAPTCHA=fallback      → try auto, fall back to manual on any error
    */
   public async getCaptcha(): Promise<string|null> {
-    const mode = (process.env.MANUAL_CAPTCHA || '').toLowerCase().trim();
-    if (mode === 'true' || mode === '1' || mode === 'yes') {
-      return this.getCaptchaManual();
+    if (!await this.captchaRequired()) {
+      record('captcha', 'not required', 'ok');
+      return null;
     }
+    const evId = record('captcha', 'challenge raised by Suno', 'pending');
+    try {
+      const tok = await this.resolveCaptcha(evId);
+      settle(evId, 'ok', tok ? 'token obtained' : 'cleared without a token');
+      return tok;
+    } catch (e: any) {
+      settle(evId, 'error', e?.message ?? String(e));
+      throw e;
+    }
+  }
+
+  /** The actual escalation ladder, split out so getCaptcha can report on it. */
+  private async resolveCaptcha(evId: number): Promise<string|null> {
+
+    // A token we already captured beats asking for another one. hCaptcha
+    // tokens are short-lived, but a generate and its follow-up extend land
+    // well inside the window, which turns 2-3 interruptions per track into 1.
+    if (this.capturedToken && Date.now() - this.capturedToken.at < SunoApi.TOKEN_REUSE_MS) {
+      logger.info('Reusing the CAPTCHA token captured moments ago');
+      return this.capturedToken.token;
+    }
+
+    // Suno demands a captcha when a client has been impatient, and stops once
+    // the rate limit relaxes. Waiting costs nothing; solving costs money and
+    // prompting costs a human. So wait first, and only escalate if it sticks.
+    const budgetS = SunoApi.CAPTCHA_WAIT_MAX_S;
+    if (budgetS > 0) {
+      logger.info(`CAPTCHA required — waiting up to ${budgetS}s for the rate limit to relax before escalating`);
+      if (await this.waitForCaptchaClear(budgetS)) {
+        logger.info('CAPTCHA no longer required — continuing without solving one');
+        return null;
+      }
+      logger.warn(`CAPTCHA still required after ${budgetS}s`);
+    }
+
+    const mode = (process.env.MANUAL_CAPTCHA || '').toLowerCase().trim();
+    const hasSolverKey = Boolean((process.env.TWOCAPTCHA_KEY ?? '').trim());
+
+    if (mode === 'true' || mode === '1' || mode === 'yes') {
+      return this.rememberToken(await this.getCaptchaManual());
+    }
+
+    // Without a 2captcha key the automatic flow CANNOT succeed — it drives the
+    // page and then hands the challenge to a solver that isn't configured.
+    // Attempting it anyway burns ~30s per prompt launching a browser and
+    // waiting on a selector Suno removed in v5.5. Skip straight to the human.
+    if (!hasSolverKey) {
+      if (mode === 'fallback') {
+        logger.info('No TWOCAPTCHA_KEY set — skipping the automatic attempt, which cannot succeed without it');
+        return this.rememberToken(await this.getCaptchaManual());
+      }
+      throw new Error(
+        'CAPTCHA required but TWOCAPTCHA_KEY is not set. Set MANUAL_CAPTCHA=fallback to solve it by hand, ' +
+        'or raise CAPTCHA_WAIT_MAX_S to wait longer for the rate limit to clear.'
+      );
+    }
+
     if (mode === 'fallback') {
       try {
-        return await this.getCaptchaAuto();
+        return this.rememberToken(await this.getCaptchaAuto());
       } catch (e: any) {
         logger.warn({ err: e?.message ?? String(e) },
           'Automatic CAPTCHA failed — falling back to MANUAL mode');
-        return this.getCaptchaManual();
+        return this.rememberToken(await this.getCaptchaManual());
       }
     }
-    return this.getCaptchaAuto();
+    return this.rememberToken(await this.getCaptchaAuto());
+  }
+
+  /**
+   * Poll /api/c/check until Suno stops demanding a captcha, or the budget runs
+   * out. Backs off gradually so a long wait isn't also a busy one.
+   *
+   * @returns true if the requirement cleared, false if it outlasted the budget.
+   */
+  private async waitForCaptchaClear(maxSeconds: number): Promise<boolean> {
+    const deadline = Date.now() + maxSeconds * 1000;
+    let delayMs = 15_000;
+    while (Date.now() < deadline) {
+      // sleep() takes SECONDS, not milliseconds — every other call in this file
+      // is sleep(0.5) / sleep(2). Passing it 15_000 sleeps for four hours, which
+      // silently wedges the whole request.
+      await sleep(Math.min(delayMs, Math.max(0, deadline - Date.now())) / 1000);
+      if (Date.now() > deadline) break;
+      try {
+        if (!await this.captchaRequired()) return true;
+      } catch (e: any) {
+        // A transient failure of the check shouldn't abandon the wait.
+        logger.warn({ err: e?.message ?? String(e) }, 'captcha check failed during wait; retrying');
+      }
+      const waitedS = Math.round((maxSeconds * 1000 - (deadline - Date.now())) / 1000);
+      logger.info(`still rate-limited after ${waitedS}s...`);
+      delayMs = Math.min(delayMs * 1.5, 60_000);
+    }
+    return false;
+  }
+
+  /** Cache a freshly captured token so the next call in this run can reuse it. */
+  private rememberToken(token: string | null): string | null {
+    if (token) this.capturedToken = { token, at: Date.now() };
+    return token;
   }
 
   /**
@@ -439,12 +576,32 @@ class SunoApi {
       // await this.click(page, { x: 318, y: 13 });
     } catch(e) {}
 
-    const textarea = page.locator('.custom-textarea');
+    // Suno removed `.custom-textarea` in the v5.5 UI redesign, which is what
+    // upstream issue #263 is: the flow times out here, 30s BEFORE it ever
+    // reaches the solver — so a funded TWOCAPTCHA_KEY changes nothing on its
+    // own. Try a list of candidates instead of betting on one class name.
+    const textarea = await this.firstVisible(page, [
+      '.custom-textarea',
+      'textarea[placeholder*="song" i]',
+      'textarea[placeholder*="describe" i]',
+      'textarea[placeholder*="lyric" i]',
+      '[data-testid*="prompt" i] textarea',
+      '[contenteditable="true"]',
+      'textarea'
+    ], 'prompt input');
     await this.click(textarea);
     await textarea.pressSequentially('Lorem ipsum', { delay: 80 });
 
-    const button = page.locator('button[aria-label="Create"]').locator('div.flex');
-    this.click(button);
+    const createButton = await this.firstVisible(page, [
+      'button[aria-label="Create"]',
+      'button:has-text("Create")',
+      '[data-testid*="create" i]',
+      'button[type="submit"]'
+    ], 'Create button');
+    // The original clicked an inner div.flex; go for that when it exists,
+    // since clicking the button's padding is sometimes a no-op.
+    const inner = createButton.locator('div.flex');
+    this.click((await inner.count()) > 0 ? inner.first() : createButton);
 
     const controller = new AbortController();
     new Promise<void>(async (resolve, reject) => {
@@ -508,7 +665,7 @@ class SunoApi {
           }
           this.click(frame.locator('.button-submit')).catch(e => {
             if (e.message.includes('viewport')) // when hCaptcha window has been closed due to inactivity,
-              this.click(button); // click the Create button again to trigger the CAPTCHA
+              this.click(createButton); // click the Create button again to trigger the CAPTCHA
             else
               throw e;
           });
@@ -525,7 +682,10 @@ class SunoApi {
       throw e;
     });
     return (new Promise((resolve, reject) => {
-      page.route('**/api/generate/v2/**', async (route: any) => {
+      // Regex, not a glob: the real URL ends at "/api/generate/v2-web/" with
+      // nothing after the trailing slash, so a glob ending in "/**" never
+      // matches it. This also covers both /v2/ and /v2-web/.
+      page.route(/\/api\/generate\/v2/, async (route: any) => {
         try {
           logger.info('hCaptcha token received. Closing browser');
           route.abort();
@@ -587,9 +747,13 @@ class SunoApi {
    * @returns A promise that resolves to an AudioInfo object representing the concatenated audio.
    * @throws Error if the response status is not 200.
    */
-  public async concatenate(clip_id: string): Promise<AudioInfo> {
+  public async concatenate(clip_id: string, project_id?: string): Promise<AudioInfo> {
     await this.keepAlive(false);
     const payload: any = { clip_id: clip_id };
+    // Without this the concat lands in the default workspace even when the
+    // halves it was built from were filed elsewhere — leaving the fragments
+    // in the project and the finished track outside it.
+    if (project_id) payload.project_id = project_id;
 
     const response = await this.client.post(
       `${SunoApi.BASE_URL}/api/generate/concat/v2/`,
@@ -622,7 +786,8 @@ class SunoApi {
     make_instrumental: boolean = false,
     model?: string,
     wait_audio: boolean = false,
-    negative_tags?: string
+    negative_tags?: string,
+    project_id?: string
   ): Promise<AudioInfo[]> {
     const startTime = Date.now();
     const audios = await this.generateSongs(
@@ -633,7 +798,11 @@ class SunoApi {
       make_instrumental,
       model,
       wait_audio,
-      negative_tags
+      negative_tags,
+      undefined,
+      undefined,
+      undefined,
+      project_id
     );
     const costTime = Date.now() - startTime;
     logger.info(
@@ -668,7 +837,13 @@ class SunoApi {
     negative_tags?: string,
     task?: string,
     continue_clip_id?: string,
-    continue_at?: number
+    continue_at?: number,
+    /**
+     * Suno "workspace" to file the result under. Observed on the web client's
+     * generate payload; without it clips land in the default workspace.
+     * Find ids by reading `project.id` off any clip via /api/feed/v3.
+     */
+    project_id?: string
   ): Promise<AudioInfo[]> {
     await this.keepAlive();
     const payload: any = {
@@ -689,6 +864,7 @@ class SunoApi {
     } else {
       payload.gpt_description_prompt = prompt;
     }
+    if (project_id) payload.project_id = project_id;
     logger.info(
       'generateSongs payload:\n' +
         JSON.stringify(
@@ -804,9 +980,10 @@ class SunoApi {
     negative_tags: string = '',
     title: string = '',
     model?: string,
-    wait_audio?: boolean
+    wait_audio?: boolean,
+    project_id?: string
   ): Promise<AudioInfo[]> {
-    return this.generateSongs(prompt, true, tags, title, false, model, wait_audio, negative_tags, 'extend', audioId, continueAt);
+    return this.generateSongs(prompt, true, tags, title, false, model, wait_audio, negative_tags, 'extend', audioId, continueAt, project_id);
   }
 
   /**
