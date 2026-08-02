@@ -962,6 +962,122 @@ class SunoApi {
   }
 
   /**
+   * Replace a section of an existing song ("Replace Section" / inpainting).
+   *
+   * Suno models this as a generation CONDITION named infill, not a separate
+   * endpoint — the model capability list exposes `infill`, `infill_intro`,
+   * `infill_outro`, `artist_infill`, `cover_infill`, and
+   * `allowed_condition_combinations` permits ["infill"], ["persona","infill"]
+   * and ["cover","infill"].
+   *
+   * Field names below were read off a real Suno-produced clip's
+   * `metadata.history`, not guessed. The window is `infill_start_s` ..
+   * `infill_end_s`; the model additionally *hears* `infill_context_start_s` ..
+   * `infill_context_end_s` so the replacement matches its surroundings, and
+   * `include_history_s` / `include_future_s` preserve a couple of seconds of
+   * lead-in and lead-out so the seams are not abrupt.
+   */
+  public async generateInfill(opts: {
+    clip_id: string;
+    infill_start_s: number;
+    infill_end_s: number;
+    lyrics?: string;
+    context_start_s?: number;
+    context_end_s?: number;
+    include_history_s?: number;
+    include_future_s?: number;
+    task?: string;
+    tags?: string;
+    title?: string;
+    model?: string;
+    endpoint?: string;
+  }): Promise<AudioInfo[]> {
+    await this.keepAlive(false);
+
+    const {
+      clip_id,
+      infill_start_s,
+      infill_end_s,
+      lyrics = '',
+      include_history_s = 2,
+      include_future_s = 2,
+      // The observed capture was a stem infill ('stem_condition_infill').
+      // Plain Replace Section is 'infill' per the model capability list.
+      task = 'infill',
+      tags,
+      title,
+      model,
+      // The web app posts to /api/generate/v2-web/; this client has always
+      // used /api/generate/v2/ successfully. Overridable either way.
+      endpoint = '/api/generate/v2/'
+    } = opts;
+
+    if (!(infill_end_s > infill_start_s)) {
+      throw new Error(
+        `infill_end_s (${infill_end_s}) must be greater than infill_start_s (${infill_start_s})`
+      );
+    }
+    if (infill_start_s < 0) {
+      throw new Error('infill_start_s must be >= 0');
+    }
+
+    // Default the context window to the replacement window plus generous
+    // padding on each side — that is the shape Suno's own client sends.
+    const context_start_s = opts.context_start_s ?? Math.max(0, infill_start_s - 15);
+    const context_end_s = opts.context_end_s ?? infill_end_s + 15;
+
+    const payload: any = {
+      clip_id,
+      task,
+      infill_start_s,
+      infill_end_s,
+      infill_dur_s: infill_end_s - infill_start_s,
+      infill_context_start_s: context_start_s,
+      infill_context_end_s: context_end_s,
+      include_history_s,
+      include_future_s,
+      infill_lyrics: lyrics,
+      lyrics_updated: Boolean(lyrics),
+      edited_clip_id: clip_id,
+      mv: model || DEFAULT_MODEL,
+      token: await this.getCaptcha()
+    };
+    if (tags) payload.tags = tags;
+    if (title) payload.title = title;
+
+    logger.info(
+      'generateInfill payload:\n' +
+        JSON.stringify({ ...payload, token: payload.token ? '<captcha>' : null, infill_lyrics: `<${lyrics.length} chars>` }, null, 2)
+    );
+
+    const response = await this.client.post(`${SunoApi.BASE_URL}${endpoint}`, payload, {
+      timeout: 30000
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Error response: ' + response.statusText);
+    }
+
+    const clips = response.data?.clips ?? [];
+    return clips.map((audio: any) => ({
+      id: audio.id,
+      title: audio.title,
+      image_url: audio.image_url,
+      lyric: audio.metadata?.prompt ? this.parseLyrics(audio.metadata.prompt) : '',
+      audio_url: audio.audio_url,
+      video_url: audio.video_url,
+      created_at: audio.created_at,
+      model_name: audio.model_name,
+      status: audio.status,
+      gpt_description_prompt: audio.metadata?.gpt_description_prompt,
+      prompt: audio.metadata?.prompt,
+      type: audio.metadata?.type,
+      tags: audio.metadata?.tags,
+      duration: audio.metadata?.duration
+    }));
+  }
+
+  /**
    * Authenticated passthrough to any Suno API path.
    *
    * Suno ships endpoints far faster than this wrapper gains routes for them —
