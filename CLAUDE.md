@@ -234,18 +234,83 @@ Useful limits it reports: v5+ models accept `prompt` 5000 / `tags` 1000 /
 
 ### Replace Section is a condition, not an endpoint
 
-The thing to know for implementing it: **`infill` is a generation *condition*,
-not a separate route.** `allowed_condition_combinations` lists `["infill"]`,
-`["persona","infill"]`, `["cover","infill"]`, plus `underpaint`/`overpaint`.
-Model `capabilities` further distinguish `infill`, `infill_intro`,
-`infill_outro`, `artist_infill`, `cover_infill`. Regular clips carry
-`metadata.infill = false`, so the flag rides on the normal generate payload.
+**`infill` is a generation *condition*, not a separate route** — which is why it
+never shows up in a clip's `action_config`. `allowed_condition_combinations`
+lists `["infill"]`, `["persona","infill"]`, `["cover","infill"]`, plus
+`underpaint`/`overpaint`.
 
-**Not implemented, and not guessed.** The exact field names (window start/end,
-context window) are unconfirmed, and shipping a fabricated payload would be
-worse than shipping nothing. To finish it: open Suno, run Replace Section on a
-song, and capture the `/api/generate/v2/` request body from DevTools → Network.
-Then the shape is known and the route is ~30 lines.
+Payload captured from Suno's own web client (`POST /api/generate/v2-web/`),
+so the shape below is observed, not inferred:
+
+```jsonc
+{
+  "task": "stem_condition_infill",   // "infill" for a whole-song replace
+  "continue_clip_id": "<clip to edit>",   // NOT clip_id / edited_clip_id
+  "mv": "chirp-fenix",
+  "infill_start_s": 14.32,           // window to regenerate
+  "infill_end_s": 22.96,
+  "infill_dur_s": 8.64,
+  "infill_context_start_s": 0,       // what the model additionally hears
+  "infill_context_end_s": 37.28,
+  "include_history_s": 2,            // lead-in / lead-out preserved
+  "include_future_s": 2,
+  "batch_size": 2,                   // variants returned
+  "metadata": {
+    "infill_lyrics": "",             // NESTED — not top-level
+    "lyrics_updated": true,
+    "override_history_clip_id": "<full mix>",   // context either side comes
+    "override_history_end_seconds": 88.5,       // from the complete track
+    "override_future_clip_id": "<full mix>",
+    "override_future_start_seconds": 97.1
+  },
+  // per-stem only ("add Drums", "add Vocals"):
+  "stem_condition_clip_id": "<rendered stem>",
+  "stem_control_tags": "add Vocals",
+  "stem_condition_start_s": 14.32,
+  "stem_condition_end_s": 22.96
+}
+```
+
+Two things this fork got wrong on the first attempt, both fixed: the source clip
+is **`continue_clip_id`** (`edited_clip_id` only comes back on the response),
+and **`infill_lyrics`/`lyrics_updated` are nested inside `metadata`** while the
+`infill_*_s` fields are top-level.
+
+Exposed as `POST /api/replace_section`. Use it over `extend_audio` when changing
+something **in place** — extend regenerates everything past its cut point and
+cannot keep the tail.
+
+### Studio's Replace Section is a TWO-step flow
+
+Editing inside Studio is not one call:
+
+1. **`POST /api/studio/render-state`** — posts the entire project state (tracks,
+   clips, warp markers, EQ) plus `start_beats`, `end_beats`, a `downbeats` array
+   and `export_mode: "rendered_context_window"`. Returns a new clip of type
+   `rendered_context_window` covering just that beat range.
+2. **`POST /api/generate/v2-web/`** — the infill above, with
+   `continue_clip_id` pointing at that rendered clip.
+
+`POST /api/studio/save-project` persists the project and mints a fresh
+`version_id` on every save.
+
+### Other generate fields worth knowing
+
+The same payload carries slots this fork does not yet expose: `persona_id`,
+`cover_clip_id`/`cover_start_s`/`cover_end_s`,
+`artist_clip_id`/`artist_start_s`/`artist_end_s`, `negative_tags`,
+`batch_size`, `vocal_gender`, `disable_volume_normalization`,
+`user_uploaded_images_b64`. Captcha is checked separately via
+`POST /api/c/check {"ctype":"generation"}` → `{"required":false,...}`; when not
+required, `token` is simply `null`.
+
+### Capturing a payload yourself
+
+`scripts/capture-suno-requests.js` — paste into the DevTools console, drive the
+UI, then `__sunoCapture.save()`. **Arm it before triggering the action**; the
+generate call fires immediately and a hook installed afterwards misses it. It
+records no headers and redacts credential-shaped values, unlike "Copy as cURL"
+which embeds your bearer token and session cookie.
 
 ### Reaching what isn't wrapped
 

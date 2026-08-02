@@ -962,54 +962,88 @@ class SunoApi {
   }
 
   /**
-   * Replace a section of an existing song ("Replace Section" / inpainting).
+   * Replace a section of an existing clip ("Replace Section" / inpainting).
    *
    * Suno models this as a generation CONDITION named infill, not a separate
-   * endpoint — the model capability list exposes `infill`, `infill_intro`,
-   * `infill_outro`, `artist_infill`, `cover_infill`, and
-   * `allowed_condition_combinations` permits ["infill"], ["persona","infill"]
-   * and ["cover","infill"].
+   * endpoint, which is why it never appears in a clip's action_config.
    *
-   * Field names below were read off a real Suno-produced clip's
-   * `metadata.history`, not guessed. The window is `infill_start_s` ..
-   * `infill_end_s`; the model additionally *hears* `infill_context_start_s` ..
-   * `infill_context_end_s` so the replacement matches its surroundings, and
-   * `include_history_s` / `include_future_s` preserve a couple of seconds of
-   * lead-in and lead-out so the seams are not abrupt.
+   * The payload below was captured from Suno's own web client, so the field
+   * names and their nesting are observed rather than inferred. Two details are
+   * easy to get wrong and were wrong in this fork's first attempt:
+   *
+   *   - the source clip is `continue_clip_id`, NOT `clip_id`/`edited_clip_id`
+   *     (`edited_clip_id` only comes back on the RESPONSE metadata)
+   *   - `infill_lyrics` and `lyrics_updated` live inside `metadata`, while the
+   *     `infill_*_s` window fields are top-level
+   *
+   * The window is `infill_start_s`..`infill_end_s`. The model additionally
+   * *hears* `infill_context_start_s`..`infill_context_end_s` so the new audio
+   * matches its surroundings, and `include_history_s`/`include_future_s`
+   * preserve a couple of seconds either side so the seams are not abrupt.
+   *
+   * Studio's per-stem variant ("add Drums", "add Vocals") sets task
+   * `stem_condition_infill` and the `stem_*` fields; a plain whole-song replace
+   * uses task `infill` and omits them.
    */
   public async generateInfill(opts: {
-    clip_id: string;
+    /** Clip to edit. Sent as `continue_clip_id`. */
+    continue_clip_id: string;
     infill_start_s: number;
     infill_end_s: number;
+    /** New words for the window. Blank keeps the existing vocal line. */
     lyrics?: string;
     context_start_s?: number;
     context_end_s?: number;
     include_history_s?: number;
     include_future_s?: number;
+    /** 'infill' for a whole-song replace, 'stem_condition_infill' for a stem. */
     task?: string;
+    /** Number of variants to return. Suno's client sends 2. */
+    batch_size?: number;
     tags?: string;
+    negative_tags?: string;
     title?: string;
     model?: string;
+    project_id?: string;
+    /** Per-stem infill: the rendered stem clip and what to do to it. */
+    stem_condition_clip_id?: string;
+    stem_control_tags?: string;
+    /** Full-mix clip supplying context either side of the window. */
+    override_history_clip_id?: string;
+    override_history_end_seconds?: number;
+    override_future_clip_id?: string;
+    override_future_start_seconds?: number;
+    from_studio_project_id?: string;
+    vocal_gender?: string;
     endpoint?: string;
   }): Promise<AudioInfo[]> {
     await this.keepAlive(false);
 
     const {
-      clip_id,
+      continue_clip_id,
       infill_start_s,
       infill_end_s,
       lyrics = '',
       include_history_s = 2,
       include_future_s = 2,
-      // The observed capture was a stem infill ('stem_condition_infill').
-      // Plain Replace Section is 'infill' per the model capability list.
       task = 'infill',
-      tags,
-      title,
+      batch_size = 2,
+      tags = '',
+      negative_tags = '',
+      title = '',
       model,
-      // The web app posts to /api/generate/v2-web/; this client has always
-      // used /api/generate/v2/ successfully. Overridable either way.
-      endpoint = '/api/generate/v2/'
+      project_id,
+      stem_condition_clip_id,
+      stem_control_tags,
+      override_history_clip_id,
+      override_history_end_seconds,
+      override_future_clip_id,
+      override_future_start_seconds,
+      from_studio_project_id,
+      vocal_gender = 'unspecified',
+      // Suno's web client posts here. /api/generate/v2/ also works for the
+      // plain generate/extend paths this fork already used.
+      endpoint = '/api/generate/v2-web/'
     } = opts;
 
     if (!(infill_end_s > infill_start_s)) {
@@ -1017,37 +1051,84 @@ class SunoApi {
         `infill_end_s (${infill_end_s}) must be greater than infill_start_s (${infill_start_s})`
       );
     }
-    if (infill_start_s < 0) {
-      throw new Error('infill_start_s must be >= 0');
-    }
+    if (infill_start_s < 0) throw new Error('infill_start_s must be >= 0');
 
-    // Default the context window to the replacement window plus generous
-    // padding on each side — that is the shape Suno's own client sends.
+    // Suno's client pads the context window well past the edit window so the
+    // model hears where the section sits musically.
     const context_start_s = opts.context_start_s ?? Math.max(0, infill_start_s - 15);
     const context_end_s = opts.context_end_s ?? infill_end_s + 15;
 
+    const metadata: any = {
+      is_mumble: true,
+      create_mode: 'custom',
+      disable_volume_normalization: true,
+      vocal_gender,
+      infill_lyrics: lyrics,
+      lyrics_updated: Boolean(lyrics),
+      is_remix: true
+    };
+    if (from_studio_project_id) metadata.from_studio_project_id = from_studio_project_id;
+    if (override_history_clip_id) {
+      metadata.override_history_clip_id = override_history_clip_id;
+      metadata.override_history_end_seconds = override_history_end_seconds;
+    }
+    if (override_future_clip_id) {
+      metadata.override_future_clip_id = override_future_clip_id;
+      metadata.override_future_start_seconds = override_future_start_seconds;
+    }
+
     const payload: any = {
-      clip_id,
+      project_id: project_id ?? null,
+      token: await this.getCaptcha(),
       task,
+      generation_type: 'TEXT',
+      title,
+      tags,
+      negative_tags,
+      mv: model || DEFAULT_MODEL,
+      prompt: '',
+      metadata,
+      override_fields: [],
+      cover_clip_id: null,
+      cover_start_s: null,
+      cover_end_s: null,
+      persona_id: null,
+      artist_clip_id: null,
+      artist_start_s: null,
+      artist_end_s: null,
+      continue_clip_id,
+      continued_aligned_prompt: '',
+      continue_at: null,
+      infill_context_start_s: context_start_s,
+      infill_context_end_s: context_end_s,
       infill_start_s,
       infill_end_s,
       infill_dur_s: infill_end_s - infill_start_s,
-      infill_context_start_s: context_start_s,
-      infill_context_end_s: context_end_s,
+      transaction_uuid: randomUUID(),
+      token_provider: null,
+      batch_size,
       include_history_s,
-      include_future_s,
-      infill_lyrics: lyrics,
-      lyrics_updated: Boolean(lyrics),
-      edited_clip_id: clip_id,
-      mv: model || DEFAULT_MODEL,
-      token: await this.getCaptcha()
+      include_future_s
     };
-    if (tags) payload.tags = tags;
-    if (title) payload.title = title;
+
+    if (stem_condition_clip_id) {
+      payload.stem_condition_clip_id = stem_condition_clip_id;
+      payload.stem_control_tags = stem_control_tags ?? '';
+      payload.stem_condition_start_s = infill_start_s;
+      payload.stem_condition_end_s = infill_end_s;
+    }
 
     logger.info(
       'generateInfill payload:\n' +
-        JSON.stringify({ ...payload, token: payload.token ? '<captcha>' : null, infill_lyrics: `<${lyrics.length} chars>` }, null, 2)
+        JSON.stringify(
+          {
+            ...payload,
+            token: payload.token ? '<captcha>' : null,
+            metadata: { ...metadata, infill_lyrics: `<${lyrics.length} chars>` }
+          },
+          null,
+          2
+        )
     );
 
     const response = await this.client.post(`${SunoApi.BASE_URL}${endpoint}`, payload, {
@@ -1076,7 +1157,6 @@ class SunoApi {
       duration: audio.metadata?.duration
     }));
   }
-
   /**
    * Authenticated passthrough to any Suno API path.
    *

@@ -36,46 +36,24 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
+      // `clip_id`/`audio_id` accepted as aliases for the field Suno actually
+      // calls `continue_clip_id`, to match this API's other routes.
+      continue_clip_id,
       clip_id,
-      audio_id, // accepted as an alias, to match /api/extend_audio's naming
-      infill_start_s,
-      infill_end_s,
-      lyrics,
-      context_start_s,
-      context_end_s,
-      include_history_s,
-      include_future_s,
-      task,
-      tags,
-      title,
-      model,
-      endpoint
+      audio_id,
+      ...rest
     } = body ?? {};
 
-    const id = clip_id ?? audio_id;
+    const id = continue_clip_id ?? clip_id ?? audio_id;
     if (!id) {
-      return json({ error: "'clip_id' is required." }, 400);
+      return json({ error: "'continue_clip_id' (aliases: clip_id, audio_id) is required." }, 400);
     }
-    if (typeof infill_start_s !== 'number' || typeof infill_end_s !== 'number') {
+    if (typeof rest.infill_start_s !== 'number' || typeof rest.infill_end_s !== 'number') {
       return json({ error: "'infill_start_s' and 'infill_end_s' are required numbers (seconds)." }, 400);
     }
 
     const api = await sunoApi((await cookies()).toString());
-    const audios = await api.generateInfill({
-      clip_id: id,
-      infill_start_s,
-      infill_end_s,
-      lyrics,
-      context_start_s,
-      context_end_s,
-      include_history_s,
-      include_future_s,
-      task,
-      tags,
-      title,
-      model,
-      endpoint
-    });
+    const audios = await api.generateInfill({ continue_clip_id: id, ...rest });
 
     return json(audios, 200);
   } catch (error: any) {
