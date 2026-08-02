@@ -18,7 +18,25 @@ const cache = globalForSunoApi.sunoApiCache || new Map<string, SunoApi>();
 globalForSunoApi.sunoApiCache = cache;
 
 const logger = pino();
-export const DEFAULT_MODEL = 'chirp-v3-5';
+/**
+ * Suno's internal `mv` model identifier, sent on every /api/generate/v2 call.
+ *
+ * Upstream pinned this to 'chirp-v3-5' (Suno v3.5, ~2024) and never moved it.
+ * Known codenames, oldest → newest:
+ *   chirp-v3-0     Suno v3
+ *   chirp-v3-5     Suno v3.5
+ *   chirp-v4       Suno v4
+ *   chirp-auk      Suno v4.5
+ *   chirp-bluejay  Suno v4.5+
+ *   chirp-crow     Suno v5.0
+ *   chirp-fenix    Suno v5.5   (released 2026-03-26, current default)
+ *
+ * Override without a rebuild by setting SUNO_MODEL in .env — Suno ships new
+ * codenames faster than this fork gets updated, and an unrecognised `mv` is
+ * rejected by the API rather than silently downgraded. Per-request `model`
+ * still wins over this default.
+ */
+export const DEFAULT_MODEL = process.env.SUNO_MODEL || 'chirp-fenix';
 
 export interface AudioInfo {
   id: string; // Unique identifier for the audio
@@ -528,7 +546,7 @@ class SunoApi {
    */
   private async getTurnstile() {
     return this.client.post(
-      `https://clerk.suno.com/v1/client?__clerk_api_version=2021-02-05&_clerk_js_version=${SunoApi.CLERK_VERSION}&_method=PATCH`,
+      `${SunoApi.CLERK_BASE_URL}/v1/client?__clerk_api_version=2021-02-05&_clerk_js_version=${SunoApi.CLERK_VERSION}&_method=PATCH`,
       { captcha_error: '300030,300030,300030' },
       { headers: { 'content-type': 'application/x-www-form-urlencoded' } });
   }

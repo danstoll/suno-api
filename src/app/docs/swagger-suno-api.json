@@ -35,8 +35,8 @@
                   },
                   "model": {
                     "type": "string",
-                    "description": "Model name ,default is chirp-v3-5",
-                    "example": "chirp-v3-5|chirp-v3-0"
+                    "description": "Model name, default is chirp-fenix (Suno v5.5)",
+                    "example": "chirp-fenix|chirp-crow|chirp-bluejay|chirp-auk|chirp-v3-5"
                   },
                   "wait_audio": {
                     "type": "boolean",
@@ -155,8 +155,8 @@
                   },
                   "model": {
                     "type": "string",
-                    "description": "Model name ,default is chirp-v3-5",
-                    "example": "chirp-v3-5|chirp-v3-0"
+                    "description": "Model name, default is chirp-fenix (Suno v5.5)",
+                    "example": "chirp-fenix|chirp-crow|chirp-bluejay|chirp-auk|chirp-v3-5"
                   },
                   "wait_audio": {
                     "type": "boolean",
@@ -238,8 +238,8 @@
                   },
                   "model": {
                     "type": "string",
-                    "description": "Model name ,default is chirp-v3-5",
-                    "example": "chirp-v3-5|chirp-v3-0"
+                    "description": "Model name, default is chirp-fenix (Suno v5.5)",
+                    "example": "chirp-fenix|chirp-crow|chirp-bluejay|chirp-auk|chirp-v3-5"
                   }
                 }
               }
@@ -783,7 +783,7 @@
           },
           "model_name": {
             "type": "string",
-            "description": "suno model name, chirp-v3"
+            "description": "suno model name, e.g. chirp-fenix"
           },
           "status": {
             "type": "string",

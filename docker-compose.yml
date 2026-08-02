@@ -1,13 +1,28 @@
-version: '3'
-
+# SECONDARY deployment path. The homelab runs this natively on the Mac via PM2
+# (see ecosystem.config.js + CLAUDE.md) because the captcha flow needs a visible
+# browser, which a headless container cannot provide.
+#
+# This compose file is kept working for throwaway/isolated runs, but note: if
+# Suno demands a captcha here and TWOCAPTCHA_KEY is blank, generation will fail
+# with no way to intervene.
 services:
   suno-api:
     build:
       context: .
-      args:
-        SUNO_COOKIE: ${SUNO_COOKIE}
+    container_name: suno-api
+    restart: unless-stopped
+    # Cookie and all other config are injected at runtime from .env.
+    # Never bake SUNO_COOKIE into the image (see Dockerfile note) — it rotates.
+    env_file: ".env"
+    ports:
+      # Homelab: exposed on the Mac at 10.0.0.70:3060. Container still listens on 3000.
+      - "3060:3000"
     volumes:
       - ./public:/app/public
-    ports:
-      - "3000:3000"
-    env_file: ".env"
+    # Playwright/Chromium is the memory hog here; 2GB keeps a runaway browser
+    # session from starving the rest of the Docker Desktop VM.
+    mem_limit: 2g
+    mem_reservation: 512m
+    # Chromium needs more than Docker's default 64MB of shared memory or it
+    # crashes with SIGBUS part-way through a captcha solve.
+    shm_size: 1gb
