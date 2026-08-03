@@ -17,7 +17,11 @@
  *
  * Options:
  *   --root PATH   library root; default \\Storage\Media\Music
- *   --artist NAME artist folder; default "Daddy Wombat"
+ *   --artist NAME artist folder + ID3 artist; default "Daddy Wombat"
+ *   --total N     total tracks, for "3/10" style numbering
+ *   --genre TEXT  ID3 genre; default "Children's Music"
+ *   --year N      ID3 year; default current year
+ *   --cover PATH  cover art file or URL; default is the clip's own Suno artwork
  *   --faded PATH  archive a local (faded) file instead of downloading the raw clip
  *   --force       overwrite an existing file rather than refusing
  *
@@ -26,7 +30,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, copyFileSync, writeFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, copyFileSync, writeFileSync, statSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
 const args = parseArgs(process.argv.slice(2));
@@ -64,6 +68,8 @@ if (!title) title = path.basename(sourceFile).replace(/\.(faded|src)?\.?mp3$/i, 
 // F:\music\<Artist>\<Album>\NN Title.mp3 — the layout every music player and
 // media server already expects, so the library is browsable without extra work.
 const ARTIST = args.artist ?? 'Daddy Wombat';
+// True only when fetchCover downloaded a throwaway file that we should clean up.
+let coverIsTemp = true;
 const albumDir = path.join(ROOT, sanitise(ARTIST), sanitise(args.album));
 mkdirSync(albumDir, { recursive: true });
 
@@ -75,7 +81,7 @@ if (existsSync(dest) && !args.force) {
   process.exit(1);
 }
 
-copyFileSync(sourceFile, dest);
+await writeTagged(sourceFile, dest);
 const kb = Math.round(statSync(dest).size / 1024);
 console.log(`\nArchived: ${dest}  (${kb} KB)`);
 
@@ -88,6 +94,81 @@ if (args.clip) {
 }
 
 // ---------------------------------------------------------------- helpers
+
+/**
+ * Copy to the library with proper ID3 tags and embedded cover art.
+ *
+ * Suno's MP3s arrive with nothing but a "made with suno" comment — no title,
+ * artist, album or track number — so a media server shows them as untitled
+ * files that refuse to group into an album. Plex in particular keys off
+ * album_artist for grouping, and wants the artwork embedded rather than
+ * alongside.
+ *
+ * ID3v2.3 specifically: it is the version every player agrees on. v2.4 is
+ * newer and technically better, and is exactly the sort of thing that makes a
+ * track show up blank in one app and fine in another.
+ */
+async function writeTagged(srcMp3, destMp3) {
+  const meta = {
+    title,
+    artist: ARTIST,
+    album_artist: ARTIST,
+    album: args.album,
+    genre: args.genre ?? "Children's Music",
+    date: String(args.year ?? new Date().getFullYear())
+  };
+  if (args.track) meta.track = args.total ? `${Number(args.track)}/${args.total}` : String(Number(args.track));
+  if (args.comment) meta.comment = args.comment;
+
+  const cover = await fetchCover();
+
+  const cmd = ['-v', 'error', '-y', '-i', srcMp3];
+  if (cover) cmd.push('-i', cover);
+  // Copy the audio untouched — this is a tagging pass, not a re-encode.
+  cmd.push('-map', '0:a', '-c:a', 'copy');
+  if (cover) cmd.push('-map', '1:v', '-c:v', 'mjpeg', '-disposition:v:0', 'attached_pic',
+                      '-metadata:s:v', 'title=Album cover', '-metadata:s:v', 'comment=Cover (front)');
+  cmd.push('-id3v2_version', '3', '-write_id3v1', '1');
+  for (const [k, v] of Object.entries(meta)) cmd.push('-metadata', `${k}=${v}`);
+  cmd.push(destMp3);
+
+  try {
+    execFileSync('ffmpeg', cmd, { stdio: 'inherit' });
+    console.log(`  tagged: ${meta.artist} — ${meta.album}${meta.track ? ` [${meta.track}]` : ''}${cover ? ' + cover' : ' (no cover)'}`);
+  } catch (e) {
+    // Never lose the audio because tagging failed.
+    console.warn('  ! tagging failed, copying untagged:', e?.message ?? e);
+    copyFileSync(srcMp3, destMp3);
+  } finally {
+    // ONLY delete a cover we downloaded ourselves. An earlier version deleted
+    // whatever path fetchCover returned — which for --cover is the user's own
+    // artwork file, so the first track consumed it and every later track found
+    // nothing. Destroyed two generated album covers before it was spotted.
+    if (cover && coverIsTemp) { try { rmSync(cover, { force: true }); } catch { /* best effort */ } }
+  }
+}
+
+/** Cover art: --cover <file|url> wins, else the clip's own Suno artwork. */
+async function fetchCover() {
+  let url = args.cover;
+  if (url && existsSync(url)) { coverIsTemp = false; return url; } // user file — never delete
+  if (!url && args.clip) {
+    try {
+      // /api/clip, not /api/get — the feed mapping drops image_large_url, so
+      // asking the wrong endpoint silently yields the 360x360 version. Large
+      // is 1024x1024, which is what a TV or phone actually needs.
+      const c = JSON.parse(execFileSync('curl',
+        ['-s', '--max-time', '60', `${API}/api/clip?id=${args.clip}`], { encoding: 'utf8', maxBuffer: 32e6 }));
+      url = c?.image_large_url || c?.image_url;
+    } catch { /* fall through to no cover */ }
+  }
+  if (!url) return null;
+  const tmp = path.join(process.cwd(), `.cover-${process.pid}.jpg`);
+  try {
+    execFileSync('curl', ['-s', '--max-time', '120', '-o', tmp, url], { stdio: 'ignore' });
+    return existsSync(tmp) && statSync(tmp).size > 1000 ? tmp : null;
+  } catch { return null; }
+}
 
 /** "01 Waffle Wednesday" -> "Waffle Wednesday" (the number comes from --track) */
 function stripTrackNumber(s) {

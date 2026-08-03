@@ -189,6 +189,56 @@ Studio state carries `songFadeInBeats` / `songFadeOutBeats`), but that means
 writing a Studio project version. Local post-processing is deterministic, free,
 and works on every track including ones already exported.
 
+## Recording an album, end to end
+
+```bash
+# one track: generate -> extend -> concat -> fade, verifying coverage at each half
+node scripts/make-track.mjs --file <lyrics.md> --title "01 Waffle Wednesday" \
+  --project <workspace-id> --split "Verse 3" --fade 6
+
+# several tracks without tripping the rate limit (3 per batch, 20min gaps)
+node scripts/batch-tracks.mjs --manifest tracks.json --size 3 --gap 20
+
+# export to the library with ID3 tags + embedded 1024px cover art
+node scripts/archive-track.mjs --faded faded/01-Waffle.faded.mp3 \
+  --clip <concat-id> --album "Mi Casa" --track 01 --total 10 \
+  --title "Waffle Wednesday" --year 2026
+```
+
+**Split at a verse boundary.** Suno silently DROPS sections when a lyric sheet
+is too long for one pass — it does not truncate, so the song comes back sounding
+fine while missing a verse and two choruses. Aim for ~5-7 sections per half; a
+back half of only two sections starved one track down to 1:19.
+
+**Verify by sung words, never by duration or marker timings.** Marker durations
+are a bad proxy — they produced false "dropped section" alarms twice, and missed
+a genuinely absent verse once. `get_aligned_lyrics` plus a search for each
+section's opening phrase is the check that has been right every time.
+
+**Length comes from material, not from the prompt.** Tracks landed at 2:44-4:42
+regardless of whether their style prompt said ~2:40 or ~3:00. To lengthen a
+song, add a verse or a bridge; changing the number in the tags does nothing.
+
+**Let a human pick the take.** Each stage returns two. `make-track.mjs` keeps
+the longer one, which on an upbeat song tends to be the *more relaxed* one —
+a plausible cause of one track losing its bounce. For anything where feel
+matters, generate and choose by ear.
+
+### Tagging for Plex / Plexamp
+
+Suno's MP3s arrive with **no tags at all** beyond a "made with suno" comment —
+no title, artist, album or track number — so a media server lists them as
+untitled files that will not group. `archive-track.mjs` writes ID3v2.3 (the
+version every player agrees on) with `album_artist` set, which is what Plex
+groups on, and embeds the cover.
+
+Use `image_large_url` (1024x1024), not `image_url` (360x360) — and note that
+only `/api/clip/{id}` returns it; the `/api/feed` mapping drops the field, so
+asking the wrong endpoint silently yields the small one.
+
+Each track carries its own Suno artwork by default. Pass `--cover <file|url>`
+to force one consistent album cover across the record.
+
 ## Rate limiting, and how to clear it
 
 Suno throttles on **pacing, not quota**. A captcha wall appeared after roughly
