@@ -111,6 +111,14 @@ class SunoApi {
   /** hCaptcha tokens are short-lived; keep well inside their validity. */
   private static TOKEN_REUSE_MS = 100_000;
   private capturedToken?: { token: string; at: number };
+  /**
+   * Suno's current verification credential, lifted from the `browser-token`
+   * header of a real web-client generate request. The body's `token` field
+   * still exists but arrives empty — the header is the live mechanism, and
+   * `token_provider` names whatever minted it.
+   */
+  private browserToken?: string;
+  private tokenProvider?: string;
 
   constructor(cookies: string) {
     this.userAgent = new UserAgent(/Macintosh/).random().toString(); // Usually Mac systems get less amount of CAPTCHAs
@@ -132,6 +140,10 @@ class SunoApi {
     this.client.interceptors.request.use(config => {
       if (this.currentToken && !config.headers.Authorization)
         config.headers.Authorization = `Bearer ${this.currentToken}`;
+      // Verification now rides in a header, not the body. Without it Suno
+      // answers "We couldn't verify your request" even with a valid session.
+      if (this.browserToken && !config.headers['browser-token'])
+        config.headers['browser-token'] = this.browserToken;
       const cookiesArray = Object.entries(this.cookies).map(([key, value]) => 
         cookie.serialize(key, value as string)
       );
@@ -425,7 +437,17 @@ class SunoApi {
            * five-minute fix instead of another archaeology session.
            */
           const headers = request.headers();
+          /**
+           * `browser-token` first: that is where Suno actually carries it now.
+           *
+           * A live payload still has a `token` key in the body, but it is
+           * empty — a vestige of the old scheme. Verification moved to the
+           * header, paired with a `token_provider` field. Reading the body key
+           * therefore finds something that looks right and is worthless, which
+           * is worse than finding nothing.
+           */
           const candidates: Record<string, any> = {
+            'header.browser-token': headers['browser-token'],
             'body.token': body?.token,
             'body.captcha_token': body?.captcha_token,
             'body.hcaptcha_token': body?.hcaptcha_token,
@@ -435,6 +457,13 @@ class SunoApi {
             'header.x-hcaptcha-token': headers['x-hcaptcha-token'],
             'header.captcha-token': headers['captcha-token']
           };
+          // Suno pairs the token with the provider that minted it; sending one
+          // without the other is rejected the same as sending neither.
+          if (headers['browser-token']) {
+            this.browserToken = headers['browser-token'];
+            this.tokenProvider = body?.token_provider;
+            logger.info(`browser-token captured (provider=${this.tokenProvider ?? 'none'})`);
+          }
           const hit = Object.entries(candidates).find(([, v]) => typeof v === 'string' && v.length > 0);
           const token = hit?.[1];
           if (hit) {
@@ -973,6 +1002,8 @@ class SunoApi {
     }
     if (project_id) payload.project_id = project_id;
     if (persona_id) payload.persona_id = persona_id;
+    // Paired with the browser-token header; Suno rejects one without the other.
+    if (this.tokenProvider) payload.token_provider = this.tokenProvider;
     logger.info(
       'generateSongs payload:\n' +
         JSON.stringify(
