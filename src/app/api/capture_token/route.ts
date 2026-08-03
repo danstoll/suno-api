@@ -23,7 +23,13 @@ import { corsHeaders } from '@/lib/utils';
  *
  * The token never travels through the response body; it stays server-side.
  */
-export const maxDuration = 60;
+/**
+ * This route waits on a person, so it must not carry the usual short cap.
+ * 60s was copied in from the other routes and would have killed the capture a
+ * minute in — dev mode ignores it, which is exactly how a bug like that
+ * survives to bite somewhere else.
+ */
+export const maxDuration = 3600;
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
