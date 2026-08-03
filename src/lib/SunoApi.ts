@@ -503,6 +503,32 @@ class SunoApi {
   }
 
   /**
+   * Capture a browser-token on its own, decoupled from any render.
+   *
+   * Welding the capture to a generation meant the browser opened mid-render
+   * and a human had to be watching at that exact moment; miss it and a 25
+   * minute client timeout burned for nothing. Three runs died that way.
+   *
+   * Called on its own, the browser can sit open until it is convenient. Once a
+   * token lands it is held on this instance and getCaptcha short-circuits, so
+   * one capture covers every later call.
+   */
+  public async captureBrowserToken(): Promise<{ captured: boolean; provider?: string }> {
+    if (this.browserToken) return { captured: true, provider: this.tokenProvider };
+    try {
+      await this.getCaptchaManual();
+    } catch (e: any) {
+      logger.warn(`Token capture ended without a token: ${e?.message ?? e}`);
+    }
+    return { captured: !!this.browserToken, provider: this.tokenProvider };
+  }
+
+  /** Whether a verification token is currently held. */
+  public hasBrowserToken(): boolean {
+    return !!this.browserToken;
+  }
+
+  /**
    * Public CAPTCHA dispatcher. Routes to the automatic flow, the manual flow, or
    * the fallback flow (try auto, on error use manual) based on MANUAL_CAPTCHA.
    *
@@ -511,6 +537,19 @@ class SunoApi {
    *   MANUAL_CAPTCHA=fallback      → try auto, fall back to manual on any error
    */
   public async getCaptcha(): Promise<string|null> {
+    /**
+     * A held browser-token satisfies verification on its own.
+     *
+     * It rides on every request via the interceptor and does not expire the
+     * way the old hCaptcha token did, so once one is captured there is nothing
+     * left to solve. Without this check each call re-ran the whole ladder and
+     * re-opened a browser at a human, which made a captured token worth almost
+     * nothing.
+     */
+    if (this.browserToken) {
+      record('captcha', 'browser-token held', 'ok');
+      return null;
+    }
     if (!await this.captchaRequired()) {
       record('captcha', 'not required', 'ok');
       return null;
