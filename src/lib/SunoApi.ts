@@ -681,7 +681,32 @@ class SunoApi {
       browser.browser()?.close();
       throw e;
     });
+    /**
+     * Three ways out, not one.
+     *
+     * The only exit used to be the route interception below: the browser had
+     * to fire a generate request for a token to be lifted from. When it never
+     * fired — a blocked browser session, a click that missed, a modal in the
+     * way — this waited forever. A real run sat here for 25 minutes and
+     * reported nothing but a client-side curl timeout, which points the blame
+     * at Suno instead of at this function.
+     *
+     * The second exit matters because of what the trigger above actually does:
+     * it types a throwaway prompt and clicks Create, which IS a real web-UI
+     * generation, and a real web-UI generation is the very thing that clears
+     * the anti-automation flag. So the fix can arrive without any challenge
+     * ever appearing. Poll for that and finish with no token rather than wait
+     * for a captcha the fix made unnecessary.
+     */
+    const settled = { done: false };
+    const finish = (fn: Function, v?: any) => { if (!settled.done) { settled.done = true; fn(v); } };
+
     return (new Promise((resolve, reject) => {
+      const cleanup = () => {
+        try { browser.browser()?.close(); } catch { /* already gone */ }
+        try { controller.abort(); } catch { /* already aborted */ }
+      };
+
       // Regex, not a glob: the real URL ends at "/api/generate/v2-web/" with
       // nothing after the trailing slash, so a glob ending in "/**" never
       // matches it. This also covers both /v2/ and /v2-web/.
@@ -689,15 +714,43 @@ class SunoApi {
         try {
           logger.info('hCaptcha token received. Closing browser');
           route.abort();
-          browser.browser()?.close();
-          controller.abort();
+          cleanup();
           const request = route.request();
           this.currentToken = request.headers().authorization.split('Bearer ').pop();
-          resolve(request.postDataJSON().token);
+          finish(resolve, request.postDataJSON().token);
         } catch(err) {
-          reject(err);
+          finish(reject, err);
         }
       });
+
+      // Exit 2 — the wall came down on its own (usually because the trigger
+      // generation above cleared it). No token is needed in that case.
+      const pollMs = 10_000;
+      const poll = setInterval(async () => {
+        if (settled.done) { clearInterval(poll); return; }
+        try {
+          const { data } = await this.client.post(`${SunoApi.BASE_URL}/api/c/check`, { ctype: 'generation' });
+          if (data?.required === false) {
+            clearInterval(poll);
+            logger.info('CAPTCHA no longer required — the trigger generation cleared it. Continuing without a token.');
+            cleanup();
+            finish(resolve, undefined);
+          }
+        } catch { /* transient; keep waiting */ }
+      }, pollMs);
+
+      // Exit 3 — give up loudly rather than hang. Anything past this is a
+      // broken flow, and a clear error beats a silent client-side timeout.
+      const capMs = Math.max(60, Number(process.env.CAPTCHA_WAIT_MAX_S ?? 600)) * 1000;
+      setTimeout(() => {
+        if (settled.done) return;
+        clearInterval(poll);
+        cleanup();
+        finish(reject, new Error(
+          `CAPTCHA flow timed out after ${Math.round(capMs / 1000)}s without the browser issuing a generate ` +
+          `request and without the requirement clearing. The solver was never reached, so a 2Captcha key ` +
+          `cannot help here. Clear it by running one generation manually at suno.com.`));
+      }, capMs);
     }));
   }
 
@@ -787,7 +840,8 @@ class SunoApi {
     model?: string,
     wait_audio: boolean = false,
     negative_tags?: string,
-    project_id?: string
+    project_id?: string,
+    persona_id?: string
   ): Promise<AudioInfo[]> {
     const startTime = Date.now();
     const audios = await this.generateSongs(
@@ -802,7 +856,8 @@ class SunoApi {
       undefined,
       undefined,
       undefined,
-      project_id
+      project_id,
+      persona_id
     );
     const costTime = Date.now() - startTime;
     logger.info(
@@ -843,7 +898,16 @@ class SunoApi {
      * generate payload; without it clips land in the default workspace.
      * Find ids by reading `project.id` off any clip via /api/feed/v3.
      */
-    project_id?: string
+    project_id?: string,
+    /**
+     * Persona to sing this, from POST /api/persona/create/ ("Voice" in the UI).
+     *
+     * Generating fresh rolls a new singer every time, so a re-recorded track
+     * comes back in a different voice than the take it replaces. A persona
+     * pins the voice across generations, which is the only way to fix a lyric
+     * without losing the performance.
+     */
+    persona_id?: string
   ): Promise<AudioInfo[]> {
     await this.keepAlive();
     const payload: any = {
@@ -865,6 +929,7 @@ class SunoApi {
       payload.gpt_description_prompt = prompt;
     }
     if (project_id) payload.project_id = project_id;
+    if (persona_id) payload.persona_id = persona_id;
     logger.info(
       'generateSongs payload:\n' +
         JSON.stringify(
@@ -981,9 +1046,10 @@ class SunoApi {
     title: string = '',
     model?: string,
     wait_audio?: boolean,
-    project_id?: string
+    project_id?: string,
+    persona_id?: string
   ): Promise<AudioInfo[]> {
-    return this.generateSongs(prompt, true, tags, title, false, model, wait_audio, negative_tags, 'extend', audioId, continueAt, project_id);
+    return this.generateSongs(prompt, true, tags, title, false, model, wait_audio, negative_tags, 'extend', audioId, continueAt, project_id, persona_id);
   }
 
   /**

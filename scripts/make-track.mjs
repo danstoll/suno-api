@@ -104,12 +104,18 @@ if (args.dry) { console.log('\n--dry: nothing generated.'); process.exit(0); }
 
 // ---- run ------------------------------------------------------------------
 const projectId = args.project;
+// Persona ("Voice" in the UI) pins the singer. Without it every regeneration
+// rolls a new voice, so fixing one wrong word in a lyric hands back a track
+// sung by a stranger. Must be passed to BOTH halves or the song changes
+// singer at the join.
+const personaId = args.persona;
 
 await pace('front half');
 const p1 = post('/api/custom_generate', {
   prompt: front.map((b) => b.text).join('\n\n') + '\n',
   tags: style, title, make_instrumental: false, wait_audio: false,
-  ...(projectId ? { project_id: projectId } : {})
+  ...(projectId ? { project_id: projectId } : {}),
+  ...(personaId ? { persona_id: personaId } : {})
 });
 const frontClip = await settle(p1.map((c) => c.id), 'front half');
 await report(frontClip.id, front.length, 'front');
@@ -122,12 +128,14 @@ const p2 = post('/api/extend_audio', {
   audio_id: frontClip.id, continue_at: cut,
   prompt: back.map((b) => b.text).join('\n\n') + '\n',
   tags: style, title, wait_audio: false,
-  ...(projectId ? { project_id: projectId } : {})
+  ...(projectId ? { project_id: projectId } : {}),
+  ...(personaId ? { persona_id: personaId } : {})
 });
 const backClip = await settle(p2.map((c) => c.id), 'back half');
 await report(backClip.id, back.length, 'back');
 
-const cc = post('/api/concat', { clip_id: backClip.id, ...(projectId ? { project_id: projectId } : {}) });
+const cc = post('/api/concat', { clip_id: backClip.id, ...(projectId ? { project_id: projectId } : {}),
+  ...(personaId ? { persona_id: personaId } : {}) });
 const concatId = Array.isArray(cc) ? cc[0].id : cc.id;
 const finalClip = await settle([concatId], 'concat');
 
