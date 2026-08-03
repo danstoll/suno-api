@@ -396,7 +396,7 @@ class SunoApi {
     logger.info('The browser will close automatically once the token is captured.');
     logger.info('=================================================================');
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string | null>((resolve, reject) => {
       let captured = false;
       // Regex, not a glob: the real URL ends at "/api/generate/v2-web/" with
       // nothing after the trailing slash, so a glob ending in "/**" never
@@ -412,11 +412,54 @@ class SunoApi {
           const auth = request.headers().authorization;
           if (auth) this.currentToken = auth.split('Bearer ').pop();
           const body = request.postDataJSON();
-          const token = body?.token;
-          logger.info(`hCaptcha token captured (length=${token?.length}). Closing browser.`);
+          /**
+           * The token has not always lived in `body.token`.
+           *
+           * A real run intercepted a perfectly good generate request whose body
+           * simply had no `token` key, and the old code rejected outright —
+           * blaming the captcha, the solver and the session in turn, when the
+           * actual problem was reading one hardcoded field name.
+           *
+           * Look through the plausible carriers, and if none of them holds
+           * anything, log the shape we DID get so the next change is a
+           * five-minute fix instead of another archaeology session.
+           */
+          const headers = request.headers();
+          const candidates: Record<string, any> = {
+            'body.token': body?.token,
+            'body.captcha_token': body?.captcha_token,
+            'body.hcaptcha_token': body?.hcaptcha_token,
+            'body.h_captcha_token': body?.h_captcha_token,
+            'body.captcha': typeof body?.captcha === 'string' ? body.captcha : undefined,
+            'header.x-captcha-token': headers['x-captcha-token'],
+            'header.x-hcaptcha-token': headers['x-hcaptcha-token'],
+            'header.captcha-token': headers['captcha-token']
+          };
+          const hit = Object.entries(candidates).find(([, v]) => typeof v === 'string' && v.length > 0);
+          const token = hit?.[1];
+          if (hit) {
+            logger.info(`hCaptcha token captured from ${hit[0]} (length=${token.length}). Closing browser.`);
+          } else {
+            logger.warn(
+              'Intercepted a generate request with no recognisable captcha token.\n' +
+              `  body keys   : ${body ? Object.keys(body).join(', ') : '(no JSON body)'}\n` +
+              `  header keys : ${Object.keys(headers).filter((h) => /captcha|token|auth/i.test(h)).join(', ') || '(none matching)'}`
+            );
+          }
           try { await route.abort(); } catch {}
           try { await browser.browser()?.close(); } catch {}
-          if (!token) reject(new Error('No token field in intercepted /api/generate/v2 body'));
+          /**
+           * No token is not automatically fatal. Suno may have stopped
+           * requiring one on this path, and the Authorization bearer was
+           * captured above regardless — which is the part that actually
+           * authenticates the call. Continue and let the API be the judge,
+           * rather than failing on an assumption.
+           */
+          if (!token) {
+            logger.info('Continuing without a captcha token — the API will reject it if one was genuinely needed.');
+            resolve(null);
+            return;
+          }
           else resolve(token);
         } catch (err: any) {
           reject(err);
