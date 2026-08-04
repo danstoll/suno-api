@@ -115,6 +115,10 @@ const personaId = args.persona;
 // it competes with specificity. Override with --style-weight / --weirdness.
 const styleWeight = args["style-weight"] !== undefined ? Number(args["style-weight"]) : 0.9;
 const weirdness = args.weirdness !== undefined ? Number(args.weirdness) : 0.2;
+// Suno documents negative prompts as often more effective than describing what
+// you do want. This fork has always sent an empty string here, so it has never
+// been tried. --negative "autotune, mumbled vocals"
+const negativeTags = args.negative ? String(args.negative) : undefined;
 
 await pace('front half');
 const p1 = post('/api/custom_generate', {
@@ -122,7 +126,8 @@ const p1 = post('/api/custom_generate', {
   tags: style, title, make_instrumental: false, wait_audio: false,
   ...(projectId ? { project_id: projectId } : {}),
   ...(personaId ? { persona_id: personaId } : {}),
-  style_weight: styleWeight, weirdness
+  style_weight: styleWeight, weirdness,
+  ...(negativeTags ? { negative_tags: negativeTags } : {})
 });
 const frontClip = await settle(p1.map((c) => c.id), 'front half');
 await report(frontClip.id, front.length, 'front');
@@ -137,7 +142,8 @@ const p2 = post('/api/extend_audio', {
   tags: style, title, wait_audio: false,
   ...(projectId ? { project_id: projectId } : {}),
   ...(personaId ? { persona_id: personaId } : {}),
-  style_weight: styleWeight, weirdness
+  style_weight: styleWeight, weirdness,
+  ...(negativeTags ? { negative_tags: negativeTags } : {})
 });
 const backClip = await settle(p2.map((c) => c.id), 'back half');
 await report(backClip.id, back.length, 'back');

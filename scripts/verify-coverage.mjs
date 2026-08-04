@@ -29,8 +29,30 @@ const lyr = (src.match(/##\s*Lyrics\s*\n([\s\S]*?)(?=\n##\s|\n*$)/) ?? [])[1]?.t
 if (!lyr) { console.error('No "## Lyrics" section found.'); process.exit(1); }
 
 // One probe per section: its first handful of real words, normalised.
+/**
+ * A bracketed line is only a SECTION if it names one. Stage directions live in
+ * brackets too — [hand claps], [silence — hold it], [the girls] (MOOOO!) — and
+ * splitting on "line starts with [" counted every one as a section. That
+ * inflated coverage counts with things nobody sings.
+ *
+ * The section word need not lead the bracket: [Final Chorus — doubled…],
+ * [Double Drop]. So match it anywhere inside. A direction that happens to
+ * contain one, like [beat drops], will read as a section — an acceptable trade
+ * against silently losing a Final Chorus.
+ */
+const SECTION_RE = /^\[[^\]]*\b(?:intro|verse|pre-?chorus|post-?chorus|chorus|bridge|outro|hook|break|drop|instrumental|refrain|coda|interlude)\b/i;
+
+/** Group lines into section blocks, ignoring inline directions. */
+function splitSections(text) {
+  return text.split('\n').reduce((acc, line) => {
+    if (SECTION_RE.test(line.trim())) acc.push([line]);
+    else if (acc.length) acc[acc.length - 1].push(line);
+    return acc;
+  }, []).map((b) => b.join("\n").trim()).filter(Boolean);
+}
+
 const sections = [];
-for (const part of lyr.split(/\n(?=\[)/)) {
+for (const part of splitSections(lyr)) {
   const m = part.match(/^\[([^\]]+)\]\s*([\s\S]*)$/);
   if (!m) continue;
   const name = m[1].split(/\s+[—–-]\s+/)[0].trim();

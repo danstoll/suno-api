@@ -56,8 +56,36 @@ const style = styleBlock.split('\n').filter((l) => l.trim().startsWith('>'))
   .map((l) => l.replace(/^\s*>\s?/, '')).join(' ').trim();
 const title = (src.match(/^#\s+(.+)$/m) ?? [])[1]?.trim() ?? 'Untitled';
 
+/**
+ * A bracketed line is only a SECTION if it names one.
+ *
+ * Once stage directions moved into brackets — `[hand claps]`, and
+ * `[the girls] (MOOOO!)` for a labelled ad-lib — splitting on "line starts with
+ * [" counted every direction as a structural marker. A --dry run listed "the
+ * girls" and "engine off, two little yawns, one last beep" as sections to
+ * regenerate, which would have wrecked the split point and the verifier.
+ *
+ * Match a known section vocabulary instead of trusting the bracket alone.
+ */
+/**
+ * The section word may not lead the bracket — `[Final Chorus — doubled…]`,
+ * `[Double Drop]`, `[Verse 3 — sillier]`. Anchoring to the start dropped the
+ * Final Chorus silently, which a --dry run caught only because the list
+ * visibly ended at Verse 4.
+ *
+ * So: match a section word ANYWHERE inside the bracket. The trade is that a
+ * direction happening to contain one — `[beat drops]` — reads as a section.
+ * Worth it: a missed Final Chorus is a broken render, a spurious split is
+ * visible in --dry.
+ */
+const SECTION_RE = /^\[[^\]]*\b(?:intro|verse|pre-?chorus|post-?chorus|chorus|bridge|outro|hook|break|drop|instrumental|refrain|coda|interlude)\b/i;
+
 // Everything from --from onward, markers included.
-const blocks = lyrics.split(/\n(?=\[)/);
+const blocks = lyrics.split('\n').reduce((acc, line) => {
+  if (SECTION_RE.test(line.trim())) acc.push([line]);
+  else if (acc.length) acc[acc.length - 1].push(line);
+  return acc;
+}, []).map((b) => b.join('\n').trim()).filter(Boolean);
 const startAt = blocks.findIndex((b) => new RegExp(`^\\[${escapeRe(args.from)}`, 'i').test(b.trim()));
 if (startAt < 0) {
   console.error(`No section starting "${args.from}". Sections:`);
@@ -75,6 +103,7 @@ if (args.dry) { console.log('\n--dry: nothing generated.'); process.exit(0); }
 
 const styleWeight = args['style-weight'] !== undefined ? Number(args['style-weight']) : 0.9;
 const weirdness = args.weirdness !== undefined ? Number(args.weirdness) : 0.2;
+const negativeTags = args.negative ? String(args.negative) : undefined;
 
 const ext = post('/api/extend_audio', {
   audio_id: args.clip,
@@ -85,6 +114,7 @@ const ext = post('/api/extend_audio', {
   wait_audio: false,
   style_weight: styleWeight,
   weirdness,
+  ...(negativeTags ? { negative_tags: negativeTags } : {}),
   ...(args.project ? { project_id: args.project } : {})
 });
 const extClip = await settle(ext.map((c) => c.id), 'extension');

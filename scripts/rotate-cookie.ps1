@@ -35,6 +35,13 @@ if ($cookie -notmatch '__client') {
     throw "Clipboard does not look like a Suno cookie (no '__client' entry found). " +
           "Copy the full Cookie REQUEST header value, not a single cookie or a response header."
 }
+
+# Deliberately NOT checking for __session. It reads like a required entry, and
+# CLAUDE.md used to say so, but the code disagrees: getAuthToken and keepAlive
+# both authenticate with `Authorization: cookies.__client`, keepAlive MINTS a
+# session token from it, and launchBrowser synthesises the __session cookie from
+# that minted value. Nothing ever reads cookies.__session. A guard here would
+# reject perfectly good cookies — it did, once, for two rounds.
 if ($cookie.Contains("'")) {
     throw "Cookie contains a single quote, which would break .env quoting. Rotate manually."
 }

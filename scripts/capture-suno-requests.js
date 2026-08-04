@@ -6,9 +6,17 @@
  * instead of guessed at.
  *
  * WHY THIS EXISTS: "Copy as cURL" embeds your Authorization bearer token and
- * full session cookie. This captures no headers at all, and additionally
- * redacts credential-shaped values found inside bodies. What it produces is
- * safe to paste into a chat; a cURL export is not.
+ * full session cookie. This records header NAMES and LENGTHS only — never a
+ * header value, except for a short allow-list of non-identifying ones — and
+ * additionally redacts credential-shaped values found inside bodies. What it
+ * produces is safe to paste into a chat; a cURL export is not.
+ *
+ * Header names matter because Suno's verification moved INTO a header
+ * (`browser-token`, paired with a `token_provider` body field). A capture that
+ * skipped headers entirely — as this script used to — was structurally unable
+ * to show how verification rides, which is the single thing worth knowing when
+ * a captcha wall goes up. `browser-token: <present, 812 chars>` answers that
+ * without ever putting the credential on screen.
  *
  * ── USAGE ─────────────────────────────────────────────────────────────────
  *   1. Open suno.com, press F12, go to Console.
@@ -69,6 +77,41 @@
     try { return JSON.parse(text); } catch { return text.slice(0, MAX_STRING); }
   }
 
+  /**
+   * Headers whose values are safe to keep verbatim: they describe the client,
+   * not the user. Everything else is reduced to a length, so a capture can
+   * prove `browser-token` was present and roughly how big it was without ever
+   * carrying the token itself.
+   */
+  const HEADER_VALUE_OK = /^(content-type|accept|accept-language|sec-ch-ua|sec-ch-ua-mobile|sec-ch-ua-platform|x-suno-client|x-requested-with|token-provider|origin|referer)$/i;
+
+  /** Normalise the several shapes fetch accepts into a flat lowercase map. */
+  function headerPairs(input, init) {
+    const out = {};
+    const absorb = (h) => {
+      if (!h) return;
+      try {
+        if (typeof h.forEach === 'function' && !Array.isArray(h)) h.forEach((v, k) => { out[String(k).toLowerCase()] = String(v); });
+        else if (Array.isArray(h)) for (const pair of h) { if (pair && pair.length === 2) out[String(pair[0]).toLowerCase()] = String(pair[1]); }
+        else if (typeof h === 'object') for (const k of Object.keys(h)) out[k.toLowerCase()] = String(h[k]);
+      } catch { /* exotic header container — skip rather than break the request */ }
+    };
+    if (input && typeof input === 'object' && input.headers) absorb(input.headers);
+    absorb(init && init.headers);
+    return out;
+  }
+
+  function summariseHeaders(h) {
+    if (!h) return undefined;
+    const keys = Object.keys(h).sort();
+    if (!keys.length) return undefined;
+    const out = {};
+    for (const k of keys) {
+      out[k] = HEADER_VALUE_OK.test(k) ? h[k] : `<present, ${h[k].length} chars>`;
+    }
+    return out;
+  }
+
   function wanted(url, method) {
     if (!url || !INCLUDE.test(url) || EXCLUDE.test(url)) return false;
     return !BORING.test(url);
@@ -122,6 +165,7 @@
           path: new URL(url, location.origin).pathname,
           query: new URL(url, location.origin).search || undefined,
           status: res.status,
+          headers: summariseHeaders(headerPairs(input, init)),
           request: redact(parseMaybeJson(reqBody)),
           response: redact(resBody),
           via: 'fetch'
@@ -136,9 +180,18 @@
   // ---- XMLHttpRequest -------------------------------------------------
   const OrigOpen = XMLHttpRequest.prototype.open;
   const OrigSend = XMLHttpRequest.prototype.send;
+  const OrigSetHeader = XMLHttpRequest.prototype.setRequestHeader;
   XMLHttpRequest.prototype.open = function (method, url) {
-    this.__cap = { method: String(method || 'GET').toUpperCase(), url: String(url) };
+    this.__cap = { method: String(method || 'GET').toUpperCase(), url: String(url), headers: {} };
     return OrigOpen.apply(this, arguments);
+  };
+  // XHR headers are set one call at a time, so they have to be accumulated as
+  // they land — there is no bag to read back off the object later.
+  XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+    try {
+      if (this.__cap) this.__cap.headers[String(name).toLowerCase()] = String(value);
+    } catch { /* never let bookkeeping break the request */ }
+    return OrigSetHeader.apply(this, arguments);
   };
   XMLHttpRequest.prototype.send = function (body) {
     const cap = this.__cap;
@@ -150,6 +203,7 @@
             url: cap.url.split('?')[0],
             path: new URL(cap.url, location.origin).pathname,
             status: this.status,
+            headers: summariseHeaders(cap.headers),
             request: redact(parseMaybeJson(typeof body === 'string' ? body : null)),
             response: redact(parseMaybeJson(this.responseText)),
             via: 'xhr'
@@ -197,6 +251,7 @@
       window.fetch = origFetch;
       XMLHttpRequest.prototype.open = OrigOpen;
       XMLHttpRequest.prototype.send = OrigSend;
+      XMLHttpRequest.prototype.setRequestHeader = OrigSetHeader;
       delete window.__sunoCapture;
       console.log('[capture] stopped, originals restored.');
     }
@@ -204,7 +259,8 @@
 
   console.log(
     '%c[capture] armed.%c Drive the UI, then run __sunoCapture.copy()\n' +
-      'Headers are never recorded; JWTs and long opaque strings inside bodies are redacted.',
+      'Header NAMES + lengths only (never values, bar a client-describing allow-list);\n' +
+      'JWTs and long opaque strings inside bodies are redacted.',
     'color:#0a0;font-weight:bold', 'color:inherit'
   );
 })();
