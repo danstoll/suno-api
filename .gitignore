@@ -29,7 +29,12 @@ yarn-error.log*
 .env*.local
 .env
 # rotate-cookie.ps1 writes this; it holds the previous live cookie
-.env.bak
+.env.bak*
+# any local env variant - backups, experiments, dated copies.
+# .env.bak.captchafix held a live cookie and a 2Captcha key while being
+# untracked-but-not-ignored, one careless `git add -A` from a public fork.
+.env.*
+!.env.example
 
 # vercel
 .vercel

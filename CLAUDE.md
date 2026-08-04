@@ -75,12 +75,22 @@ go stale together — rotating one means rotating the other.
 |-----|---------|
 | `SUNO_COOKIE` | Suno session cookie. **Rotates** — see below. |
 | `SUNO_MODEL` | Overrides the default `mv` model. Blank = `chirp-fenix`. |
-| `TWOCAPTCHA_KEY` | 2captcha.com key for automatic captcha solving. **Currently blank.** |
+| `TWOCAPTCHA_KEY` | 2captcha.com key for automatic captcha solving. **Funded** — $20 balance as of 2026-08-04. |
 | `MANUAL_CAPTCHA` | `unset`/`false` = auto only · `true` = manual only · `fallback` = auto, then manual on error |
 | `BROWSER_HEADLESS` | `true` normally; manual mode forces visible for the request. |
+| `CAPTCHA_WAIT_MAX_S` | Idle-poll seconds before escalating. `0` = escalate immediately. |
+| `CAPTCHA_FLOW_MAX_S` | Hard cap on the **automatic** flow. Default 600. |
+| `CAPTCHA_MANUAL_MAX_S` | Hard cap on the **manual** flow. Default 900. |
 
 With `TWOCAPTCHA_KEY` blank, set `MANUAL_CAPTCHA=fallback` — otherwise a captcha
 challenge simply fails the request.
+
+> **`CAPTCHA_WAIT_MAX_S=0` used to cap the automatic flow at 60 seconds.** One
+> variable answered two questions: the idle wait, and `Math.max(60, …)` as the
+> auto flow's whole-run deadline. Setting it to `0` to mean "don't sit there
+> waiting" therefore also meant "give the browser 60s" — not enough to load the
+> Suno UI, let alone reach a solver. It timed out, fell through to manual, and
+> summoned a human every time. Split into `CAPTCHA_FLOW_MAX_S` on 2026-08-04.
 
 ## Cookie rotation
 
@@ -263,6 +273,33 @@ Things that do **not** clear it, all tested:
 **Prevention is cheaper than any of it.** `make-track.mjs --pace N` (default 30s)
 spaces the generate calls out. Firing three calls per track with no gap is what
 triggers the wall in the first place.
+
+### Why solving it by hand appeared to do nothing (fixed 2026-08-04)
+
+Symptom: the visible browser opens, you solve the hCaptcha, the window closes —
+and the next call asks again. Forever. Three separate faults stacked up:
+
+1. **The manual flow aborted your generation.** `getCaptchaManual` intercepted
+   `/api/generate/v2*` and called `route.abort()`. But a completed web-UI
+   generation is *the thing that clears the wall* — the automatic flow says so
+   in its own comments. Aborting killed the only request that would have fixed
+   anything, so a correct solve changed nothing and the wall stayed up. Now it
+   calls `route.continue()` and lets the song through. Costs a few credits;
+   clears the wall.
+2. **It settled on the first request it saw.** Suno fires a generate *before*
+   the challenge as well as after it. The handler marked itself `captured` on
+   that first one, found no token in it, closed the browser and returned `null`
+   — often before the human had touched anything. It now only finishes on a
+   real credential and stays armed for the post-solve request.
+3. **It could not time out.** The promise resolved only from the interceptor
+   and rejected only on the context's `close` event. A browser that died
+   without emitting it left the promise pending forever. Four requests sat
+   in-flight for seven hours that way, logging `challenge raised by Suno /
+   pending` and never settling. Now capped by `CAPTCHA_MANUAL_MAX_S`, and a
+   browser `disconnected` event rejects too.
+
+Diagnose it with `GET /api/activity`: a `captcha` event stuck on `pending` with
+a non-zero `inFlight` is this bug, not Suno being slow.
 
 ## Suno's API surface (fork research, 2026-08-02)
 

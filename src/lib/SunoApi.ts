@@ -108,6 +108,24 @@ class SunoApi {
    * fix. Set CAPTCHA_WAIT_MAX_S=0 to disable and escalate immediately.
    */
   private static CAPTCHA_WAIT_MAX_S = Number(process.env.CAPTCHA_WAIT_MAX_S ?? 600);
+  /**
+   * Hard cap on the automatic flow, kept SEPARATE from the idle wait above.
+   *
+   * These were one variable, and the overload was a trap: the auto flow read
+   * `Math.max(60, CAPTCHA_WAIT_MAX_S)`, so setting `CAPTCHA_WAIT_MAX_S=0` to
+   * mean "don't sit and wait, escalate now" silently also meant "give the auto
+   * flow 60 seconds" — barely enough to load the Suno UI, never mind reach a
+   * solver. It then failed, fell through to manual, and asked a human. Two
+   * knobs, because they answer two different questions.
+   */
+  private static CAPTCHA_FLOW_MAX_S = Number(process.env.CAPTCHA_FLOW_MAX_S ?? 600);
+  /**
+   * Hard cap on the manual flow. It waits on a person, so this is generous —
+   * but it is not absent. With no cap at all a browser that closed without its
+   * context emitting `close` left the promise pending forever, which is how
+   * four requests ended up in-flight for seven hours reporting nothing.
+   */
+  private static CAPTCHA_MANUAL_MAX_S = Number(process.env.CAPTCHA_MANUAL_MAX_S ?? 900);
   /** hCaptcha tokens are short-lived; keep well inside their validity. */
   private static TOKEN_REUSE_MS = 100_000;
   private capturedToken?: { token: string; at: number };
@@ -410,6 +428,16 @@ class SunoApi {
 
     return new Promise<string | null>((resolve, reject) => {
       let captured = false;
+      const settled = { done: false };
+      const finish = (fn: Function, v?: any) => {
+        if (settled.done) return;
+        settled.done = true;
+        clearInterval(poll);
+        clearTimeout(cap);
+        try { browser.browser()?.close(); } catch { /* already gone */ }
+        fn(v);
+      };
+
       // Regex, not a glob: the real URL ends at "/api/generate/v2-web/" with
       // nothing after the trailing slash, so a glob ending in "/**" never
       // matches it. This also covers both /v2/ and /v2-web/.
@@ -418,7 +446,6 @@ class SunoApi {
           try { await route.continue(); } catch {}
           return;
         }
-        captured = true;
         try {
           const request = route.request();
           const auth = request.headers().authorization;
@@ -475,29 +502,79 @@ class SunoApi {
               `  header keys : ${Object.keys(headers).filter((h) => /captcha|token|auth/i.test(h)).join(', ') || '(none matching)'}`
             );
           }
-          try { await route.abort(); } catch {}
-          try { await browser.browser()?.close(); } catch {}
           /**
-           * No token is not automatically fatal. Suno may have stopped
-           * requiring one on this path, and the Authorization bearer was
-           * captured above regardless — which is the part that actually
-           * authenticates the call. Continue and let the API be the judge,
-           * rather than failing on an assumption.
+           * LET IT THROUGH. This used to `route.abort()`, and that abort was
+           * the whole reason solving by hand appeared to do nothing.
+           *
+           * The thing that actually clears Suno's wall is a REAL web-UI
+           * generation completing — the automatic flow says so in as many
+           * words further down. Aborting killed the one request that would
+           * have done it, so the human solved a challenge, watched the browser
+           * vanish, and got asked again on the very next call. A solve that
+           * changes nothing is a loop, and this was its source.
+           *
+           * Continuing costs a few credits for a throwaway song. That is the
+           * price of clearing the wall, and it is cheaper than another round.
            */
-          if (!token) {
-            logger.info('Continuing without a captcha token — the API will reject it if one was genuinely needed.');
-            resolve(null);
+          try { await route.continue(); } catch { /* page may be closing */ }
+
+          /**
+           * No token is not fatal, but it is also not a reason to stop
+           * watching. Suno fires a generate BEFORE the challenge as well as
+           * after it, and treating the first one as the answer meant closing
+           * the browser on a request that never had a token in it. Only a real
+           * credential ends this; anything else leaves the listener armed for
+           * the post-solve request.
+           */
+          if (!token && !this.browserToken) {
+            logger.info('No verification on this request — leaving the browser open for the post-solve one.');
             return;
           }
-          else resolve(token);
+          captured = true;
+          logger.info('Verification captured. Letting the generation finish, then closing.');
+          // Give the continued request a moment to reach Suno, so the wall
+          // clears too rather than only the token being harvested.
+          await sleep(3);
+          finish(resolve, token ?? null);
         } catch (err: any) {
-          reject(err);
+          finish(reject, err);
         }
       });
-      // No timeout — let the user take as long as they need.
-      // Detect browser closed by user as a cancel.
+
+      /**
+       * Exit 2 — the wall came down because the human's generation landed.
+       * That is a success even with no token in hand, and without this the
+       * flow would keep a browser open waiting for a challenge that the fix
+       * already made unnecessary.
+       */
+      const poll = setInterval(async () => {
+        if (settled.done) return;
+        try {
+          if (!await this.captchaRequired()) {
+            logger.info('CAPTCHA no longer required — the manual generation cleared it.');
+            finish(resolve, null);
+          }
+        } catch { /* transient; keep waiting */ }
+      }, 10_000);
+
+      // Exit 3 — a person may be slow, but they are not infinite. Without a
+      // cap, a browser that died without its context emitting `close` left
+      // this pending forever and wedged the request behind it.
+      const cap = setTimeout(() => {
+        finish(reject, new Error(
+          `Manual CAPTCHA timed out after ${SunoApi.CAPTCHA_MANUAL_MAX_S}s with no verification captured. ` +
+          `Clear it directly by generating one song at suno.com in your normal browser, ` +
+          `or raise CAPTCHA_MANUAL_MAX_S.`));
+      }, SunoApi.CAPTCHA_MANUAL_MAX_S * 1000);
+
+      // Detect the human closing the window as a cancel. Listen on the browser
+      // too: killing the process does not always emit `close` on the context,
+      // which is precisely how this hung instead of failing.
       browser.on('close', () => {
-        if (!captured) reject(new Error('Browser closed by user before captcha solved'));
+        if (!captured) finish(reject, new Error('Browser closed by user before captcha solved'));
+      });
+      browser.browser()?.on('disconnected', () => {
+        if (!captured) finish(reject, new Error('Browser disconnected before captcha solved'));
       });
     });
   }
@@ -852,7 +929,7 @@ class SunoApi {
 
       // Exit 3 — give up loudly rather than hang. Anything past this is a
       // broken flow, and a clear error beats a silent client-side timeout.
-      const capMs = Math.max(60, Number(process.env.CAPTCHA_WAIT_MAX_S ?? 600)) * 1000;
+      const capMs = Math.max(60, SunoApi.CAPTCHA_FLOW_MAX_S) * 1000;
       setTimeout(() => {
         if (settled.done) return;
         clearInterval(poll);
