@@ -142,16 +142,35 @@ class SunoApi {
     this.userAgent = new UserAgent(/Macintosh/).random().toString(); // Usually Mac systems get less amount of CAPTCHAs
     this.cookies = cookie.parse(cookies);
     this.deviceId = this.cookies.ajs_anonymous_id || randomUUID();
+    /**
+     * Identify as the WEB client, not the Android app.
+     *
+     * Upstream sent `x-suno-client: Android …` + `X-Requested-With:
+     * com.suno.android`, and Suno answers that identity with
+     * `captcha_version: 1`. Probed 2026-08-04 with one cookie and one bearer
+     * against both hosts: the android headers return v1, web-like headers
+     * return v2, and the endpoint makes no difference — the CLIENT picks the
+     * scheme.
+     *
+     * That split was incoherent here. The captcha flows solve a challenge in a
+     * real Chromium, which Suno has on v2, and then replay what they harvest
+     * through THIS client, which Suno had on v1 — a credential minted under one
+     * scheme presented under the other. Both sides now sit on v2.
+     *
+     * The Mac user-agent stays: it is a desktop browser UA, which is what a web
+     * client should look like, and upstream's note that Mac draws fewer
+     * challenges costs nothing to keep.
+     */
     this.client = axios.create({
       withCredentials: true,
       headers: {
         'Affiliate-Id': 'undefined',
         'Device-Id': `"${this.deviceId}"`,
-        'x-suno-client': 'Android prerelease-4nt180t 1.0.42',
-        'X-Requested-With': 'com.suno.android',
-        'sec-ch-ua': '"Chromium";v="130", "Android WebView";v="130", "Not?A_Brand";v="99"',
-        'sec-ch-ua-mobile': '?1',
-        'sec-ch-ua-platform': '"Android"',
+        'Origin': 'https://suno.com',
+        'Referer': 'https://suno.com/',
+        'sec-ch-ua': '"Chromium";v="130", "Not?A_Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
         'User-Agent': this.userAgent
       }
     });
@@ -1029,7 +1048,9 @@ class SunoApi {
     wait_audio: boolean = false,
     negative_tags?: string,
     project_id?: string,
-    persona_id?: string
+    persona_id?: string,
+    style_weight?: number,
+    weirdness?: number
   ): Promise<AudioInfo[]> {
     const startTime = Date.now();
     const audios = await this.generateSongs(
@@ -1045,7 +1066,9 @@ class SunoApi {
       undefined,
       undefined,
       project_id,
-      persona_id
+      persona_id,
+      style_weight,
+      weirdness
     );
     const costTime = Date.now() - startTime;
     logger.info(
@@ -1095,7 +1118,11 @@ class SunoApi {
      * pins the voice across generations, which is the only way to fix a lyric
      * without losing the performance.
      */
-    persona_id?: string
+    persona_id?: string,
+    /** metadata.control_sliders.style_weight — how hard the style prompt is obeyed. */
+    style_weight?: number,
+    /** metadata.control_sliders.weirdness_constraint — competes with specificity. */
+    weirdness?: number
   ): Promise<AudioInfo[]> {
     await this.keepAlive();
     const payload: any = {
@@ -1118,6 +1145,26 @@ class SunoApi {
     }
     if (project_id) payload.project_id = project_id;
     if (persona_id) payload.persona_id = persona_id;
+    /**
+     * Style weight and weirdness, nested inside `metadata` exactly as the web
+     * client sends them. Top-level would be accepted and silently ignored —
+     * the generation succeeds and the sliders do nothing, which is the worst
+     * kind of failure to notice.
+     *
+     * This fork sent neither until now, so every render here used Suno's
+     * defaults while hand-made takes used 0.9 / 0.2. High style weight matters
+     * when the style prompt carries section-level arrangement instructions
+     * ("verses have no drums"), because a low weight means Suno ignores them.
+     * Low weirdness matters when the structure is already unusual — weirdness
+     * and specificity compete for the same territory.
+     */
+    if (style_weight !== undefined || weirdness !== undefined) {
+      payload.metadata = payload.metadata ?? {};
+      payload.metadata.control_sliders = {
+        ...(style_weight !== undefined ? { style_weight: Number(style_weight) } : {}),
+        ...(weirdness !== undefined ? { weirdness_constraint: Number(weirdness) } : {})
+      };
+    }
     // Paired with the browser-token header; Suno rejects one without the other.
     if (this.tokenProvider) payload.token_provider = this.tokenProvider;
     logger.info(
@@ -1237,9 +1284,11 @@ class SunoApi {
     model?: string,
     wait_audio?: boolean,
     project_id?: string,
-    persona_id?: string
+    persona_id?: string,
+    style_weight?: number,
+    weirdness?: number
   ): Promise<AudioInfo[]> {
-    return this.generateSongs(prompt, true, tags, title, false, model, wait_audio, negative_tags, 'extend', audioId, continueAt, project_id, persona_id);
+    return this.generateSongs(prompt, true, tags, title, false, model, wait_audio, negative_tags, 'extend', audioId, continueAt, project_id, persona_id, style_weight, weirdness);
   }
 
   /**

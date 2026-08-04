@@ -40,14 +40,20 @@ on a generation*, not separate endpoints, so this list is close to a feature map
 | **`continued_aligned_prompt`** | ❌ | **Unexplored.** Likely the aligned lyric of the source, so an extend knows where it is |
 | `control_sliders` | ✅ | `style_weight`, `weirdness_constraint` — see below |
 | `transaction_uuid` | ✅ | Idempotency key |
-| `metadata` | ✅ | Nested; carries `infill_lyrics`, `lyrics_updated` |
+| **`lyrics_project_id`** | ❌ | **Unexplored.** Present on Studio-originated generations — lyrics appear to be their own persisted entity, not just a string on the request |
+| `metadata` | ✅ | Nested. Carries `infill_lyrics` / `lyrics_updated` on an infill, and on a Studio generation: `web_client_pathname`, `create_mode` (`custom`), `is_max_mode`, `user_tier`, `create_session_token`, `disable_volume_normalization` |
 | `infill_start_s` / `infill_end_s` | ✅ | Top-level, **not** inside metadata |
 | `batch_size` | ✅ | Takes per generation (normally 2) |
 
 ### control_sliders
 
+**Nested inside `metadata`, not top-level.** A live Studio request carries
+`metadata.control_sliders = { style_weight, weirdness_constraint }`. Sending it
+at the top level would be silently ignored — the request still succeeds and the
+sliders simply do nothing, which is the worst kind of failure to debug.
+
 Observed values on takes that came out well: `style_weight: 0.9`,
-`weirdness_constraint: 0.2`.
+`weirdness_constraint: 0.2`. The web UI will go to `style_weight: 1`.
 
 High style weight matters when the style prompt carries section-level
 arrangement instructions ("verses have no drums"), because low weight means
@@ -77,6 +83,11 @@ unusual — weirdness and specificity compete for the same territory.
 | `/api/billing/info/` | GET | Subscription |
 | `/api/c/check` | POST | `{ctype:"generation"}` → whether verification is required |
 | `/api/edit/stems/` | POST | Stem separation |
+| `/api/clips/{id}/attribution` | GET | **Lineage.** Returns `source_clips` with a `relationship` code — `EX` for an extend — naming the clip this one derives from. The only way to ask "where did this come from?" without guessing from titles. Note the plural `clips`, where every other clip route is singular |
+| `/api/clip/{id}/stems/pages` | GET | How many pages of stems exist. `0` means none separated yet |
+| `/api/clip/{id}/stems?page=N` | GET | Paginated stems. **1-indexed** — `page=0` returns "Invalid page number" |
+| `/api/lyrics-projects/{id}/flush` | POST | `{lyrics}`. Lyrics are a persisted entity, referenced by `lyrics_project_id` on a generation |
+| `/api/gen/bulk_increment_play_counts/v2` | POST | `{gen_ids[], sample_factor}` — telemetry |
 
 ### Seen in captures, not yet used
 
