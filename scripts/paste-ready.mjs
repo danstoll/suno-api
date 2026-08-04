@@ -46,7 +46,19 @@ const stylePath = `${base}.STYLE.txt`;
 writeFileSync(lyricsPath, `${lyrics}\n`);
 writeFileSync(stylePath, `${style}\n`);
 
-const sections = (lyrics.match(/^\[/gm) ?? []).length;
+/**
+ * Count SECTIONS, not bracketed lines.
+ *
+ * Stage directions live in brackets too — [hand claps], [the girls] (MOOOO!) —
+ * so a bare `^\[` count reported The Long Way Home as 17 sections when it has
+ * 13. The count is the whole point of this script: it is what tells you a paste
+ * was complete before you spend a generation. An inflated one is worse than
+ * none.
+ *
+ * Third script to carry this bug. The predicate belongs in a shared module.
+ */
+const SECTION_RE = /^\[[^\]]*\b(?:intro|verse|pre-?chorus|post-?chorus|chorus|bridge|outro|hook|break|drop|instrumental|refrain|coda|interlude)\b/i;
+const sections = lyrics.split('\n').filter((l) => SECTION_RE.test(l.trim())).length;
 const lines = lyrics.split('\n').filter((l) => l.trim() && !l.trim().startsWith('[')).length;
 
 console.log(`  ${path.basename(lyricsPath)}`);
