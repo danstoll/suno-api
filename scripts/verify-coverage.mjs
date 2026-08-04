@@ -60,6 +60,45 @@ for (const w of words) { offsets.push(run); run += norm(w.word ?? '').length + 1
 // Not all — Suno drops the odd word, and a single miss should not condemn a
 // verse that is plainly there.
 const THRESHOLD = 0.6;
+
+/**
+ * Count REPEATS, not just presence.
+ *
+ * Presence alone is blind to the commonest real failure. A chorus that appears
+ * three times in the sheet has identical words each time, so if Suno sings it
+ * once, all three entries still score 100% — the words are in the transcript,
+ * and this check had no notion of how many times.
+ *
+ * That is exactly how a take of The Long Way Home passed 13/13 while having
+ * dropped two pre-choruses, two verses and the bridge. The listener heard it
+ * immediately; this script said everything was fine.
+ *
+ * Sections with identical bodies are grouped, and an anchor word — the rarest
+ * distinctive word in that body — is counted across the transcript. Rarest,
+ * because a common word appears in other sections too and would overcount.
+ */
+const freq = new Map();
+for (const w of transcript.split(' ')) freq.set(w, (freq.get(w) ?? 0) + 1);
+
+const groups = new Map();
+for (const s of sections) {
+  const key = [...s.words].sort().join(' ');
+  if (!groups.has(key)) groups.set(key, []);
+  groups.get(key).push(s);
+}
+const shortfall = new Map();
+for (const [, group] of groups) {
+  if (group.length < 2) continue; // only repeats can be under-sung this way
+  const words = group[0].words;
+  // Anchor on the section's rarest word that actually appears at all.
+  const anchor = words
+    .filter((w) => freq.has(w))
+    .sort((a, b) => (freq.get(a) ?? 0) - (freq.get(b) ?? 0))[0];
+  if (!anchor) continue;
+  const actual = freq.get(anchor) ?? 0;
+  if (actual < group.length) shortfall.set(group[0].name, { want: group.length, got: actual });
+}
+
 let missing = 0;
 for (const s of sections) {
   const hits = s.words.filter((w) => transcript.includes(w));
@@ -84,7 +123,19 @@ for (const s of sections) {
 
 const end = words[words.length - 1]?.end_s ?? 0;
 console.log(`\n  ${sections.length - missing}/${sections.length} sections sung, audio ends ${fmt(end)}`);
-process.exit(missing ? 1 : 0);
+
+// A repeated section sung fewer times than written is not caught by the
+// per-section check above — every copy scores 100% off the same words.
+if (shortfall.size) {
+  console.log('\n  UNDER-SUNG REPEATS:');
+  for (const [name, { want, got }] of shortfall) {
+    console.log(`    ${name.padEnd(20)} written ${want}x, heard ~${got}x`);
+  }
+  console.log('    A repeat count below the sheet usually means a long lyric was');
+  console.log('    compressed into one pass. Re-record with --split.');
+}
+
+process.exit(missing || shortfall.size ? 1 : 0);
 
 function norm(s) { return String(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
 function fmt(t) { return `${Math.floor(t / 60)}:${String(Math.round(t % 60)).padStart(2, '0')}`; }
