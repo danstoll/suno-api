@@ -7,6 +7,22 @@ Unofficial REST wrapper around Suno's internal API. It authenticates as **your
 own Suno account** using a browser session cookie — there is no official API key.
 Everything below follows from that one fact.
 
+## Read these first
+
+Three places hold what has been learned the hard way. This file is one of them;
+the other two are easy to miss.
+
+| Where | Holds |
+|---|---|
+| **[CAPABILITIES.md](./CAPABILITIES.md)** | What the Suno API actually does, observed rather than guessed. The full generate payload field list — which is close to a feature map, since most of Suno's menu is conditions on one call. Also the traps: `feed/v3` silently ignores unknown filters, marker durations don't indicate dropped sections, verification rides in a `browser-token` header while the body's `token` field arrives empty |
+| **`daddy-wombat-brand` skill** (`~/.claude/skills/`) | How to write for this catalogue: the artist profile, genre per album, `[brackets]` are directions while `(parentheses) get sung`, the tag vocabulary Suno reads, descriptor limits, and the visual identity. **It loads on trigger keywords, so a session that never says "style prompt" or "album cover" will not see it — load it deliberately when writing or recording songs** |
+| This file | Running the fork: config, cookies, rate limiting, the recording pipeline |
+
+Before assuming something is impossible, run the capture-and-diff habit in
+CAPABILITIES.md. Guessing endpoint names has a poor record here — `/api/persona/`
+404s while `/api/persona/create/` works, and eight plausible "list personas"
+paths all 404'd while the real one is `/api/persona/get-persona-paginated/`.
+
 ## Why we forked
 
 Upstream's last commit was **2026-03-06** and the project is effectively
@@ -103,8 +119,15 @@ id", or every call erroring after previously working.
 3. Reload, then click any request going to `studio-api.prod.suno.com`
    (filter the list by `suno` to find one quickly).
 4. In **Headers → Request Headers**, find the **`Cookie`** header.
-5. Copy its **entire** value — the whole string, not just one key. It must
-   include the Clerk session entries (`__client`, `__session`, ...).
+5. Copy its **entire** value — the whole string, not just one key. The entry
+   that matters is **`__client`**; everything else is along for the ride.
+
+   > Earlier wording here demanded `__session` too. That is wrong, and it cost
+   > two rounds of a real rotation. `getAuthToken` and `keepAlive` authenticate
+   > with `Authorization: cookies.__client`, `keepAlive` *mints* a session token
+   > from it, and `launchBrowser` synthesises the `__session` cookie from that
+   > minted value. `cookies.__session` is never read. A paste with `__client`
+   > and no `__session` is perfectly valid.
 6. Put it in `.env`. Easiest — with the value still on your clipboard, run:
 
    ```powershell
@@ -123,6 +146,19 @@ id", or every call erroring after previously working.
 7. Restart the dev server (Ctrl-C, then `npm run dev -- -p 3060`). Next.js reads
    `.env` at boot, so an edit alone does nothing.
 8. Verify: `curl http://localhost:3060/api/get_limit` should return your quota.
+
+**Check a cookie without restarting anything:**
+
+```bash
+node scripts/check-cookie.mjs              # the one currently in .env
+node scripts/check-cookie.mjs candidate.txt  # a candidate, before you commit to it
+```
+
+It runs the real boot sequence — `getAuthToken` → `keepAlive` → a billing call —
+and prints a GOOD/REJECTED verdict plus the credit balance, never the cookie.
+Exit 0 means the app will start. Use it *before* rotating: it distinguishes "this
+paste is wrong" from "Suno is refusing me", which is otherwise a restart-and-guess
+loop.
 
 Notes:
 - Quote the value. Cookie strings contain `;` and `=`, which break an unquoted `.env` line.
@@ -438,6 +474,67 @@ The same payload carries slots this fork does not yet expose: `persona_id`,
 `POST /api/c/check {"ctype":"generation"}` → `{"required":false,...}`; when not
 required, `token` is simply `null`.
 
+### Live web-client capture, 2026-08-04
+
+A real `/api/generate/v2-web/` from the Suno UI, taken with
+`scripts/capture-suno-requests.js`. Everything below was then probed against the
+live API rather than read off the capture alone.
+
+**`captcha_version` is chosen by your headers, not by the endpoint.** Probed on
+both hosts with the same cookie and bearer:
+
+| client identity | `captcha_version` |
+|---|---|
+| the android spoof this fork sends (`x-suno-client: Android …`, `X-Requested-With: com.suno.android`) | **1** |
+| web-like (`Origin`/`Referer: https://suno.com`, desktop UA, no android headers) | **2** |
+
+This matters for the whole captcha flow: the manual and automatic flows solve a
+challenge inside a **real browser**, which Suno has on **v2**, and then replay
+what they harvest through the **axios client**, which Suno has on **v1**. A
+credential minted under one scheme is being presented under the other. Unproven
+as the cause — it needs a live wall to confirm — but it is the strongest
+remaining explanation for a solved challenge not sticking.
+
+**The host rename is cosmetic.** The web client now calls
+`studio-api-prod.suno.com` (hyphens) where this fork uses
+`studio-api.prod.suno.com` (dots). Both answer `200` identically. No change needed.
+
+**`/api/feed/v3` exists and is better than the v2 this fork uses.** v2 still
+works (`200`), so nothing is broken, but v3 is a POST that fetches *specific*
+clips instead of paging:
+
+```jsonc
+POST /api/feed/v3
+{ "filters": { "ids": { "presence": "True", "clipIds": ["<id>"] } }, "limit": 1 }
+```
+
+That is what the UI polls with — one call per clip, no scanning.
+
+**Generate fields the fork does not send**, observed in a working request:
+`generation_type: "TEXT"`, `transaction_uuid` (a client-minted UUID per
+request), `override_fields: []`, `lyrics_project_id`, and inside `metadata`:
+`create_session_token`, `user_tier`, `is_max_mode`, `create_mode: "custom"`,
+`web_client_pathname`. None appear to be required — the fork generates fine
+without them — but `transaction_uuid` looks like idempotency and is worth
+watching if duplicate generations ever show up.
+
+**Confirms the existing note on verification**: with `required: false`, the body
+carries `token: null` *and* `token_provider: null`. Both empty, not absent.
+
+> **That capture could not show the `browser-token` mechanism** — the script
+> recorded no headers at all, and `browser-token` is a header. Fixed the same
+> day: it now records header **names and lengths** (values only for a
+> client-describing allow-list), so a future capture taken *while a wall is up*
+> will show `browser-token: <present, 812 chars>` and its `token_provider`
+> without ever carrying the credential.
+
+**Both sides now sit on captcha v2.** The client identity was switched from the
+android spoof to web-like on 2026-08-04 — see `constructor` in
+[src/lib/SunoApi.ts](src/lib/SunoApi.ts). Verified through the real code path
+after restart: `/api/raw` → `/api/c/check` returns `captcha_version: 2` where it
+returned `1` before, with auth unaffected. Whether this actually fixes a solved
+challenge not sticking is **still unproven** — it needs a live wall to confirm.
+
 ### Capturing a payload yourself
 
 `scripts/capture-suno-requests.js` — paste into the DevTools console, drive the
@@ -517,6 +614,18 @@ Interactive docs: `http://localhost:3060/docs` (Swagger UI, served by the app).
 - **Fixed stale `clerk.suno.com`** in `getTurnstile()` — upstream migrated to
   `auth.suno.com` but missed this one. Dead code path today, but it would have
   bitten whoever revived it.
+- **Client identity: android spoof → web-like** (2026-08-04). Upstream's
+  `x-suno-client: Android …` / `X-Requested-With: com.suno.android` put the API
+  client on `captcha_version: 1` while the browser it opens to solve challenges
+  is on v2. Both now sit on v2.
+- **Captcha flow repairs** (2026-08-04): the manual flow no longer aborts the
+  human's generation, no longer settles on a tokenless pre-challenge request,
+  and can no longer hang forever. Plus `CAPTCHA_FLOW_MAX_S` /
+  `CAPTCHA_MANUAL_MAX_S` split out of the overloaded `CAPTCHA_WAIT_MAX_S`.
+- **`scripts/check-cookie.mjs`** added — validates a cookie end to end without
+  printing it, so a rotation is verified rather than guessed at.
+- **`scripts/capture-suno-requests.js` records header names + lengths**, which
+  is the only way to observe the `browser-token` verification path.
 
 ### Reviewed and deliberately NOT taken
 
