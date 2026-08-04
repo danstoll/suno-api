@@ -78,6 +78,23 @@ unusual — weirdness and specificity compete for the same territory.
 | `/api/c/check` | POST | `{ctype:"generation"}` → whether verification is required |
 | `/api/edit/stems/` | POST | Stem separation |
 
+### Seen in captures, not yet used
+
+Found by `scripts/capture-diff.mjs` against a persona-creation capture.
+
+| Endpoint | Notes |
+|---|---|
+| `/api/statsig/experiment/{name}` | **Feature flags.** Statsig gates Suno's experiments, so this is where unreleased features surface before they reach the menus. Worth watching |
+| `/api/challenge/progress` | Suno's achievement list — and a useful feature inventory in its own right: `audio_to_midi`, `song_remaster`, `song_voice`, `song_download_wav`, `studio_project_create`, `studio_gen`, `song_stem`, `studio_export`, `song_share` |
+| `/api/project/{id}/pinned-clips` | Pinned clips within a workspace |
+| `/api/prompts/suggestions` | Prompt, lyric and tag suggestions |
+| `/api/notification/v2` | Notifications |
+| `/api/notification/v2/badge-count` | Unread count |
+
+Fields seen but unused: `is_public` and `description` on `persona/create`
+(Wendy went up public by default — a persona derived from your own track is
+discoverable unless you say otherwise), and `filters` / `limit` on `feed/v3`.
+
 ### Known 404 — do not retry
 
 `/api/persona/`, `/api/personas/`, `/api/persona/list/`, `/api/artist/`,
@@ -125,6 +142,30 @@ Most of Suno's menu is generation *conditions*, not endpoints.
 **Extend from a mid-point regenerates everything after that timestamp**, not
 just the tail. That makes it a partial re-record that keeps the opening — the
 only repair that fixes a broken back half without losing the take.
+
+## The capture-and-diff habit
+
+Suno ships faster than this fork gets updated, and new capabilities appear as
+new *fields on the generate payload* before they appear anywhere documented.
+`persona_id`, `cover_clip_id` and `artist_clip_id` were all sitting in a
+captured request long before we knew what they were for.
+
+Do this whenever Suno's UI changes, or before assuming a thing is impossible:
+
+1. Paste `scripts/capture-suno-requests.js` into DevTools on suno.com
+2. Drive the feature you want to understand
+3. `__sunoCapture.save()`
+4. `node scripts/capture-diff.mjs --capture <file>`
+
+It reports endpoints and request fields not already in this document, and exits
+non-zero when it finds any, so a discovery is hard to miss. Add what it finds
+here, then work out what it does.
+
+Two notes from building it. It normalises UUIDs to `{id}`, or every clip id
+reads as a fresh endpoint. And it treats every identifier inside any backtick
+span as documented — an earlier version matched only whole single-word spans,
+so a payload written as `{root_clip_id, name, vox_audio_id, …}` made it cry
+wolf on its own documentation.
 
 ## Worth knowing before trusting a result
 
