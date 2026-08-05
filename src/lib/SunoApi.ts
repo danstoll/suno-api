@@ -620,6 +620,24 @@ class SunoApi {
   }
 
   /** Whether a verification token is currently held. */
+  /**
+   * Accept a verification token captured from the user's OWN browser.
+   *
+   * The automation's browser is the wrong place to get one. It runs a separate
+   * session that Suno challenges harder — a real hCaptcha appears, solving it
+   * does not land a token, and it simply reappears. Meanwhile the user's normal
+   * signed-in tab generates songs without being challenged at all.
+   *
+   * So take it from there instead. A console snippet lifts the `browser-token`
+   * header off a real generate request and posts it straight here, which means
+   * the credential goes browser -> localhost and never through a transcript.
+   */
+  public setBrowserToken(token: string, provider?: string): void {
+    this.browserToken = token;
+    if (provider) this.tokenProvider = provider;
+    logger.info(`browser-token accepted from client (${token.length} chars, provider=${provider ?? 'none'})`);
+  }
+
   public hasBrowserToken(): boolean {
     return !!this.browserToken;
   }
@@ -906,13 +924,35 @@ class SunoApi {
      * for a captcha the fix made unnecessary.
      */
     const settled = { done: false };
-    const finish = (fn: Function, v?: any) => { if (!settled.done) { settled.done = true; fn(v); } };
+
+    /**
+     * Cleanup belongs in finish(), not at each call site.
+     *
+     * Every exit used to call cleanup() by hand, so the paths that did not —
+     * the catch below, and anything settling before reaching one — left a
+     * Chromium running. Nineteen orphans accumulated over two days, and they
+     * came in PAIRS: the auto flow leaked one, then the fallback to manual
+     * opened a second.
+     *
+     * Declared before the promise so the interval and timeout handles below are
+     * in scope by the time it runs.
+     */
+    let poll: any;
+    let cap: any;
+    const cleanup = () => {
+      try { clearInterval(poll); } catch { /* not armed yet */ }
+      try { clearTimeout(cap); } catch { /* not armed yet */ }
+      try { browser.browser()?.close(); } catch { /* already gone */ }
+      try { controller.abort(); } catch { /* already aborted */ }
+    };
+    const finish = (fn: Function, v?: any) => {
+      if (settled.done) return;
+      settled.done = true;
+      cleanup();
+      fn(v);
+    };
 
     return (new Promise((resolve, reject) => {
-      const cleanup = () => {
-        try { browser.browser()?.close(); } catch { /* already gone */ }
-        try { controller.abort(); } catch { /* already aborted */ }
-      };
 
       // Regex, not a glob: the real URL ends at "/api/generate/v2-web/" with
       // nothing after the trailing slash, so a glob ending in "/**" never
@@ -933,7 +973,7 @@ class SunoApi {
       // Exit 2 — the wall came down on its own (usually because the trigger
       // generation above cleared it). No token is needed in that case.
       const pollMs = 10_000;
-      const poll = setInterval(async () => {
+      poll = setInterval(async () => {
         if (settled.done) { clearInterval(poll); return; }
         try {
           const { data } = await this.client.post(`${SunoApi.BASE_URL}/api/c/check`, { ctype: 'generation' });
@@ -949,7 +989,7 @@ class SunoApi {
       // Exit 3 — give up loudly rather than hang. Anything past this is a
       // broken flow, and a clear error beats a silent client-side timeout.
       const capMs = Math.max(60, SunoApi.CAPTCHA_FLOW_MAX_S) * 1000;
-      setTimeout(() => {
+      cap = setTimeout(() => {
         if (settled.done) return;
         clearInterval(poll);
         cleanup();
