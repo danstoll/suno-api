@@ -230,12 +230,53 @@ Curve choice matters more than length — measured across a 7s fade:
 
 Ballads want 6–8s, upbeat 3–4s.
 
+**But 3–4s of `qsin` does not mask a truncation** — the curve holds level for
+its first ~3s, so a 4s fade only starts descending inside the cliff it was
+meant to hide. Measured on Five and Golden (239.8s, upbeat): the raw ending ran
+−15 dB to 237s then −20 → −31 → silence, and a 4s `qsin` moved that to
+−22 → −35. Effectively unchanged. **8s `qsin` produced a real taper** —
+−16.7 → −19.9 → −20.9 → −27 → −41 — because the fade is underway before the
+truncation starts.
+
+So the length rule is about *where the cliff is*, not the tempo: the fade has to
+begin at least ~3s before the drop. When an upbeat track truncates hard, take
+the 6–8s fade and accept it over the last chorus. `tri` at the same length is
+smoother still but starts pulling down ~4s earlier, which costs more of the
+climax — prefer `qsin` when the final chorus is the point.
+
 Suno does have a native fade (`edit-mode-fade` is in the account flags, and
 Studio state carries `songFadeInBeats` / `songFadeOutBeats`), but that means
 writing a Studio project version. Local post-processing is deterministic, free,
 and works on every track including ones already exported.
 
 ## Recording an album, end to end
+
+**Default to single-shot generation for anything under ~4 minutes — not the
+split pipeline.** Suno's own docs say v4.5 supports up to an 8-minute first
+generation; a third-party v5.5 guide (suno.bi, 2026-08, not official) claims
+v5.5 specifically caps around **4 minutes per single generation**, less than
+v4.5, with longer tracks needing v4.5+ or Extend. Unconfirmed against the
+official docs, but every single-shot take that has come back clean in this
+catalogue (via `make-track-oneshot.mjs` or manual web-UI) has also landed
+under 4 minutes — nothing here has actually tested a single-shot generation
+past that ceiling. Meanwhile the split/extend/concat pipeline below produced
+a genuine duplication/runaway-length failure (a 3:30 target came back at
+6:20+ with extra markers, twice in a row) on a track a single-shot take
+handled cleanly. So: for a song naturally under ~4 minutes, single-shot is
+the confirmed-better option. For something genuinely longer (a ballad like
+The Tide Turns Silver, which ran 5-7 minutes), the split pipeline's failure
+mode is known and bad, but single-shot past 4 minutes is *unverified*, not
+confirmed-safe — treat the first long single-shot attempt as a test, verify
+coverage carefully, and update this note with what actually happens.
+
+```bash
+# one track, one generate call, no extend/concat
+node scripts/make-track-oneshot.mjs --file <lyrics.md> --title "01 Waffle Wednesday" \
+  --project <workspace-id> --fade 6
+```
+
+Reach for the split pipeline below only if a single-shot take actually drops a
+section (confirmed by `verify-coverage.mjs`, not by marker duration).
 
 ```bash
 # one track: generate -> extend -> concat -> fade, verifying coverage at each half
@@ -463,6 +504,15 @@ Editing inside Studio is not one call:
 
 `POST /api/studio/save-project` persists the project and mints a fresh
 `version_id` on every save.
+
+Studio also now has a conversational **Agent** layer (natural-language edits
+like "add deeper bass and skips") sitting on top of this — see
+`CAPABILITIES.md`'s "Studio Agent" section for the full capture. Short
+version: the DAW parts of Studio (multi-track, EQ, take lanes, live mic
+recording, importing outside audio) are usable the same way anything else in
+this document is; the Agent chat layer needs a maintained websocket session
+and tool-execution loop, not a single call, so it's not a near-term addition
+to the scripted pipeline this project actually runs.
 
 ### Other generate fields worth knowing
 
