@@ -60,8 +60,16 @@ const src = readFileSync(args.file, 'utf8').replace(/\\([[\]~*_`#])/g, '$1');
 const title = args.title ?? (src.match(/^#\s+(.+)$/m)?.[1] ?? path.basename(args.file, '.md'));
 
 // ---- parse the lyrics file -------------------------------------------------
-const styleMatch = src.match(/##\s*Suno Style Prompt\s*\n>\s*([\s\S]*?)(?=\n##|\n$)/);
-const style = (styleMatch?.[1] ?? '').replace(/\n>\s?/g, ' ').replace(/\s+/g, ' ').trim();
+// Only consume the blockquote's own `>` lines — stop at the first line that
+// isn't one. See the matching comment in make-track-oneshot.mjs: the old
+// `(?=\n##|\n$)` lookahead ran to the next heading instead, swallowing a
+// trailing "**Mix-specific risk:**" paragraph into the style/tags field sent
+// to Suno and pushing 4 Full Burrow tracks' tags past v5+'s 1000-char limit —
+// Suno rejected every one outright. `.*\r?\n?` (not bare `\n?`) matters too:
+// these files are CRLF, and `.` never matches `\r`, so a bare `\n?` stops the
+// `+` loop after one line every time.
+const styleMatch = src.match(/##\s*Suno Style Prompt\s*\n((?:>.*\r?\n?)+)/);
+const style = (styleMatch?.[1] ?? '').replace(/^>\s?/gm, '').replace(/\s+/g, ' ').trim();
 if (!style) { console.error('No "## Suno Style Prompt" blockquote found.'); process.exit(1); }
 
 const lyricsMatch = src.match(/##\s*Lyrics\s*\n([\s\S]*?)(?=\n##\s|\n*$)/);
