@@ -53,3 +53,6 @@ spliced/
 
 # archive-track.mjs temp downloads
 .archive-*.mp3
+
+# profile-capture.mjs persistent browser profile (holds a live Suno session)
+.suno-profile/
