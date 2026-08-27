@@ -1627,7 +1627,11 @@ class SunoApi {
       infill_end_s,
       infill_dur_s: infill_end_s - infill_start_s,
       transaction_uuid: randomUUID(),
-      token_provider: null,
+      // Paired with the browser-token header, same as generateSongs — Suno
+      // rejects one without the other. This used to be hardcoded `null`,
+      // which silently dropped the pairing for every infill call made while
+      // a captured browser-token was held.
+      token_provider: this.tokenProvider ?? null,
       batch_size,
       include_history_s,
       include_future_s
