@@ -40,7 +40,7 @@ if (!lyr) { console.error('No "## Lyrics" section found.'); process.exit(1); }
  * contain one, like [beat drops], will read as a section — an acceptable trade
  * against silently losing a Final Chorus.
  */
-const SECTION_RE = /^\[[^\]]*\b(?:intro|verse|pre-?chorus|post-?chorus|chorus|bridge|outro|hook|break|drop|instrumental|refrain|coda|interlude)\b/i;
+const SECTION_RE = /^\[[^\]]*\b(?:intro|verse|pre-?chorus|post-?chorus|chorus|bridge|outro|hook|break|drop|instrumental|refrain|coda|interlude|key\s*change|crescendo|diminuendo|stop)\b/i;
 
 /** Group lines into section blocks, ignoring inline directions. */
 function splitSections(text) {
