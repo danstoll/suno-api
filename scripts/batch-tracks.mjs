@@ -15,13 +15,20 @@
  * Usage:
  *   node scripts/batch-tracks.mjs --manifest tracks.json [--size 3] [--gap 20]
  *
- *   --size N   tracks per batch (default 3)
- *   --gap  N   minutes to pause between batches (default 20)
- *   --dry      print the plan and the per-track splits, generate nothing
+ *   --size N     tracks per batch (default 3)
+ *   --gap  N     minutes to pause between batches (default 20)
+ *   --oneshot    call make-track-oneshot.mjs instead of make-track.mjs — the
+ *                default for anything under ~4 minutes per CLAUDE.md; a
+ *                manifest entry's "split" field is simply ignored in this
+ *                mode rather than erroring, since one-shot has nothing to split
+ *   --dry        print the plan and the per-track splits, generate nothing
  *
  * Manifest is a JSON array:
  *   [{ "file": "../tunes/mi-casa/06-bath.md", "title": "06 Bath Time Splash",
  *      "split": "Verse 2", "project": "<workspace-id>", "fade": 6 }]
+ *
+ * "split" is only used by the default (make-track.mjs) pipeline; --oneshot
+ * mode has no split step and ignores it.
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -87,12 +94,21 @@ console.log(`\n  ${done}/${tracks.length} recorded`);
 // ---------------------------------------------------------------- helpers
 
 function runMakeTrack(t, dry) {
-  const script = path.join(path.dirname(process.argv[1]), 'make-track.mjs');
+  const script = path.join(path.dirname(process.argv[1]), args.oneshot ? 'make-track-oneshot.mjs' : 'make-track.mjs');
   const a = ['--file', t.file, '--title', t.title];
-  if (t.split) a.push('--split', t.split);
   if (t.project) a.push('--project', t.project);
   if (t.fade !== undefined) a.push('--fade', String(t.fade));
-  if (t.pace !== undefined) a.push('--pace', String(t.pace));
+  if (args.oneshot) {
+    // make-track-oneshot.mjs has no split step (nothing to split) and no
+    // --pace (one call, not several) — both are silently inapplicable here.
+    if (t.persona) a.push('--persona', t.persona);
+    if (t['style-weight'] !== undefined) a.push('--style-weight', String(t['style-weight']));
+    if (t.weirdness !== undefined) a.push('--weirdness', String(t.weirdness));
+    if (t.negative) a.push('--negative', t.negative);
+  } else {
+    if (t.split) a.push('--split', t.split);
+    if (t.pace !== undefined) a.push('--pace', String(t.pace));
+  }
   if (dry) a.push('--dry');
   console.log(`\n---------- ${t.title} ----------`);
   const r = spawnSync('node', [script, ...a], { stdio: 'inherit' });
