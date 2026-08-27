@@ -263,13 +263,26 @@ async function close(context) {
   try { await context.close(); } catch { /* already gone */ }
 }
 
-/** A signed-in Clerk session leaves a `__client` cookie on suno.com. Cheap
- *  shape check only — used while polling `--warm`'s login wait, where a
- *  false negative just means "keep waiting" and a network round-trip every
- *  3s would otherwise hammer Suno for no reason. */
+/**
+ * A signed-in Clerk session leaves a `__client` cookie — but on
+ * `auth.suno.com`, a Clerk-hosted auth subdomain, NOT on `suno.com` itself.
+ *
+ * `context.cookies('https://suno.com')` filters to cookies that would be
+ * sent to that exact host (or a parent domain of it) — a cookie scoped to
+ * the sibling subdomain `auth.suno.com` never matches. That one-line bug
+ * cost five straight `--warm` attempts here: a human logged in correctly
+ * every time, the cookie was genuinely on disk, and this check still
+ * reported "not logged in" because it was querying the wrong host. Fetching
+ * all cookies with no URL filter and matching by name sidesteps the whole
+ * domain-scoping question.
+ *
+ * Cheap shape check only — used while polling `--warm`'s login wait, where a
+ * false negative just means "keep waiting" and a network round-trip every
+ * 3s would otherwise hammer Suno for no reason.
+ */
 async function hasSessionCookie(context) {
   try {
-    const cookies = await context.cookies('https://suno.com');
+    const cookies = await context.cookies();
     return cookies.some(c => c.name === '__client' && c.value && c.value.length > 40);
   } catch { return false; }
 }
