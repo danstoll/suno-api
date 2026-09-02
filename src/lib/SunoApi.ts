@@ -141,7 +141,13 @@ class SunoApi {
   constructor(cookies: string) {
     this.userAgent = new UserAgent(/Macintosh/).random().toString(); // Usually Mac systems get less amount of CAPTCHAs
     this.cookies = cookie.parse(cookies);
-    this.deviceId = this.cookies.ajs_anonymous_id || randomUUID();
+    // Segment's analytics.js cookie stores this value pre-quoted — the raw
+    // Set-Cookie is `ajs_anonymous_id=%22<uuid>%22`, which `cookie.parse`
+    // percent-decodes into the literal string `"<uuid>"`, quote characters
+    // and all. A real browser strips those before sending the header (via
+    // `analytics.user().anonymousId()`), so send the bare UUID here too.
+    const rawDeviceId = this.cookies.ajs_anonymous_id || randomUUID();
+    this.deviceId = rawDeviceId.replace(/^"|"$/g, '');
     /**
      * Identify as the WEB client, not the Android app.
      *
@@ -165,7 +171,7 @@ class SunoApi {
       withCredentials: true,
       headers: {
         'Affiliate-Id': 'undefined',
-        'Device-Id': `"${this.deviceId}"`,
+        'Device-Id': this.deviceId,
         'Origin': 'https://suno.com',
         'Referer': 'https://suno.com/',
         'sec-ch-ua': '"Chromium";v="130", "Not?A_Brand";v="99"',

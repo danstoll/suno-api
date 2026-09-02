@@ -18,7 +18,12 @@ export async function POST(req: NextRequest) {
         Boolean(wait_audio),
         negative_tags,
         project_id,
-        persona_id
+        persona_id,
+        // Bug found 2026-08-28: these were destructured above and then never
+        // passed through, so every custom_generate call silently used Suno's
+        // slider defaults regardless of what the caller asked for.
+        style_weight,
+        weirdness
       );
       return new NextResponse(JSON.stringify(audioInfo), {
         status: 200,

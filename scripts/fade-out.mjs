@@ -57,16 +57,87 @@ let input = args.file;
 let label = args.file ? path.basename(args.file, path.extname(args.file)) : args.clip;
 
 if (args.clip) {
-  const res = await fetch(`${API}/api/get?ids=${args.clip}`);
-  if (!res.ok) throw new Error(`${API} returned ${res.status} — is the dev server running?`);
-  const clips = await res.json();
+  // The dev server has been observed dropping requests with a transient 500
+  // under concurrent batch load (2026-08-28: a fade catch-up batch running
+  // alongside a generation batch took out several tracks in a row this way).
+  // A few retries with a short pause turns that into a non-event instead of
+  // a hard failure partway through an otherwise-fine batch.
+  let clips;
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(`${API}/api/get?ids=${args.clip}`).catch((err) => ({ ok: false, status: `network error: ${err.message}` }));
+    if (res.ok) { clips = await res.json(); break; }
+    if (attempt >= 4) throw new Error(`${API} returned ${res.status} after ${attempt} attempts — is the dev server running?`);
+    console.warn(`  (/api/get returned ${res.status}, retrying in 3s — attempt ${attempt}/4)`);
+    await new Promise((r) => setTimeout(r, 3000));
+  }
   const clip = clips?.[0];
-  if (!clip?.audio_url) throw new Error(`No audio_url for clip ${args.clip} (status: ${clip?.status ?? 'unknown'})`);
+  if (!clip) throw new Error(`No clip found for ${args.clip} (status: ${clip?.status ?? 'unknown'})`);
   label = sanitise(clip.title || args.clip);
+
+  // Both of Suno's obvious download fields are dead ends as of 2026-08-28:
+  // `audio_url` now returns a literal `.../api/forbidden` placeholder for
+  // API-originated requests, and `media_urls[]`'s cdn1.suno.ai entry 403s
+  // with a CloudFront "MissingKey" error (needs a signed cookie we don't
+  // have); its *.cloudfront.net entry 200s but the bytes are encrypted
+  // garbage. The real mechanism, found via a live capture of the web UI's
+  // actual Download button (scripts/capture-suno-requests.js):
+  //   1. POST /api/gen/{id}/increment_action_count/  {action:"download_audio",
+  //      download_source:"clip_page"} — appears to kick off server-side
+  //      rendering (best-effort here; a fresh clip may need it, an
+  //      already-downloaded one may not, so failure here isn't fatal).
+  //   2. GET /api/download/clip/{id}?format=mp3 — poll until the body's
+  //      `status` flips from "processing" to "ready", at which point it
+  //      carries a `download_url`: a normal, temporary, presigned S3 URL
+  //      (AWSAccessKeyId/Signature/Expires query params) good for a few
+  //      minutes and fetchable with a plain unauthenticated request.
+  // Both calls go through /api/raw since neither is wrapped. Verified
+  // end-to-end same day: downloaded and ffprobe'd a real, valid mp3 this way.
+  try {
+    await rawPost(`/api/gen/${args.clip}/increment_action_count/`,
+      { action: 'download_audio', download_source: 'clip_page' });
+  } catch (err) {
+    console.warn(`  (increment_action_count failed, continuing anyway: ${err.message})`);
+  }
+
+  let downloadUrl;
+  let lastPollError;
+  for (let i = 0; i < 30; i++) {
+    let d;
+    try {
+      d = await rawGet(`/api/download/clip/${args.clip}?format=mp3`);
+    } catch (err) {
+      // A single flaky poll (dev-server hiccup, transient network blip)
+      // shouldn't kill the whole 60s budget — note it and keep polling.
+      lastPollError = err;
+      console.warn(`  (poll ${i + 1}/30 failed, retrying: ${err.message})`);
+      await new Promise((r) => setTimeout(r, 2000));
+      continue;
+    }
+    if (d?.status === 'ready' && d?.download_url) { downloadUrl = d.download_url; break; }
+    // Only "processing" is a known in-progress state (per the live capture).
+    // Anything else — an error status, ok:false, ready-without-a-url — is
+    // not something more waiting will fix, so surface it immediately rather
+    // than burning the full 60s to report the same unhelpful timeout.
+    if (d?.status && d.status !== 'processing') {
+      throw new Error(`Unexpected download status for clip ${args.clip}: ${JSON.stringify(d).slice(0, 300)}`);
+    }
+    if (d && d.ok === false) {
+      throw new Error(`Download request rejected for clip ${args.clip}: ${JSON.stringify(d).slice(0, 300)}`);
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  if (!downloadUrl) {
+    const suffix = lastPollError ? ` (last poll error: ${lastPollError.message})` : '';
+    throw new Error(`Download never became ready for clip ${args.clip} after 60s${suffix}`);
+  }
+
   input = path.join(outDir, `${label}.src.mp3`);
   console.log(`Downloading "${clip.title}" (${clip.duration}s)...`);
-  const audio = await fetch(clip.audio_url);
-  if (!audio.ok) throw new Error(`Download failed: ${audio.status}`);
+  const audio = await fetch(downloadUrl);
+  // The URL carries temporary AWS SigV2 query params — drop them from any
+  // error text so a shared/logged batch output doesn't include credentials,
+  // even short-lived ones.
+  if (!audio.ok) throw new Error(`Download failed: ${audio.status} (${downloadUrl.split('?')[0]})`);
   const { writeFileSync } = await import('node:fs');
   writeFileSync(input, Buffer.from(await audio.arrayBuffer()));
 }
@@ -115,6 +186,45 @@ printTail(out, newDur);
 
 function ffprobe(a) {
   return execFileSync('ffprobe', a, { encoding: 'utf8' });
+}
+
+async function rawGet(sunoPath) {
+  const res = await fetch(`${API}/api/raw?path=${encodeURIComponent(sunoPath)}`);
+  const json = await parseRawResponse(res, sunoPath);
+  if (json?.suno_status !== 200) {
+    throw new Error(`${sunoPath} -> suno ${json?.suno_status}: ${JSON.stringify(json?.data ?? null).slice(0, 200)}`);
+  }
+  return json.data;
+}
+
+async function rawPost(sunoPath, body) {
+  const res = await fetch(`${API}/api/raw`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: sunoPath, method: 'POST', body })
+  });
+  const json = await parseRawResponse(res, sunoPath);
+  if (json?.suno_status !== 200 && json?.suno_status !== 204) {
+    throw new Error(`${sunoPath} -> suno ${json?.suno_status}: ${JSON.stringify(json?.data ?? null).slice(0, 200)}`);
+  }
+  return json.data;
+}
+
+/**
+ * /api/raw always wraps with local HTTP 200 on a real Suno response, but our
+ * own dev server can still fail before reaching that point (a 500 from a
+ * crash/overload, a Next.js HTML error page, a proxy timeout page) — none of
+ * which are JSON. Surfacing the wrapper's own HTTP status and a snippet of
+ * whatever it actually returned beats a bare, path-less `SyntaxError:
+ * Unexpected token '<'...` when triaging a failed batch run later.
+ */
+async function parseRawResponse(res, sunoPath) {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`${sunoPath} -> /api/raw returned non-JSON (local HTTP ${res.status}): ${text.slice(0, 200)}`);
+  }
 }
 
 /** Print a per-second RMS bar chart of the final 12s, so the fade is visible. */

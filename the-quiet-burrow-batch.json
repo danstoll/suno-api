@@ -1,0 +1,22 @@
+[
+  {
+    "file": "../daddy-wombat-tunes/the-quiet-burrow/09-underglow.md",
+    "title": "09 Underglow",
+    "project": "b9aca3b8-22d0-4e62-85f9-91ce2b7c9222",
+    "duration": 360,
+    "style-weight": 0.85,
+    "weirdness": 0.1,
+    "negative": "vocals, choir, spoken word, brass fanfare, timpani hit, dissonance, sudden dynamics, orchestral stab, distortion, drums, percussion crash",
+    "fade": 0
+  },
+  {
+    "file": "../daddy-wombat-tunes/the-quiet-burrow/10-last-page.md",
+    "title": "10 Last Page",
+    "project": "b9aca3b8-22d0-4e62-85f9-91ce2b7c9222",
+    "duration": 390,
+    "style-weight": 0.85,
+    "weirdness": 0.1,
+    "negative": "vocals, choir, spoken word, brass fanfare, timpani hit, dissonance, sudden dynamics, orchestral stab, distortion, drums, percussion crash",
+    "fade": 0
+  }
+]

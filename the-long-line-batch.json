@@ -1,0 +1,42 @@
+[
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/05-interweave.md",
+    "title": "05 Interweave",
+    "project": "30271698-66e9-4520-ace5-8c2cbf22b47e",
+    "duration": 480,
+    "style-weight": 0.75,
+    "weirdness": 0.20,
+    "negative": "vocals, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause",
+    "fade": 0
+  },
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/06-tightest-weave.md",
+    "title": "06 Tightest Weave",
+    "project": "30271698-66e9-4520-ace5-8c2cbf22b47e",
+    "duration": 540,
+    "style-weight": 0.65,
+    "weirdness": 0.30,
+    "negative": "vocals, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause",
+    "fade": 0
+  },
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/07-unraveling.md",
+    "title": "07 Unraveling",
+    "project": "30271698-66e9-4520-ace5-8c2cbf22b47e",
+    "duration": 480,
+    "style-weight": 0.75,
+    "weirdness": 0.20,
+    "negative": "vocals, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause",
+    "fade": 0
+  },
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/08-one-thread-again.md",
+    "title": "08 One Thread Again",
+    "project": "30271698-66e9-4520-ace5-8c2cbf22b47e",
+    "duration": 420,
+    "style-weight": 0.75,
+    "weirdness": 0.20,
+    "negative": "vocals, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause",
+    "fade": 0
+  }
+]

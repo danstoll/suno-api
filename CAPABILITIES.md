@@ -352,3 +352,15 @@ scripted single-shot generate pipeline this project runs today.
 - **Rate limiting is Cloudflare's**, not Suno's quota — a burst of ~50 requests
   in two minutes triggered error 1015 and blocked generation while reads
   continued working.
+- **The real `duration` field (not the style-prompt kind above) appears to cap
+  around 479-480s (~8:00) on `chirp-fenix` single-shot generation**, regardless
+  of a higher value requested. Observed across The Long Line (`daddy-wombat-tunes`):
+  4 of 5 originally-successful tracks with an 8:00+ target landed at exactly
+  479.2s; the one 6:00 target landed on target (6:01). Three tracks targeting
+  5:30/9:00/7:00 came back badly short and unstable (3:10, 4:40, 2:19) on
+  their first attempt — all three straddle the same ~480s line — and when
+  re-recorded, all three landed at exactly 479.2s again. Read together: a
+  `duration` at or above ~8:00 either caps cleanly at 479.2s or, less
+  reliably, produces a much shorter unstable render — not confirmed which
+  determines which outcome. Treat ~8:00 as this pipeline's practical ceiling
+  until tested further; a target past it is a real risk, not just guesswork.

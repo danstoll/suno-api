@@ -56,3 +56,19 @@ spliced/
 
 # profile-capture.mjs persistent browser profile (holds a live Suno session)
 .suno-profile/
+
+# tools/: keep scripts, never the soundfont, fluidsynth build, or renders
+tools/*.sf2
+tools/*.zip
+tools/fluidsynth/
+tools/*.wav
+tools/*.mp3
+tools/andante-render-segments/
+tools/andante-segments/
+tools/refs/
+
+# master-album.mjs output (audio artifacts, not source)
+master/
+
+# local semgrep guardian auth/session state, not project source
+.semgrep/

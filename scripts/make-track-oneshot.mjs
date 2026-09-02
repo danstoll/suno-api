@@ -13,18 +13,43 @@
  *
  * Usage:
  *   node scripts/make-track-oneshot.mjs --file <lyrics.md> --title "01 Waffle Wednesday" \
- *     [--project <workspace-id>] [--fade 6] [--dry]
+ *     [--project <workspace-id>] [--fade 6] [--duration 4:30] [--dry]
  *
  *   --dry          parse and print the plan, generate nothing
  *   --fade N       fade-out seconds (default 6; 0 to skip)
+ *   --duration D   target length — seconds ("270") or mm:ss ("4:30"). Sent as
+ *                  the real `duration` field Suno's Custom Mode "Duration"
+ *                  slider uses. Omit to let material decide (usually undershoots
+ *                  a stated target — confirmed 2026-08-28: a 5:00-worth-of-material
+ *                  track came back at 2:28 with no duration set).
+ *   --style-weight, --weirdness   0-1 floats (default 0.9 / 0.2)
+ *   --negative "a, b, c"          negative tags
+ *   --model M      mv value (default chirp-fenix)
  *
  * Lyrics file format: a "## Lyrics" heading, then [Section] blocks. The style
  * prompt is read from the "## Suno Style Prompt" blockquote. Same format as
  * make-track.mjs.
+ *
+ * WHY THIS POSTS TO /api/raw + /api/generate/v2-web/ INSTEAD OF THIS FORK'S
+ * OWN /api/custom_generate: two bugs found 2026-08-28 via a live browser
+ * capture (scripts/capture-suno-requests.js) made that wrapper untrustworthy
+ * for this. (1) /api/custom_generate's route handler destructures
+ * `style_weight`/`weirdness` off the request body and then never passes them
+ * into custom_generate() — read but silently discarded, so every prior
+ * one-shot render used Suno's defaults regardless of what was requested here.
+ * (2) That wrapper's underlying generateSongs() targets the older
+ * /api/generate/v2/ and has no `duration` field at all. The capture showed
+ * the real web client posting to /api/generate/v2-web/ with a top-level
+ * `duration` (seconds) that produced an exact-length render — going straight
+ * at that proven shape beats guessing whether v2 (non-web) honors duration
+ * too. Also replicates the web client's follow-up
+ * POST /api/project/{id}/clips call, which CAPABILITIES.md notes is required
+ * in addition to `project_id` on the generate call itself.
  */
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync, writeFileSync, rmSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -82,16 +107,70 @@ const personaId = args.persona;
 const styleWeight = args["style-weight"] !== undefined ? Number(args["style-weight"]) : 0.9;
 const weirdness = args.weirdness !== undefined ? Number(args.weirdness) : 0.2;
 const negativeTags = args.negative ? String(args.negative) : undefined;
+const model = args.model ? String(args.model) : 'chirp-fenix';
+const duration = parseDuration(args.duration);
 
-const p1 = post('/api/custom_generate', {
+const genBody = {
+  token: null,
+  generation_type: 'TEXT',
+  title,
+  tags: style,
+  negative_tags: negativeTags ?? '',
+  mv: model,
   prompt: blocks.map((b) => b.text).join('\n\n') + '\n',
-  tags: style, title, make_instrumental: false, wait_audio: false,
+  make_instrumental: false,
+  user_uploaded_images_b64: null,
+  metadata: {
+    create_mode: 'custom',
+    control_sliders: { style_weight: styleWeight, weirdness_constraint: weirdness }
+  },
+  override_fields: [],
+  cover_clip_id: null, cover_start_s: null, cover_end_s: null,
+  persona_id: personaId ?? null,
+  artist_clip_id: null, artist_start_s: null, artist_end_s: null,
+  continue_clip_id: null, continued_aligned_prompt: null, continue_at: null,
+  transaction_uuid: randomUUID(),
+  token_provider: null,
   ...(projectId ? { project_id: projectId } : {}),
-  ...(personaId ? { persona_id: personaId } : {}),
-  style_weight: styleWeight, weirdness,
-  ...(negativeTags ? { negative_tags: negativeTags } : {})
-});
-const finalClip = await settle(p1.map((c) => c.id), 'generate');
+  ...(duration !== undefined ? { duration } : {})
+};
+
+const raw1 = post('/api/raw', { path: '/api/generate/v2-web/', method: 'POST', body: genBody });
+if (raw1.suno_status !== 200) {
+  // This raw path sends token/token_provider as null, bypassing this fork's
+  // own getCaptcha()/keepAlive() flow that /api/custom_generate uses. If
+  // Suno's /api/c/check is currently requiring a challenge, this is where it
+  // shows up — a 400/403 here, not a hang. The fix is still the one in
+  // CLAUDE.md ("Rate limiting, and how to clear it"): generate one song by
+  // hand in the web UI, then re-run. This script has no automatic fallback.
+  throw new Error(`generate/v2-web -> suno ${raw1.suno_status}: ${JSON.stringify(raw1.data).slice(0, 300)}\n` +
+    `  If this looks auth/challenge-shaped (401/403), see CLAUDE.md's captcha-wall section — this path can't self-heal it.`);
+}
+const clips = raw1.data?.clips;
+if (!Array.isArray(clips) || !clips.length) {
+  throw new Error(`generate/v2-web -> no clips in response: ${JSON.stringify(raw1.data).slice(0, 300)}`);
+}
+
+// Matches the web client's own sequence (confirmed via capture): project_id
+// on the generate call alone is not sufficient to file the clip. Suno
+// returns 204 on success here — /api/raw always wraps with local HTTP 200,
+// so `suno_status` is the field that actually says whether this worked; an
+// unchecked call would let a 400/403 here pass as silent success while the
+// (already-paid-for) clips land outside the intended workspace.
+if (projectId) {
+  const raw2 = post('/api/raw', {
+    path: `/api/project/${projectId}/clips`, method: 'POST',
+    body: { update_type: 'add', metadata: { clip_ids: clips.map((c) => c.id) } }
+  });
+  if (raw2.suno_status !== 204) {
+    console.warn(`! Failed to file clip(s) into project ${projectId} (suno_status ${raw2.suno_status}): ` +
+      `${JSON.stringify(raw2.data).slice(0, 200)}`);
+    console.warn(`  Clip(s) generated fine but may be sitting in the default workspace — check manually: ` +
+      clips.map((c) => c.id).join(', '));
+  }
+}
+
+const finalClip = await settle(clips.map((c) => c.id), 'generate', duration);
 await report(finalClip.id, blocks.length);
 
 const mins = `${Math.floor(finalClip.duration / 60)}:${String(Math.round(finalClip.duration % 60)).padStart(2, '0')}`;
@@ -130,7 +209,18 @@ function get(route) {
   try { return JSON.parse(out); } catch { return null; }
 }
 
-async function settle(ids, label) {
+/**
+ * @param targetDuration  seconds, if a --duration was requested. `duration`
+ *   the field turns out NOT to reliably constrain length — confirmed
+ *   2026-08-28 across 4 live generations with it set: 330s target -> 329.8s,
+ *   570s -> 242.3s, 360s -> 479.2s, 390s -> 204.8s. No correlation found with
+ *   style_weight/weirdness or section count; looks like inherent per-take
+ *   variance in how strictly the model honours it. Given that, "pick the
+ *   longer of the 2 candidates" (the old default, still used when no target
+ *   was given) is the wrong tiebreak once a duration WAS requested — picking
+ *   whichever candidate actually landed closer to it is strictly more useful.
+ */
+async function settle(ids, label, targetDuration) {
   process.stdout.write(`${label}: `);
   for (let i = 0; i < 40; i++) {
     const clips = get(`/api/get?ids=${ids.join(',')}`) ?? [];
@@ -138,8 +228,11 @@ async function settle(ids, label) {
     const failed = clips.filter((c) => c.status === 'error');
     if (done.length + failed.length >= clips.length && clips.length) {
       if (!done.length) throw new Error(`${label}: all takes errored — ${failed[0]?.error_message ?? 'no message'}`);
-      const best = done.sort((a, b) => (b.duration ?? 0) - (a.duration ?? 0))[0];
-      console.log(`ok ${best.duration}s (${done.length}/${clips.length} usable)`);
+      const best = targetDuration
+        ? done.sort((a, b) => Math.abs((a.duration ?? 0) - targetDuration) - Math.abs((b.duration ?? 0) - targetDuration))[0]
+        : done.sort((a, b) => (b.duration ?? 0) - (a.duration ?? 0))[0];
+      const all = done.map((c) => `${c.duration}s${c === best ? ' *' : ''}`).join(', ');
+      console.log(`ok — candidates: ${all} (${done.length}/${clips.length} usable)`);
       return best;
     }
     process.stdout.write('.');
@@ -161,6 +254,30 @@ async function report(id, expected) {
       console.warn('    Run verify-coverage.mjs to confirm before trusting this.');
     }
   } catch { console.log('  (alignment unavailable)'); }
+}
+
+/**
+ * "270" or "4:30" -> seconds. Throws rather than silently sending a bad
+ * value — a NaN here JSON.stringifies to `null`, which would look to Suno
+ * like "no duration set" and waste a full paid generation testing something
+ * that was never actually going to hit the intended length.
+ */
+function parseDuration(v) {
+  if (v === undefined || v === true) return undefined;
+  const s = String(v).trim();
+  let seconds;
+  if (s.includes(':')) {
+    const parts = s.split(':');
+    if (parts.length !== 2) throw new Error(`--duration "${s}": expected mm:ss (one colon), not ${parts.length - 1}.`);
+    const [m, sec] = parts.map(Number);
+    if (!Number.isFinite(m) || !Number.isFinite(sec)) throw new Error(`--duration "${s}": not a valid mm:ss.`);
+    seconds = m * 60 + sec;
+  } else {
+    seconds = Number(s);
+    if (!Number.isFinite(seconds)) throw new Error(`--duration "${s}": not a number or mm:ss.`);
+  }
+  if (seconds <= 0) throw new Error(`--duration "${s}": must be positive (got ${seconds}s).`);
+  return seconds;
 }
 
 function parseArgs(argv) {

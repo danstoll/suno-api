@@ -105,6 +105,8 @@ function runMakeTrack(t, dry) {
     if (t['style-weight'] !== undefined) a.push('--style-weight', String(t['style-weight']));
     if (t.weirdness !== undefined) a.push('--weirdness', String(t.weirdness));
     if (t.negative) a.push('--negative', t.negative);
+    if (t.duration !== undefined) a.push('--duration', String(t.duration));
+    if (t.model) a.push('--model', t.model);
   } else {
     if (t.split) a.push('--split', t.split);
     if (t.pace !== undefined) a.push('--pace', String(t.pace));
