@@ -44,6 +44,18 @@ class Segments(unittest.TestCase):
         _, _, quarters = sm.segment_notes(src, (1, 4), None, {})
         self.assertEqual(quarters, 6.0)                   # four 3/8 bars = 6 quarters
 
+    def test_boundary_note_sustaining_into_segment_is_not_dropped(self):
+        # SonataIV.mid bar 50: a left-hand note (note 64) starts before the bar and
+        # sustains 1344 source ticks (3.5 quarter notes) across the boundary. It must be
+        # admitted starting at tick 0 of the segment, not dropped because it didn't START
+        # inside the window.
+        src = sm.load_voices(SRC / 'SonataIV.mid')
+        notes, length, quarters = sm.segment_notes(src, (50, 50), ['left'], {})
+        self.assertTrue(notes, 'the note sustaining across the bar-50 boundary was dropped')
+        crossing = [n for n in notes if n[1] == 0]
+        self.assertEqual(len(crossing), 1)
+        self.assertGreater(crossing[0][2], 0)
+
 
 class Assemble(unittest.TestCase):
     def test_first_thread_expected_and_midi_length(self):
@@ -68,6 +80,36 @@ class Assemble(unittest.TestCase):
         mf, _ = sm.assemble(entry, SRC)
         progs = {(m.channel, m.program) for t in mf.tracks for m in t if m.type == 'program_change'}
         self.assertEqual(progs, {(0, 0), (1, 0), (2, 42)})
+
+    def test_hold_extends_the_note_actually_sounding_last(self):
+        # SonataIV-1.mid bar 1, feet voice: the only note ends 192 source ticks (0.5
+        # quarter) before the bar's structural boundary. A hold window measured from
+        # that boundary misses it entirely; the fix must find and extend the real last
+        # note (not just pad silence onto the end of the bar) by exactly the requested
+        # number of seconds.
+        entry = {"num": "t3", "title": "t3", "targetSeconds": 1, "segments": [
+            {"midi": "SonataIV-1.mid", "bars": [1, 1], "qpm": 60, "voices": ["feet"]}]}
+        held = dict(entry, holdLastNoteSeconds=2)
+
+        def feet_note_off_tick(mf):
+            track = next(t for t in mf.tracks if any(m.type == 'program_change' and m.channel == 2 for m in t))
+            tick, last_off = 0, None
+            for msg in track:
+                tick += msg.time
+                if msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0):
+                    last_off = tick
+            return last_off
+
+        base_off = feet_note_off_tick(sm.assemble(entry, SRC)[0])
+        held_off = feet_note_off_tick(sm.assemble(held, SRC)[0])
+        hold_ticks = round(2 * 60 / 60.0 * sm.OUT_TPB)   # 2s at qpm 60
+        self.assertEqual(held_off - base_off, hold_ticks)
+
+
+class BarBoundsValidation(unittest.TestCase):
+    def test_bar_bounds_rejects_non_positive_time_signature(self):
+        with self.assertRaises(ValueError):
+            sm.bar_bounds(384, [(0, 4, 0)], 1536)
 
 
 if __name__ == '__main__':

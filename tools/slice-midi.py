@@ -65,7 +65,11 @@ def bar_bounds(tpb, ts_map, total_ticks):
         while i + 1 < len(ts_map) and ts_map[i + 1][0] <= tick:
             i += 1
         _, num, den = ts_map[i]
+        if num <= 0 or den <= 0:
+            raise ValueError(f'invalid time signature {num}/{den} at tick {tick}')
         length = int(round(tpb * num * 4 / den))
+        if length <= 0:
+            raise ValueError(f'time signature {num}/{den} at tick {tick} yields non-positive bar length {length}')
         bounds.append((tick, tick + length))
         tick += length
     return bounds
@@ -84,8 +88,8 @@ def segment_notes(src, bars, voice_names, octave_shift):
     for name in (voice_names or list(voices)):
         shift = 12 * int(octave_shift.get(name, 0))
         for s, e, n, v in voices[name]:
-            if seg_start <= s < seg_end:
-                out.append((name, s - seg_start, min(e, seg_end) - seg_start, max(0, min(127, n + shift))))
+            if s < seg_end and e > seg_start:
+                out.append((name, max(s, seg_start) - seg_start, min(e, seg_end) - seg_start, max(0, min(127, n + shift))))
     return out, seg_end - seg_start, (seg_end - seg_start) / tpb
 
 
@@ -110,11 +114,12 @@ def assemble(entry, source_dir):
     if hold > 0:
         hold_ticks = int(round(hold * last_qpm / 60.0 * OUT_TPB))
         near = OUT_TPB // 4
+        max_end = max((n[1] for notes in per_voice.values() for n in notes), default=last_seg_end)
         for name in per_voice:
             for note in per_voice[name]:
-                if note[1] >= last_seg_end - near:
+                if note[1] >= max_end - near:
                     note[1] += hold_ticks
-        cursor += hold_ticks
+        cursor = max_end + hold_ticks
         expected += hold
     pad_ticks = int(round(TAIL_PAD_SECONDS * last_qpm / 60.0 * OUT_TPB))
 
