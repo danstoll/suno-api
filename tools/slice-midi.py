@@ -119,7 +119,7 @@ def assemble(entry, source_dir):
             for note in per_voice[name]:
                 if note[1] >= max_end - near:
                     note[1] += hold_ticks
-        cursor = max_end + hold_ticks
+        cursor = max(last_seg_end, max_end) + hold_ticks
         expected += hold
     pad_ticks = int(round(TAIL_PAD_SECONDS * last_qpm / 60.0 * OUT_TPB))
 

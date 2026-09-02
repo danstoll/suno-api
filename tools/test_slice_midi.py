@@ -105,6 +105,17 @@ class Assemble(unittest.TestCase):
         hold_ticks = round(2 * 60 / 60.0 * sm.OUT_TPB)   # 2s at qpm 60
         self.assertEqual(held_off - base_off, hold_ticks)
 
+    def test_midi_length_matches_expected_seconds_hold_and_no_hold(self):
+        # The emitted MIDI's reported length (minus the fixed tail pad) must track the
+        # `expected` seconds the duration report checks against -- for a plain segment
+        # and for one with holdLastNoteSeconds applied.
+        base = {"num": "12", "title": "x", "targetSeconds": 40, "segments": [
+            {"midi": "SonataIV-1.mid", "bars": [1, 4], "qpm": 33}]}
+        held = dict(base, holdLastNoteSeconds=8)
+        for entry in (base, held):
+            mf, expected = sm.assemble(entry, SRC)
+            self.assertAlmostEqual(mf.length - sm.TAIL_PAD_SECONDS, expected, delta=0.05)
+
 
 class BarBoundsValidation(unittest.TestCase):
     def test_bar_bounds_rejects_non_positive_time_signature(self):
