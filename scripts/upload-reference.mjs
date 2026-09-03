@@ -621,6 +621,14 @@ async function uploadViaBrowser({ filePath, title, projectId, description, exten
 
     if (result?.error) {
       const { step, status, data } = result.error;
+      // Structural fix, not payload discipline: short-circuit S3 failures
+      // BEFORE classification, so a future diagnostic addition to `data`
+      // (e.g. the S3 body) can never reach checkContentMatch -- S3 has no
+      // part in Suno's content decision, matching the API path's equivalent
+      // S3 error below.
+      if (step === 'S3 upload') {
+        throw new FatalError(`[browser] S3 upload -> ${status} (${data?.s3Host ?? 'unknown host'}) — S3 rejected the upload: a tooling/infrastructure failure, not a Suno content decision.`);
+      }
       checkContentMatch(data); // exits(2) if this is a genuine content-match rejection
       throw new FatalError(`[browser] ${step} -> ${status}: ${JSON.stringify(data).slice(0, 300)}`);
     }

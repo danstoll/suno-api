@@ -133,3 +133,31 @@ test('static check: the browser-fallback S3 upload block never calls the content
   assert.doesNotMatch(block, /checkContentMatch\(|detectContentMatch\(/,
     'the browser S3 upload block must never call the content-match predicate on an S3 response');
 });
+
+test('static check: the browser error handler classifies an S3 failure BEFORE calling the content-match predicate', () => {
+  // Tests 11/12 only scan the two S3 upload blocks themselves -- this is
+  // what let a round-1 fix regress: the offending checkContentMatch(data)
+  // call was not IN an S3 block, it was in the generic result-error
+  // handler downstream, where an S3 failure ({ s3Host }) and a genuine
+  // Suno rejection both land. That payload is inert today only because it
+  // carries no message-shaped field -- the next person who adds the S3
+  // body to it for diagnostics would silently misroute an AWS
+  // SignatureDoesNotMatch again. This test scans the handler itself and
+  // requires the S3 short-circuit to appear structurally BEFORE
+  // checkContentMatch(, so no payload shape can reach it for that step.
+  const src = readFileSync(SCRIPT_PATH, 'utf8');
+  const start = src.indexOf('if (result?.error) {');
+  assert.ok(start !== -1, 'could not locate the browser result-error handler by its "if (result?.error) {" marker');
+  const end = src.indexOf('if (!result?.clipId)', start);
+  assert.ok(end !== -1 && end > start, 'could not locate the end of the browser result-error handler');
+  const block = src.slice(start, end);
+
+  const s3Idx = block.indexOf("step === 'S3 upload'");
+  const checkIdx = block.indexOf('checkContentMatch(');
+  assert.ok(s3Idx !== -1,
+    "the browser error handler must short-circuit on step === 'S3 upload' before any content-match classification");
+  assert.ok(checkIdx !== -1, 'checkContentMatch( call is missing from the browser error handler');
+  assert.ok(s3Idx < checkIdx,
+    'the S3 short-circuit must appear BEFORE checkContentMatch( in the browser error handler -- ' +
+    'an S3 failure must never reach content-match classification, regardless of what fields its data carries');
+});
