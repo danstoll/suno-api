@@ -1,66 +1,39 @@
 [
-  {"num":"01","title":"First Thread","targetSeconds":112,"segments":[
-    {"midi":"SonataIV.mid","bars":[1,4],"qpm":30,"note":"Adagio 1-4"},
-    {"midi":"SonataIV.mid","bars":[1,4],"qpm":30,"note":"Adagio 1-4 again"},
-    {"midi":"SonataIV.mid","bars":[5,20],"qpm":60,"note":"tail hint: Vivace 1-16"}]},
+  {"num":"01","title":"First Thread","targetSeconds":80,"segments":[
+    {"midi":"SonataIV.mid","bars":[1,4],"qpm":24,"note":"bookend, opening statement — Adagio score & file bars 1-4, pass 1 of 2"},
+    {"midi":"SonataIV.mid","bars":[1,4],"qpm":24,"note":"bookend, opening statement — Adagio score & file bars 1-4, pass 2 of 2 (repeat)"}]},
 
-  {"num":"02","title":"Cast","targetSeconds":207,"segments":[
-    {"midi":"SonataIV.mid","bars":[5,65],"qpm":60,"note":"Vivace 1-61"},
-    {"midi":"SonataIV.mid","bars":[58,65],"qpm":60,"voices":["feet","right"],"note":"tail hint: Vivace 54-61 pedal + top"}]},
+  {"num":"02","title":"Cast","targetSeconds":24,"segments":[
+    {"midi":"SonataIV.mid","bars":[5,12],"qpm":60,"note":"quote, intro — Vivace score bars 1-8 = file bars 5-12"}]},
 
-  {"num":"03","title":"Tension","targetSeconds":296,"segments":[
-    {"midi":"SonataIV.mid","bars":[5,65],"qpm":84,"note":"Vivace 1-61 pass 1"},
-    {"midi":"SonataIV.mid","bars":[5,65],"qpm":84,"note":"Vivace 1-61 pass 2"},
-    {"midi":"SonataIV.mid","bars":[50,65],"qpm":84,"voices":["feet"],"note":"tail hint: Vivace 46-61 pedal only"}]},
+  {"num":"03","title":"Tension","targetSeconds":17,"segments":[
+    {"midi":"SonataIV.mid","bars":[5,12],"qpm":90.0,"voices":["feet"],"note":"quote, intro riff, feet only — Vivace score bars 1-8 = file bars 5-12, pedal voice only; qpm raised from table's q84 to 90 so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
 
-  {"num":"04","title":"Splice","targetSeconds":207,"segments":[
-    {"midi":"SonataIV.mid","bars":[5,65],"qpm":86,"note":"Vivace 1-61"},
-    {"midi":"SonataIV.mid","bars":[35,65],"qpm":86,"note":"Vivace 31-61 again"},
-    {"midi":"SonataIV-1.mid","bars":[1,2],"qpm":33,"voices":["feet"],"note":"tail hint: Andante 1-2 pedal only"}]},
+  {"num":"04","title":"Splice","targetSeconds":17,"segments":[
+    {"midi":"SonataIV.mid","bars":[29,36],"qpm":90.0,"note":"quote, bridge — Vivace score bars 25-32 = file bars 29-36; qpm raised from table's q86 to 90 so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
 
-  {"num":"05","title":"The Long Line","targetSeconds":305,"segments":[
-    {"midi":"SonataIV-1.mid","bars":[1,45],"qpm":37,"note":"Andante whole"},
-    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":74,"note":"tail hint: opening phrase at double speed"}]},
+  {"num":"05","title":"The Long Line","targetSeconds":26,"segments":[
+    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":37,"note":"quote, intro — Andante score & file bars 1-4"}]},
 
-  {"num":"06","title":"The Answer","targetSeconds":234,"segments":[
-    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":37,"note":"phrase 1 slow"},
-    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":86,"note":"phrase 1 fast"},
-    {"midi":"SonataIV-1.mid","bars":[5,8],"qpm":37,"note":"phrase 2 slow"},
-    {"midi":"SonataIV-1.mid","bars":[5,8],"qpm":86,"note":"phrase 2 fast"},
-    {"midi":"SonataIV-1.mid","bars":[9,12],"qpm":37,"note":"phrase 3 slow"},
-    {"midi":"SonataIV-1.mid","bars":[9,12],"qpm":86,"note":"phrase 3 fast"},
-    {"midi":"SonataIV-1.mid","bars":[13,16],"qpm":37,"note":"phrase 4 slow"},
-    {"midi":"SonataIV-1.mid","bars":[13,16],"qpm":86,"note":"phrase 4 fast"},
-    {"midi":"SonataIV-1.mid","bars":[17,20],"qpm":37,"note":"phrase 5 slow"},
-    {"midi":"SonataIV-1.mid","bars":[17,20],"qpm":86,"note":"phrase 5 fast"},
-    {"midi":"SonataIV-1.mid","bars":[21,24],"qpm":37,"note":"phrase 6 slow"},
-    {"midi":"SonataIV-1.mid","bars":[21,24],"qpm":86,"note":"phrase 6 fast"},
-    {"midi":"SonataIV-1.mid","bars":[25,28],"qpm":86,"note":"tail hint: 25-28 fast, all voices, piano and beat overlap"}]},
+  {"num":"06","title":"The Answer","targetSeconds":26,"segments":[
+    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":37,"note":"quote, the call — Andante score & file bars 1-4"}]},
 
-  {"num":"07","title":"Slack","targetSeconds":189,"segments":[
-    {"midi":"SonataIV-1.mid","bars":[13,36],"qpm":33,"note":"Andante 13-36"},
-    {"midi":"SonataIV-1.mid","bars":[35,36],"qpm":33,"voices":["feet"],"octaveShift":{"feet":-1},"note":"tail hint: pedal only, one octave down"}]},
+  {"num":"07","title":"Slack","targetSeconds":29,"segments":[
+    {"midi":"SonataIV-1.mid","bars":[13,16],"qpm":35.6,"note":"quote, intro — Andante score & file bars 13-16; qpm raised from table's q33 to 35.6 so the rendered file (after synth release tail) stays under the 30s quote ceiling"}]},
 
-  {"num":"08","title":"Tightest Weave","targetSeconds":302,"segments":[
-    {"midi":"SonataIV-1.mid","bars":[1,45],"qpm":43,"note":"Andante whole, one bar = four 172 measures"},
-    {"midi":"SonataIV-1.mid","bars":[1,6],"qpm":43,"note":"opening again"},
-    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":81,"note":"tail hint: Un poco allegro 1-16 at dq54"}]},
+  {"num":"08","title":"Tightest Weave","targetSeconds":22,"segments":[
+    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":45.7,"note":"quote, bridge — Andante score & file bars 1-4; qpm raised from table's q43 to 45.7 so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
 
-  {"num":"09","title":"Fray","targetSeconds":234,"segments":[
-    {"midi":"SonataIV-2.mid","bars":[1,97],"qpm":81,"note":"Un poco allegro whole at dq54, pass 1"},
-    {"midi":"SonataIV-2.mid","bars":[1,97],"qpm":81,"note":"pass 2"},
-    {"midi":"SonataIV-2.mid","bars":[81,97],"qpm":81,"voices":["feet","left"],"note":"tail hint: 81-97 pedal + second voice"}]},
+  {"num":"09","title":"Fray","targetSeconds":27,"segments":[
+    {"midi":"SonataIV-2.mid","bars":[1,24],"qpm":81,"note":"quote, intro — Un poco allegro score & file bars 1-24, dq54 = qpm 81"}]},
 
-  {"num":"10","title":"Line Out","targetSeconds":277,"holdLastNoteSeconds":6,"segments":[
-    {"midi":"SonataIV-2.mid","bars":[1,97],"qpm":64.5,"note":"Un poco allegro whole at dq43 (one 3/8 bar = one 172 measure), pass 1"},
-    {"midi":"SonataIV-2.mid","bars":[1,97],"qpm":64.5,"note":"pass 2; final chord held 6 s"}]},
+  {"num":"10","title":"Line Out","targetSeconds":22,"segments":[
+    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":68.6,"note":"quote, drop — Un poco allegro score & file bars 1-16; qpm raised from table's dq43 (qpm 64.5) to qpm 68.6 (dq45.7) so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
 
-  {"num":"11","title":"Mend","targetSeconds":210,"segments":[
-    {"midi":"SonataIV-2.mid","bars":[1,97],"qpm":45,"note":"Un poco allegro whole at natural dq30"},
-    {"midi":"SonataIV.mid","bars":[1,2],"qpm":30,"note":"tail hint: Adagio 1-2"}]},
+  {"num":"11","title":"Mend","targetSeconds":28,"segments":[
+    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":52.4,"note":"quote, outro — Un poco allegro score & file bars 1-16; qpm raised from table's dq30 (qpm 45) to qpm 52.4 (dq34.9) and targetSeconds lowered from the brief's 32 to 28 — 32s conflicted with the brief's own 'every quote is under 30 seconds' rule once the synth release tail is included; flagged in report"}]},
 
-  {"num":"12","title":"One Thread Again","targetSeconds":145,"holdLastNoteSeconds":8,"segments":[
-    {"midi":"SonataIV.mid","bars":[1,4],"qpm":30,"note":"Adagio 1-4"},
-    {"midi":"SonataIV.mid","bars":[1,4],"qpm":30,"note":"Adagio 1-4 again"},
-    {"midi":"SonataIV-1.mid","bars":[1,10],"qpm":33,"note":"Andante 1-10, last note held 8 s"}]}
+  {"num":"12","title":"One Thread Again","targetSeconds":77,"segments":[
+    {"midi":"SonataIV.mid","bars":[1,4],"qpm":24,"note":"bookend, closing statement — Adagio score & file bars 1-4, once"},
+    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":26,"note":"bookend, closing statement — Andante score & file bars 1-4, once, closes the album"}]}
 ]
