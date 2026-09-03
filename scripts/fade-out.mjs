@@ -19,6 +19,7 @@
  *   --curve NAME  ffmpeg fade curve; default qsin. See note below.
  *   --tail N      also trim N seconds of dead air off the end first
  *   --api URL     suno-api base; default http://localhost:3060
+ *   --format wav|mp3  download format; default mp3
  *
  * On the curve: measured per-second RMS across a 7s fade on a real track --
  *   qsin  holds level ~3s then eases out, silent exactly at the end   <- default
@@ -40,6 +41,7 @@ const API = args.api ?? 'http://localhost:3060';
 const FADE = Number(args.seconds ?? 6);
 const TRIM_TAIL = Number(args.tail ?? 0);
 const CURVE = typeof args.curve === 'string' ? args.curve : 'qsin';
+const FORMAT = args.format === 'wav' ? 'wav' : 'mp3';   // Suno's download endpoint; WAV availability is probed in The Long Line v2 Task 15
 
 if (!args.clip && !args.file) {
   console.error('Need --clip <id> or --file <path>. See header for usage.');
@@ -104,7 +106,7 @@ if (args.clip) {
   for (let i = 0; i < 30; i++) {
     let d;
     try {
-      d = await rawGet(`/api/download/clip/${args.clip}?format=mp3`);
+      d = await rawGet(`/api/download/clip/${args.clip}?format=${FORMAT}`);
     } catch (err) {
       // A single flaky poll (dev-server hiccup, transient network blip)
       // shouldn't kill the whole 60s budget — note it and keep polling.
@@ -131,7 +133,7 @@ if (args.clip) {
     throw new Error(`Download never became ready for clip ${args.clip} after 60s${suffix}`);
   }
 
-  input = path.join(outDir, `${label}.src.mp3`);
+  input = path.join(outDir, `${label}.src.${FORMAT}`);
   console.log(`Downloading "${clip.title}" (${clip.duration}s)...`);
   const audio = await fetch(downloadUrl);
   // The URL carries temporary AWS SigV2 query params — drop them from any
