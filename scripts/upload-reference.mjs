@@ -90,14 +90,14 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const args = parseArgs(process.argv.slice(2));
 const API = args.api ?? 'http://localhost:3060';
 const VIA = String(args.via ?? 'api').toLowerCase();
 
-const CONTENT_MATCH_RE = /match|copyright|existing recording|not allowed|rights/i;
+export const CONTENT_MATCH_RE = /match|copyright|existing recording|not allowed|rights/i;
 
 // How long to wait for Suno's async post-upload content review (3b above) to
 // land on a terminal status before giving up. Measured once at ~90s for a
@@ -118,19 +118,26 @@ class StepError extends Error {
   }
 }
 
-if (!['api', 'browser', 'auto'].includes(VIA)) {
-  console.error(`--via must be api|browser|auto, got "${VIA}".`);
-  process.exit(1);
-}
-
-main().catch((err) => {
-  if (err instanceof FatalError) {
-    console.error(err.message);
+// Only run the CLI when this file is executed directly (`node
+// upload-reference.mjs ...`), never when it is imported as a module -- the
+// test file imports pure predicates (detectContentMatch, extractMessage)
+// from this same file and must not trigger argv validation or main().
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) {
+  if (!['api', 'browser', 'auto'].includes(VIA)) {
+    console.error(`--via must be api|browser|auto, got "${VIA}".`);
     process.exit(1);
   }
-  console.error(err?.stack ?? err?.message ?? String(err));
-  process.exit(1);
-});
+
+  main().catch((err) => {
+    if (err instanceof FatalError) {
+      console.error(err.message);
+      process.exit(1);
+    }
+    console.error(err?.stack ?? err?.message ?? String(err));
+    process.exit(1);
+  });
+}
 
 async function main() {
   if (args['reset-gate-only']) {
@@ -201,9 +208,20 @@ async function resetGateIfNeeded() {
     return false;
   }
   console.error('  gate is UP. Running profile-capture.mjs to clear it (costs one throwaway generation)...');
-  const res = spawnSync(process.execPath, [path.join(SCRIPT_DIR, 'profile-capture.mjs')], { stdio: 'inherit' });
+  // profile-capture.mjs logs its own progress via console.log at a dozen+
+  // sites. None of that may reach THIS process's stdout, which a caller
+  // parses as exactly one clip_id/FLAGGED line -- so its stdout is piped,
+  // not inherited, and re-emitted on stderr instead.
+  const res = spawnSync(process.execPath, [path.join(SCRIPT_DIR, 'profile-capture.mjs')], {
+    stdio: ['inherit', 'pipe', 'inherit']
+  });
+  if (res.stdout && res.stdout.length) {
+    console.error(res.stdout.toString('utf8').replace(/\n+$/, ''));
+  }
   if (res.error) throw new FatalError(`Could not run profile-capture.mjs: ${res.error.message}`);
-  if (res.status !== 0) console.error(`  profile-capture.mjs exited ${res.status} — re-checking anyway.`);
+  if (res.status !== 0) {
+    throw new FatalError(`profile-capture.mjs exited ${res.status} — gate reset failed. See its output above.`);
+  }
 
   console.error('  re-checking gate...');
   required = await isChallenged();
@@ -217,31 +235,48 @@ async function resetGateIfNeeded() {
 
 // ------------------------------------------------------------ content match
 
-/** Check a response body (object or raw text) for content-match language.
- *  On a hit: print FLAGGED to stdout and terminate with exit 2, immediately —
- *  a content-match rejection is a valid, final result, never a generic error
- *  and never worth retrying via the browser fallback. */
-function checkContentMatch(dataOrText) {
-  // Only ever test actual message-shaped text -- never the whole stringified
-  // object. Suno's own routine field NAMES contain trigger words (every
-  // upload-status response carries a boolean `copyright_muted`, which
-  // false-positived this check on step 3b's very first, entirely benign
-  // "processing" poll before this fix). A structured object with none of
-  // the candidate fields below is never flagged, no matter what its other
-  // keys are called.
-  const target = typeof dataOrText === 'string' ? dataOrText : extractMessage(dataOrText);
-  if (!target || !CONTENT_MATCH_RE.test(target)) return;
-  console.log(`FLAGGED: ${String(target).slice(0, 200)}`);
-  process.exit(2);
-}
-
-function extractMessage(dataObj) {
+export function extractMessage(dataObj) {
   if (dataObj && typeof dataObj === 'object') {
+    // Empirically observed from live Suno responses (2026-09-02) -- not
+    // documented anywhere, and not guaranteed exhaustive.
     for (const key of ['error_message', 'detail', 'message', 'error', 'reason', 'error_type']) {
       if (typeof dataObj[key] === 'string') return dataObj[key];
     }
   }
   return null;
+}
+
+/**
+ * Pure predicate, no side effects: does this Suno response object carry
+ * content-match language in one of its known message-shaped fields? Returns
+ * the matched message (trimmed to 200 chars), or null.
+ *
+ * Deliberately does NOT scan a whole stringified object and does NOT accept
+ * a raw string -- only a structured object via extractMessage's fixed field
+ * allowlist. That is what keeps a routine field like the upload-status
+ * endpoint's `copyright_muted` boolean (whose NAME contains "copyright")
+ * from ever being mistaken for a rejection, and what keeps an S3
+ * infrastructure error's raw body (which commonly contains the literal word
+ * "match", e.g. AWS's `SignatureDoesNotMatch`) from ever reaching this
+ * check at all -- a bare string is not a structured object, so
+ * extractMessage returns null for it unconditionally, no matter what words
+ * it contains.
+ */
+export function detectContentMatch(data) {
+  const target = extractMessage(data);
+  if (!target || !CONTENT_MATCH_RE.test(target)) return null;
+  return String(target).slice(0, 200);
+}
+
+/** Side-effecting wrapper used throughout the CLI: prints FLAGGED to stdout
+ *  and exits 2 immediately when detectContentMatch finds something. A
+ *  content-match rejection is a valid, final result, never a generic error
+ *  and never worth retrying via the browser fallback. */
+function checkContentMatch(data) {
+  const message = detectContentMatch(data);
+  if (message === null) return;
+  console.log(`FLAGGED: ${message}`);
+  process.exit(2);
 }
 
 // --------------------------------------------------------------- /api/raw
@@ -350,27 +385,38 @@ async function uploadViaApi({ filePath, title, projectId, description, extension
   console.error(`  accepted upload_type: "${uploadType}"`);
 
   const { url, fields, id: uploadId } = uploadReq ?? {};
-  if (!url || !uploadId) throw new FatalError(`/api/uploads/audio/ returned no url/id: ${JSON.stringify(uploadReq).slice(0, 200)}`);
+  if (!url || !uploadId) {
+    // Never stringify the whole response here -- it normally carries
+    // `fields` with real S3 credentials (AWSAccessKeyId/policy/signature).
+    // Report only which required key is missing plus presence/type of the
+    // rest.
+    throw new FatalError(`/api/uploads/audio/ response missing ${!url ? 'url' : 'id'} ` +
+      `(has_url=${!!url}, has_id=${!!uploadId}, has_fields=${!!(fields && Object.keys(fields).length)}).`);
+  }
 
   // Step 2: push the raw bytes straight to S3 — never through /api/raw,
-  // which is pinned to Suno's own API host. Only the S3 host is ever
-  // printed; the presigned fields/query string never are.
+  // which is pinned to Suno's own API host. S3 has no part in Suno's
+  // content decision, so its response body is NEVER passed through
+  // checkContentMatch -- a routine AWS failure (e.g. "SignatureDoesNotMatch"
+  // from clock skew or an expired policy) contains the literal word "match"
+  // and would otherwise be misread as a content-match rejection. Only the
+  // S3 host and HTTP status are ever surfaced; the presigned fields/query
+  // string and the response body never are.
   const s3Host = new URL(url).host;
+  let s3res;
   if (fields && Object.keys(fields).length) {
     const form = new FormData();
     for (const [k, v] of Object.entries(fields)) form.append(k, String(v));
     form.append('file', new Blob([fileBuf]), fileName);
-    const res = await fetch(url, { method: 'POST', body: form });
-    const resText = await res.text().catch(() => '');
-    checkContentMatch(resText);
-    console.error(`  S3 POST -> ${res.status} (${s3Host})`);
-    if (!res.ok) throw new StepError('S3 upload (POST)', res.status, resText.slice(0, 300));
+    s3res = await fetch(url, { method: 'POST', body: form });
+    console.error(`  S3 POST -> ${s3res.status} (${s3Host})`);
   } else {
-    const res = await fetch(url, { method: 'PUT', body: fileBuf });
-    const resText = await res.text().catch(() => '');
-    checkContentMatch(resText);
-    console.error(`  S3 PUT -> ${res.status} (${s3Host})`);
-    if (!res.ok) throw new StepError('S3 upload (PUT)', res.status, resText.slice(0, 300));
+    s3res = await fetch(url, { method: 'PUT', body: fileBuf });
+    console.error(`  S3 PUT -> ${s3res.status} (${s3Host})`);
+  }
+  if (!s3res.ok) {
+    throw new StepError(`S3 upload (${s3Host})`, s3res.status,
+      'S3 rejected the upload -- a tooling/infrastructure failure, not a Suno content decision.');
   }
 
   // Step 3: tell Suno the upload finished.
@@ -427,6 +473,16 @@ async function uploadViaApi({ filePath, title, projectId, description, extension
  * throws), including the same 3b content-review poll run in-page. See this
  * script's task report for whether this path was actually exercised live on
  * a given run, versus written but unexercised.
+ *
+ * Every in-page failure returns a STRUCTURED { error: { step, status, data } }
+ * object rather than a pre-formatted string. Node then runs the exact same
+ * extractMessage-based detectContentMatch predicate on `data` that every
+ * other step in this script uses (via checkContentMatch below) -- never a
+ * whole-object text dump, which is what let a routine field name
+ * (`copyright_muted`) reintroduce the false-positive class already fixed on
+ * the API path. `data` is also never allowed to carry the upload-slot's
+ * raw `fields` (S3 credentials) or a presigned URL -- see the "upload slot"
+ * and "S3 upload" branches below.
  */
 async function uploadViaBrowser({ filePath, title, projectId, description, extension }) {
   console.error('\n[browser] uploading via the warm persistent profile ...');
@@ -460,11 +516,13 @@ async function uploadViaBrowser({ filePath, title, projectId, description, exten
 
     // Everything below runs IN the page's own JS context, so it shares the
     // tab's cookies (`credentials:'include'`) — same-origin, same trust as a
-    // human dragging the file into the Suno UI. It returns a plain result
-    // object (never throws across the evaluate boundary) so the failure
-    // reason survives back into Node for the content-match check.
+    // human dragging the file into the Suno UI.
     const result = await page.evaluate(async ({ extension, fileName, fileB64, title, description, projectId, reviewMaxMs, reviewPollMs }) => {
       const HOST = 'https://studio-api.prod.suno.com';
+
+      function fail(step, status, data, extra) {
+        return { error: { step, status, data }, ...extra };
+      }
 
       async function call(apiPath, body, method = 'POST') {
         const res = await fetch(`${HOST}${apiPath}`, {
@@ -492,11 +550,25 @@ async function uploadViaBrowser({ filePath, title, projectId, description, exten
         uploadType = 'file_upload';
         step1 = await call('/api/uploads/audio/', { extension, upload_type: uploadType });
       }
-      if (step1.status !== 200) return { error: `upload slot -> ${step1.status}: ${JSON.stringify(step1.data).slice(0, 300)}` };
+      if (step1.status !== 200) return fail('upload slot', step1.status, step1.data);
       const { url, fields, id: uploadId } = step1.data ?? {};
-      if (!url || !uploadId) return { error: `no url/id in upload-slot response: ${JSON.stringify(step1.data).slice(0, 300)}` };
+      if (!url || !uploadId) {
+        // Never surface the whole response -- it normally carries S3
+        // credentials in `fields` (AWSAccessKeyId/policy/signature).
+        return fail('upload slot', step1.status, {
+          missing: !url ? 'url' : 'id',
+          has_url: !!url, has_id: !!uploadId,
+          has_fields: !!(fields && Object.keys(fields).length)
+        });
+      }
 
+      // S3 has no part in Suno's content decision. Its response is reduced
+      // to a bare host + HTTP status before ever leaving this function --
+      // never a body, never the presigned fields/query string -- and that
+      // sanitized {s3Host} object carries no message-shaped field, so it
+      // can never reach detectContentMatch's allowlist back in Node either.
       const blob = b64ToBlob(fileB64);
+      const s3Host = new URL(url).host;
       let s3res;
       if (fields && Object.keys(fields).length) {
         const form = new FormData();
@@ -506,11 +578,11 @@ async function uploadViaBrowser({ filePath, title, projectId, description, exten
       } else {
         s3res = await fetch(url, { method: 'PUT', body: blob });
       }
-      if (!s3res.ok) return { error: `S3 upload -> ${s3res.status}` };
+      if (!s3res.ok) return fail('S3 upload', s3res.status, { s3Host });
 
       const step3 = await call(`/api/uploads/audio/${uploadId}/upload-finish/`,
         { upload_type: uploadType, upload_filename: fileName, agreed_to_vip_upload_terms: false });
-      if (step3.status !== 200) return { error: `upload-finish -> ${step3.status}: ${JSON.stringify(step3.data).slice(0, 300)}` };
+      if (step3.status !== 200) return fail('upload-finish', step3.status, step3.data);
 
       // Step 3b: same content-review poll as the API path — see this
       // script's top-level header for why this is not optional.
@@ -518,26 +590,20 @@ async function uploadViaBrowser({ filePath, title, projectId, description, exten
       let reviewData = null;
       while (Date.now() < deadline) {
         const st = await call(`/api/uploads/audio/${uploadId}/`, undefined, 'GET');
-        if (st.status !== 200) return { error: `content review poll -> ${st.status}: ${JSON.stringify(st.data).slice(0, 300)}` };
+        if (st.status !== 200) return fail('content review poll', st.status, st.data);
         if (st.data?.status === 'complete') { reviewData = st.data; break; }
-        if (st.data?.status === 'error') {
-          // Extract the actual message, not the whole object -- it also
-          // carries a routine `copyright_muted` boolean that would
-          // false-positive a whole-object text scan back in Node.
-          const msg = st.data?.error_message || st.data?.error_type || JSON.stringify(st.data).slice(0, 300);
-          return { error: msg };
-        }
+        if (st.data?.status === 'error') return fail('content review', st.status, st.data);
         await new Promise((r) => setTimeout(r, reviewPollMs));
       }
-      if (!reviewData) return { error: `content review timed out after ${reviewMaxMs}ms` };
+      if (!reviewData) return fail('content review', 0, { timed_out_after_ms: reviewMaxMs });
 
       const step4 = await call(`/api/uploads/audio/${uploadId}/initialize-clip/`, { user_reviewed_tags: true });
-      if (step4.status !== 200) return { error: `initialize-clip -> ${step4.status}: ${JSON.stringify(step4.data).slice(0, 300)}` };
+      if (step4.status !== 200) return fail('initialize-clip', step4.status, step4.data);
       const clipId = step4.data?.clip_id;
-      if (!clipId) return { error: `initialize-clip returned no clip_id: ${JSON.stringify(step4.data).slice(0, 300)}` };
+      if (!clipId) return fail('initialize-clip', step4.status, step4.data);
 
       const step5 = await call(`/api/gen/${clipId}/set_metadata/`, { title });
-      if (step5.status !== 200) return { error: `set_metadata -> ${step5.status}: ${JSON.stringify(step5.data).slice(0, 300)}`, clipId };
+      if (step5.status !== 200) return fail('set_metadata', step5.status, step5.data, { clipId });
 
       let descField = 'user_corrected_description';
       let step6 = await call(`/api/gen/${clipId}/set_audio_description`, { user_corrected_description: description });
@@ -545,17 +611,18 @@ async function uploadViaBrowser({ filePath, title, projectId, description, exten
         descField = 'description';
         step6 = await call(`/api/gen/${clipId}/set_audio_description`, { description });
       }
-      if (step6.status !== 200) return { error: `set_audio_description -> ${step6.status}: ${JSON.stringify(step6.data).slice(0, 300)}`, clipId };
+      if (step6.status !== 200) return fail('set_audio_description', step6.status, step6.data, { clipId });
 
       const step7 = await call(`/api/project/${projectId}/clips`, { update_type: 'add', metadata: { clip_ids: [clipId] } });
-      if (step7.status !== 204) return { error: `project/clips -> ${step7.status}: ${JSON.stringify(step7.data).slice(0, 300)}`, clipId };
+      if (step7.status !== 204) return fail('project/clips', step7.status, step7.data, { clipId });
 
       return { clipId, uploadType, descField };
     }, { extension, fileName, fileB64, title, description, projectId, reviewMaxMs: UPLOAD_REVIEW_MAX_MS, reviewPollMs: UPLOAD_REVIEW_POLL_MS });
 
     if (result?.error) {
-      checkContentMatch(result.error);
-      throw new FatalError(`[browser] ${result.error}`);
+      const { step, status, data } = result.error;
+      checkContentMatch(data); // exits(2) if this is a genuine content-match rejection
+      throw new FatalError(`[browser] ${step} -> ${status}: ${JSON.stringify(data).slice(0, 300)}`);
     }
     if (!result?.clipId) throw new FatalError(`[browser] upload chain returned no clip_id: ${JSON.stringify(result).slice(0, 200)}`);
 
