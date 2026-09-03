@@ -1,0 +1,7 @@
+[
+  {"num":"P1","title":"tempo up",   "targetSeconds":93,  "segments":[{"midi":"SonataIV.mid","bars":[1,4],"qpm":36,"note":"+20% vs planned q30"},{"midi":"SonataIV.mid","bars":[1,4],"qpm":36}]},
+  {"num":"P2","title":"tempo down", "targetSeconds":140, "segments":[{"midi":"SonataIV.mid","bars":[1,4],"qpm":24,"note":"-20% vs planned q30"},{"midi":"SonataIV.mid","bars":[1,4],"qpm":24}]},
+  {"num":"P3","title":"short 60",   "targetSeconds":64,  "segments":[{"midi":"SonataIV.mid","bars":[1,4],"qpm":30,"note":"one pass only, planned tempo"}]},
+  {"num":"P4","title":"short 30",   "targetSeconds":32,  "segments":[{"midi":"SonataIV.mid","bars":[1,2],"qpm":30,"note":"half the phrase"}]},
+  {"num":"P5","title":"short 15",   "targetSeconds":16,  "segments":[{"midi":"SonataIV.mid","bars":[1,1],"qpm":30,"note":"one bar"}]}
+]
