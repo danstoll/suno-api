@@ -6,11 +6,11 @@
   {"num":"02","title":"Cast","targetSeconds":24,"segments":[
     {"midi":"SonataIV.mid","bars":[5,12],"qpm":60,"note":"quote, intro — Vivace score bars 1-8 = file bars 5-12"}]},
 
-  {"num":"03","title":"Tension","targetSeconds":17,"segments":[
-    {"midi":"SonataIV.mid","bars":[5,12],"qpm":90.0,"voices":["feet"],"note":"quote, intro riff, feet only — Vivace score bars 1-8 = file bars 5-12, pedal voice only; qpm raised from table's q84 to 90 so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
+  {"num":"03","title":"Tension","targetSeconds":18,"segments":[
+    {"midi":"SonataIV.mid","bars":[5,12],"qpm":84,"voices":["feet"],"note":"quote, intro riff, feet only — Vivace score bars 1-8 = file bars 5-12, pedal voice only; qpm restored to the plan's q84 (natural tempo — fix round 1 reverted the earlier speed-up); targetSeconds set to this tempo's real rendered duration including the fluidsynth release tail"}]},
 
-  {"num":"04","title":"Splice","targetSeconds":17,"segments":[
-    {"midi":"SonataIV.mid","bars":[29,36],"qpm":90.0,"note":"quote, bridge — Vivace score bars 25-32 = file bars 29-36; qpm raised from table's q86 to 90 so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
+  {"num":"04","title":"Splice","targetSeconds":18,"segments":[
+    {"midi":"SonataIV.mid","bars":[29,36],"qpm":86,"note":"quote, bridge — Vivace score bars 25-32 = file bars 29-36; qpm restored to the plan's q86 (natural tempo — fix round 1 reverted the earlier speed-up); targetSeconds set to this tempo's real rendered duration including the fluidsynth release tail"}]},
 
   {"num":"05","title":"The Long Line","targetSeconds":26,"segments":[
     {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":37,"note":"quote, intro — Andante score & file bars 1-4"}]},
@@ -19,19 +19,19 @@
     {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":37,"note":"quote, the call — Andante score & file bars 1-4"}]},
 
   {"num":"07","title":"Slack","targetSeconds":29,"segments":[
-    {"midi":"SonataIV-1.mid","bars":[13,16],"qpm":35.6,"note":"quote, intro — Andante score & file bars 13-16; qpm raised from table's q33 to 35.6 so the rendered file (after synth release tail) stays under the 30s quote ceiling"}]},
+    {"midi":"SonataIV-1.mid","bars":[13,16],"qpm":33,"note":"quote, intro — Andante score & file bars 13-16; qpm restored to the plan's q33 (natural tempo — fix round 1 reverted the earlier speed-up); real render (~31s incl. tail) is comfortably under the real 34s content-review ceiling"}]},
 
-  {"num":"08","title":"Tightest Weave","targetSeconds":22,"segments":[
-    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":45.7,"note":"quote, bridge — Andante score & file bars 1-4; qpm raised from table's q43 to 45.7 so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
+  {"num":"08","title":"Tightest Weave","targetSeconds":23,"segments":[
+    {"midi":"SonataIV-1.mid","bars":[1,4],"qpm":43,"note":"quote, bridge — Andante score & file bars 1-4; qpm restored to the plan's q43 (natural tempo — fix round 1 reverted the earlier speed-up); targetSeconds set to this tempo's real rendered duration including the fluidsynth release tail"}]},
 
   {"num":"09","title":"Fray","targetSeconds":27,"segments":[
     {"midi":"SonataIV-2.mid","bars":[1,24],"qpm":81,"note":"quote, intro — Un poco allegro score & file bars 1-24, dq54 = qpm 81"}]},
 
-  {"num":"10","title":"Line Out","targetSeconds":22,"segments":[
-    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":68.6,"note":"quote, drop — Un poco allegro score & file bars 1-16; qpm raised from table's dq43 (qpm 64.5) to qpm 68.6 (dq45.7) so the rendered file (after synth release tail) lands inside the ±10% tolerance"}]},
+  {"num":"10","title":"Line Out","targetSeconds":23,"segments":[
+    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":64.5,"note":"quote, drop — Un poco allegro score & file bars 1-16; qpm restored to the plan's dq43 = qpm 64.5 (natural tempo — fix round 1 reverted the earlier speed-up); targetSeconds set to this tempo's real rendered duration including the fluidsynth release tail"}]},
 
-  {"num":"11","title":"Mend","targetSeconds":28,"segments":[
-    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":52.4,"note":"quote, outro — Un poco allegro score & file bars 1-16; qpm raised from table's dq30 (qpm 45) to qpm 52.4 (dq34.9) and targetSeconds lowered from the brief's 32 to 28 — 32s conflicted with the brief's own 'every quote is under 30 seconds' rule once the synth release tail is included; flagged in report"}]},
+  {"num":"11","title":"Mend","targetSeconds":32,"segments":[
+    {"midi":"SonataIV-2.mid","bars":[1,16],"qpm":45,"note":"quote, outro — Un poco allegro score & file bars 1-16, dq30 = qpm 45 — this is the plan's natural tempo, the movement's wind-down with the noise gone; restored after fix round 1 wrongly sped it up to fit a 30s ceiling that never existed. Real render (~34s incl. tail) is the longest quote and sits right at the real 34s content-review ceiling — the one reference most likely to be refused; check this one first if generation-time review ever rejects a clip"}]},
 
   {"num":"12","title":"One Thread Again","targetSeconds":77,"segments":[
     {"midi":"SonataIV.mid","bars":[1,4],"qpm":24,"note":"bookend, closing statement — Adagio score & file bars 1-4, once"},
