@@ -1,0 +1,38 @@
+[
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/09-fray.md",
+    "title": "09 Fray recover",
+    "project": "7ead0662-b185-4ce9-8758-7e97b330a403",
+    "coverClipId": "583c8913-ad27-48e8-83ba-d71cc25616f0",
+    "audioWeight": 0.6,
+    "style-weight": 0.75,
+    "weirdness": 0.2,
+    "duration": 204,
+    "fade": 0,
+    "negative": "vocals, singing, humming, choir, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause"
+  },
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/10-line-out.md",
+    "title": "10 Line Out recover",
+    "project": "7ead0662-b185-4ce9-8758-7e97b330a403",
+    "coverClipId": "b5e68a86-f8c3-427b-91a1-d550aad0fef8",
+    "audioWeight": 0.6,
+    "style-weight": 0.75,
+    "weirdness": 0.2,
+    "duration": 251,
+    "fade": 0,
+    "negative": "vocals, singing, humming, choir, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause"
+  },
+  {
+    "file": "../daddy-wombat-tunes/the-long-line/11-mend.md",
+    "title": "11 Mend recover",
+    "project": "7ead0662-b185-4ce9-8758-7e97b330a403",
+    "coverClipId": "5163007d-78dc-4efb-b7d9-ca03ffddf3db",
+    "audioWeight": 0.6,
+    "style-weight": 0.75,
+    "weirdness": 0.2,
+    "duration": 174,
+    "fade": 0,
+    "negative": "vocals, singing, humming, choir, screaming, growls, spoken word, blast beats, chaotic glitch, noise, laughter, crowd noise, applause"
+  }
+]

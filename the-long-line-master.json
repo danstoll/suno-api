@@ -1,0 +1,128 @@
+{
+  "album": "The Long Line",
+  "artist": "Daddy Wombat",
+  "year": 2026,
+  "genre": "Focus Sessions",
+  "cover": "../daddy-wombat-tunes/artwork/covers/the-long-line-cover-v1-2.png",
+  "outDir": "master/the-long-line",
+  "leadInSeconds": 0.5,
+  "tailSeconds": 1.0,
+  "partCrossfade": 8,
+  "maxSpreadLU": 14,
+  "truePeakDb": -1,
+  "tracks": [
+    {
+      "num": "01",
+      "title": "First Thread",
+      "files": [
+        "faded/01-First-Thread.src.mp3"
+      ],
+      "clipIds": [
+        "8e7c9b3a-cafa-4e71-8d91-85a05a3912be"
+      ],
+      "fadeIntoNext": 5
+    },
+    {
+      "num": "02",
+      "title": "Cast",
+      "files": [
+        "faded/02-Cast.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 3
+    },
+    {
+      "num": "03",
+      "title": "Tension",
+      "files": [
+        "faded/03-Tension.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 3
+    },
+    {
+      "num": "04",
+      "title": "Splice",
+      "files": [
+        "faded/04-Splice.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 4
+    },
+    {
+      "num": "05",
+      "title": "The Long Line",
+      "files": [
+        "faded/05-The-Long-Line.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 4
+    },
+    {
+      "num": "06",
+      "title": "The Answer",
+      "files": [
+        "faded/06-The-Answer.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 5
+    },
+    {
+      "num": "07",
+      "title": "Slack",
+      "files": [
+        "faded/07-Slack.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 3
+    },
+    {
+      "num": "08",
+      "title": "Tightest Weave",
+      "files": [
+        "faded/08-Tightest-Weave.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 3
+    },
+    {
+      "num": "09",
+      "title": "Fray",
+      "files": [
+        "faded/09-Fray.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 3
+    },
+    {
+      "num": "10",
+      "title": "Line Out",
+      "files": [
+        "faded/10-Line-Out.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 2
+    },
+    {
+      "num": "11",
+      "title": "Mend",
+      "files": [
+        "faded/11-Mend.src.mp3"
+      ],
+      "clipIds": [],
+      "fadeIntoNext": 5
+    },
+    {
+      "num": "12",
+      "title": "One Thread Again",
+      "files": [
+        "faded/12-One-Thread-Again.src.mp3"
+      ],
+      "clipIds": [
+        "3eb78406-3939-4a67-bbeb-8060698737ca"
+      ]
+    }
+  ],
+  "quoteCrossfade": 7,
+  "bridgeCrossfade": 4
+}

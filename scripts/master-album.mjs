@@ -34,8 +34,13 @@ const SPREAD = Number(M.maxSpreadLU ?? 14);
 const LEAD = Number(M.leadInSeconds ?? 0.5);
 const TAIL = Number(M.tailSeconds ?? 1.0);
 const PART_XF = Number(M.partCrossfade ?? 2);
-const QUOTE_XF = 2;    // intro/outro Bach-quote crossfade, fixed by spec (Task 23)
-const BRIDGE_XF = 1.5; // bridge Bach-quote crossfade, each side, fixed by spec
+// Bach-quote crossfades. These were 2s / 1.5s originally, which listening proved
+// to be a cut rather than a transition: a solo-piano quote stopping dead as a full
+// band starts reads as two different songs stitched together. A longer overlap lets
+// the body swell in under the quote's decay. Overridable per album via the manifest,
+// and per track via `quote.crossfade`.
+const QUOTE_XF = Number(M.quoteCrossfade ?? 2);
+const BRIDGE_XF = Number(M.bridgeCrossfade ?? 1.5);
 
 // ---- 1. decode + join parts (+ optional Bach quote) ------------------------
 const decoded = M.tracks.map((t, i) => {
@@ -49,12 +54,14 @@ const decoded = M.tracks.map((t, i) => {
   if (!quote) {
     joinParts(bodyFiles, partXfs, out);
   } else if (quote.position === 'intro') {
+    const qxf = Number(quote.crossfade ?? QUOTE_XF);
     // quote leads, then crossfades into the body -- reuses the plain multi-part join below,
     // just with the quote prepended and a 2s crossfade ahead of it
-    joinParts([quote.file, ...bodyFiles], [QUOTE_XF, ...partXfs], out);
+    joinParts([quote.file, ...bodyFiles], [qxf, ...partXfs], out);
   } else if (quote.position === 'outro') {
+    const qxf = Number(quote.crossfade ?? QUOTE_XF);
     // body crossfades into the quote, which ends the track -- same join, quote appended
-    joinParts([...bodyFiles, quote.file], [...partXfs, QUOTE_XF], out);
+    joinParts([...bodyFiles, quote.file], [...partXfs, qxf], out);
   } else if (quote.position === 'bridge') {
     // the only genuinely new mixing behaviour: join the body's own parts first (if any),
     // split THAT body's own midpoint (not the eventual track's, which doesn't exist yet),

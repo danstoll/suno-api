@@ -1,0 +1,155 @@
+[
+  {
+    "num": "02",
+    "title": "Cast",
+    "targetSeconds": 26,
+    "segments": [
+      {
+        "midi": "SonataIV.mid",
+        "bars": [
+          5,
+          10
+        ],
+        "qpm": 42,
+        "note": "Vivace 1-6 @ q42 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "04",
+    "title": "Splice",
+    "targetSeconds": 24,
+    "segments": [
+      {
+        "midi": "SonataIV.mid",
+        "bars": [
+          29,
+          34
+        ],
+        "qpm": 60,
+        "note": "Vivace 25-30 @ q60 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "05",
+    "title": "The Long Line",
+    "targetSeconds": 28,
+    "segments": [
+      {
+        "midi": "SonataIV-1.mid",
+        "bars": [
+          1,
+          3
+        ],
+        "qpm": 26,
+        "note": "Andante 1-3 @ q26 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "06",
+    "title": "The Answer",
+    "targetSeconds": 28,
+    "segments": [
+      {
+        "midi": "SonataIV-1.mid",
+        "bars": [
+          1,
+          3
+        ],
+        "qpm": 26,
+        "note": "Andante 1-3 @ q26 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "07",
+    "title": "Slack",
+    "targetSeconds": 31,
+    "segments": [
+      {
+        "midi": "SonataIV-1.mid",
+        "bars": [
+          13,
+          15
+        ],
+        "qpm": 23,
+        "note": "Andante 13-15 @ q23 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "08",
+    "title": "Tightest Weave",
+    "targetSeconds": 24,
+    "segments": [
+      {
+        "midi": "SonataIV-1.mid",
+        "bars": [
+          1,
+          3
+        ],
+        "qpm": 30,
+        "note": "Andante 1-3 @ q30 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "10",
+    "title": "Line Out",
+    "targetSeconds": 29,
+    "segments": [
+      {
+        "midi": "SonataIV-2.mid",
+        "bars": [
+          1,
+          16
+        ],
+        "qpm": 45,
+        "note": "UPA 1-16 @ dq30 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "11",
+    "title": "Mend",
+    "targetSeconds": 30,
+    "segments": [
+      {
+        "midi": "SonataIV-2.mid",
+        "bars": [
+          1,
+          11
+        ],
+        "qpm": 31.5,
+        "note": "UPA 1-11 @ dq21 (0.7x)"
+      }
+    ]
+  },
+  {
+    "num": "12",
+    "title": "One Thread Again",
+    "targetSeconds": 72,
+    "segments": [
+      {
+        "midi": "SonataIV.mid",
+        "bars": [
+          1,
+          4
+        ],
+        "qpm": 20,
+        "note": "Adagio @ q20"
+      },
+      {
+        "midi": "SonataIV-1.mid",
+        "bars": [
+          1,
+          2
+        ],
+        "qpm": 18,
+        "note": "Andante 1-2 @ q18"
+      }
+    ]
+  }
+]
