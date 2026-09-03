@@ -5,7 +5,10 @@
  *   node scripts/master-album.mjs --manifest the-long-line-master.json
  *
  * Steps (The Long Line v2 spec §10):
- *   1. decode every input to 44.1k stereo WAV; join multi-part tracks with a short crossfade
+ *   1. decode every input to 44.1k stereo WAV; join multi-part tracks with a short crossfade.
+ *      A track may also carry a Bach quote (Task 23): `quote: {file, position}` where
+ *      position is intro/outro (quote spliced onto the file list, reusing this same join)
+ *      or bridge (quote inserted at the joined body's own midpoint -- see step 1 below).
  *   2. measure integrated loudness + true peak (ebur128); one album gain puts the loudest
  *      track at truePeakDb; any track more than maxSpreadLU below the loudest is lifted to
  *      exactly that spread, then re-measured and limited if it now exceeds truePeakDb
@@ -31,19 +34,41 @@ const SPREAD = Number(M.maxSpreadLU ?? 14);
 const LEAD = Number(M.leadInSeconds ?? 0.5);
 const TAIL = Number(M.tailSeconds ?? 1.0);
 const PART_XF = Number(M.partCrossfade ?? 2);
+const QUOTE_XF = 2;    // intro/outro Bach-quote crossfade, fixed by spec (Task 23)
+const BRIDGE_XF = 1.5; // bridge Bach-quote crossfade, each side, fixed by spec
 
-// ---- 1. decode + join parts ------------------------------------------------
+// ---- 1. decode + join parts (+ optional Bach quote) ------------------------
 const decoded = M.tracks.map((t, i) => {
-  const files = t.files.map((f) => path.resolve(base, f));
-  for (const f of files) if (!existsSync(f)) throw new Error(`${t.num}: missing ${f}`);
+  const bodyFiles = t.files.map((f) => path.resolve(base, f));
+  for (const f of bodyFiles) if (!existsSync(f)) throw new Error(`${t.num}: missing ${f}`);
   const out = path.join(WORK, `${t.num}.wav`);
-  if (files.length === 1) {
-    ff(['-i', files[0], '-ar', '44100', '-ac', '2', '-c:a', 'pcm_f32le', out]);
+  const partXfs = bodyFiles.slice(1).map(() => PART_XF);
+  const quote = t.quote ? { ...t.quote, file: path.resolve(base, t.quote.file) } : null;
+  if (quote && !existsSync(quote.file)) throw new Error(`${t.num}: missing quote ${quote.file}`);
+
+  if (!quote) {
+    joinParts(bodyFiles, partXfs, out);
+  } else if (quote.position === 'intro') {
+    // quote leads, then crossfades into the body -- reuses the plain multi-part join below,
+    // just with the quote prepended and a 2s crossfade ahead of it
+    joinParts([quote.file, ...bodyFiles], [QUOTE_XF, ...partXfs], out);
+  } else if (quote.position === 'outro') {
+    // body crossfades into the quote, which ends the track -- same join, quote appended
+    joinParts([...bodyFiles, quote.file], [...partXfs, QUOTE_XF], out);
+  } else if (quote.position === 'bridge') {
+    // the only genuinely new mixing behaviour: join the body's own parts first (if any),
+    // split THAT body's own midpoint (not the eventual track's, which doesn't exist yet),
+    // then rejoin half1 + quote + half2 through the same join path
+    const bodyWav = path.join(WORK, `${t.num}.body.wav`);
+    joinParts(bodyFiles, partXfs, bodyWav);
+    const mid = probe(bodyWav) / 2;
+    const half1 = path.join(WORK, `${t.num}.half1.wav`);
+    const half2 = path.join(WORK, `${t.num}.half2.wav`);
+    ff(['-i', bodyWav, '-af', `atrim=end=${mid.toFixed(6)}`, '-ar', '44100', '-ac', '2', '-c:a', 'pcm_f32le', half1]);
+    ff(['-i', bodyWav, '-af', `atrim=start=${mid.toFixed(6)}`, '-ar', '44100', '-ac', '2', '-c:a', 'pcm_f32le', half2]);
+    joinParts([half1, quote.file, half2], [BRIDGE_XF, BRIDGE_XF], out);
   } else {
-    const inputs = files.flatMap((f) => ['-i', f]);
-    let chain = '', prev = '[0:a]';
-    files.slice(1).forEach((_, k) => { const o = `[p${k}]`; chain += `${prev}[${k + 1}:a]acrossfade=d=${PART_XF}:c1=tri:c2=tri${o};`; prev = o; });
-    ff([...inputs, '-filter_complex', chain.slice(0, -1), '-map', prev, '-ar', '44100', '-ac', '2', '-c:a', 'pcm_f32le', out]);
+    throw new Error(`${t.num}: unknown quote position "${quote.position}"`);
   }
   return { ...t, wav: out, index: i };
 });
@@ -129,6 +154,20 @@ console.log(`\nmaster ${fmt(masterLen)} → ${OUT}`);
 // ---------------------------------------------------------------- helpers
 function ff(a) { execFileSync('ffmpeg', ['-v', 'error', '-y', ...a], { stdio: 'inherit' }); }
 function probe(f) { return Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], { encoding: 'utf8' }).trim()); }
+// join N files end to end with an acrossfade between each adjacent pair; crossfades[k] is the
+// duration between files[k] and files[k+1]. Used for the plain multi-part `files` join, and
+// reused unchanged for intro/outro (quote spliced into the file list) and for bridge's final
+// half1+quote+half2 join -- one join implementation, three callers.
+function joinParts(files, crossfades, out) {
+  if (files.length === 1) {
+    ff(['-i', files[0], '-ar', '44100', '-ac', '2', '-c:a', 'pcm_f32le', out]);
+    return;
+  }
+  const inputs = files.flatMap((f) => ['-i', f]);
+  let chain = '', prev = '[0:a]';
+  files.slice(1).forEach((_, k) => { const o = `[p${k}]`; chain += `${prev}[${k + 1}:a]acrossfade=d=${crossfades[k]}:c1=tri:c2=tri${o};`; prev = o; });
+  ff([...inputs, '-filter_complex', chain.slice(0, -1), '-map', prev, '-ar', '44100', '-ac', '2', '-c:a', 'pcm_f32le', out]);
+}
 function measure(f) {
   // ffmpeg prints the ebur128 summary on stderr; spawnSync captures both streams
   const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', f, '-af', 'ebur128=peak=true', '-f', 'null', '-'], { encoding: 'utf8' });
