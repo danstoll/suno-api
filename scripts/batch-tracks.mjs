@@ -29,6 +29,10 @@
  *
  * "split" is only used by the default (make-track.mjs) pipeline; --oneshot
  * mode has no split step and ignores it.
+ *
+ *   Cover route: an entry with "coverClipId" (+ optional "audioWeight"), or
+ *   "parts": [{"coverClipId", "duration"}], runs make-cover-from-reference.mjs
+ *   instead of the oneshot script. See The Long Line v2 spec §9.
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -94,6 +98,7 @@ console.log(`\n  ${done}/${tracks.length} recorded`);
 // ---------------------------------------------------------------- helpers
 
 function runMakeTrack(t, dry) {
+  if (t.coverClipId || t.parts) return runCover(t, dry);
   const script = path.join(path.dirname(process.argv[1]), args.oneshot ? 'make-track-oneshot.mjs' : 'make-track.mjs');
   const a = ['--file', t.file, '--title', t.title];
   if (t.project) a.push('--project', t.project);
@@ -115,6 +120,37 @@ function runMakeTrack(t, dry) {
   console.log(`\n---------- ${t.title} ----------`);
   const r = spawnSync('node', [script, ...a], { stdio: 'inherit' });
   return r.status === 0;
+}
+
+/**
+ * Cover route (The Long Line v2): an entry with `coverClipId`, or with
+ * `parts: [{coverClipId, duration}]`, generates through
+ * make-cover-from-reference.mjs against a reference clip uploaded by hand.
+ * Each part becomes its own clip titled "<title> part k"; master-album.mjs
+ * joins parts later. Pacing and the captcha probe are the caller's, unchanged.
+ */
+function runCover(t, dry) {
+  const script = path.join(path.dirname(process.argv[1]), 'make-cover-from-reference.mjs');
+  const parts = t.parts ?? [{ coverClipId: t.coverClipId, duration: t.duration }];
+  let allOk = true;
+  parts.forEach((p, i) => {
+    const title = parts.length > 1 ? `${t.title} part ${i + 1}` : t.title;
+    const a = ['--cover-clip-id', String(p.coverClipId), '--lyrics-file', t.file, '--title', title];
+    if (t.project) a.push('--project', t.project);
+    a.push('--fade', String(t.fade ?? 0));
+    if (t['style-weight'] !== undefined) a.push('--style-weight', String(t['style-weight']));
+    if (t.weirdness !== undefined) a.push('--weirdness', String(t.weirdness));
+    if (t.audioWeight !== undefined) a.push('--audio-weight', String(t.audioWeight));
+    if (t.negative) a.push('--negative', t.negative);
+    const dur = p.duration ?? t.duration;
+    if (dur !== undefined) a.push('--duration', String(dur));
+    if (t.model) a.push('--model', t.model);
+    if (dry) a.push('--dry');
+    console.log(`\n---------- ${title} (cover) ----------`);
+    const r = spawnSync('node', [script, ...a], { stdio: 'inherit' });
+    if (r.status !== 0) allOk = false;
+  });
+  return allOk;
 }
 
 /** Ask Suno directly whether it is currently demanding a captcha. */
