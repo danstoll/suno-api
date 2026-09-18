@@ -96,6 +96,8 @@ unusual — weirdness and specificity compete for the same territory.
 | `/api/uploads/audio/{id}/initialize-clip/` | POST | Converts the finished upload into a real clip on the account — returns `{clip_id}`. From here it behaves like any other clip (has `set_metadata`, can be dragged into a Studio track) |
 | `/api/gen/{id}/set_metadata/` | POST | Sets title/image/ToS-acceptance on a clip — used right after `initialize-clip` to name the upload |
 | `/api/gen/{id}/aligned_lyrics/v3` | POST then GET | **A richer replacement for `/api/get_aligned_lyrics`.** POST `{lyrics, enable_augmentation:true}` starts an async alignment job (`{state:"running"}`); poll the same URL with GET until `{state:"complete", alignment:[...]}`. Unlike the old endpoint, you submit the lyrics text explicitly rather than relying on whatever Suno stored — and alignment comes back at phoneme/sub-word granularity with a `p_align` confidence score per token, not just per-word. Same bracket-bundling behavior as the old endpoint (a run of `[Section]`/direction tags collapses onto the next sung word's token) — this independently confirms `verify-coverage.mjs`'s `SECTION_RE` fix was the right diagnosis, not a new bug. Not yet wired into `verify-coverage.mjs`; the async job/poll shape is more integration work than the current one-shot GET for a benefit (confidence scores) this project hasn't needed |
+| `/api/gen/{id}/convert_wav/` | POST | **The real download mechanism since Suno retired MP3 download (2026-09-18).** Triggers WAV conversion. `204` on success, `402` means the account needs Suno Pro/Premier, `403` means this specific clip isn't WAV-convertible. Found by reading the Suno Explorer Chrome extension's own source (`shared/wav-api.js`), not by capture — worth re-finding by capture per `BROWSER-EXPLORATION-SCRIPT.md` to confirm the UI now surfaces this directly rather than it being hidden. Matches the `song_download_wav` achievement key already listed below |
+| `/api/gen/{id}/wav_file/` | GET | Poll after `convert_wav`. Body is `{}` while converting, gains a `wav_file_url` key (presigned S3 URL, plain fetchable, no auth needed) once ready. `suno-api/scripts/fade-out.mjs` implements the full trigger-then-poll flow |
 
 ### Seen in captures, not yet used
 
@@ -120,9 +122,44 @@ discoverable unless you say otherwise), and `filters` / `limit` on `feed/v3`.
 `/api/voice/`, `/api/voices/`, `/api/user/voices/`, `/api/feed/voices/`,
 `/api/profiles/me/personas/`, `/api/studio/personas/`
 
+### Known dead — do not retry
+
+`/api/gen/{id}/increment_action_count/` + polling `/api/download/clip/{id}?format=mp3|wav`
+— the old MP3/WAV download flow. Retired alongside Suno dropping MP3
+download entirely (2026-09-18). Now returns `{"ok":false,"reason":"not_authorized"}`
+regardless of format, on every clip, regardless of that clip's
+`is_download_unlocked` field — this is a dead endpoint, not a per-clip or
+per-account permission gap. Use `convert_wav` / `wav_file` above instead.
+
 ### Adding a clip to a playlist
 
-Still unknown. Five endpoint shapes all returned 405. Needs a capture.
+Still unknown after two rounds of guessing (2026-09-14 and 2026-09-18). **Stop
+guessing paths — the next attempt must be a real browser capture**, per
+`BROWSER-EXPLORATION-SCRIPT.md`. Reasoning below explains why guessing is a
+dead end here specifically, not just unlucky.
+
+`/api/playlist/{id}` is a real route but **only implements GET** — confirmed
+2026-09-18 by creating a live throwaway playlist (`f3907fff-...`, "Vombatus
+Test Delete Me", still sitting on the account, empty, private — no DELETE
+verb on this route either, so it can't be cleaned up via API) and getting
+`405` on PUT/PATCH/DELETE against it. This matters because **any single-
+segment guess under `/api/playlist/` — real or not — also lands on this same
+`{id}` handler** (e.g. `/api/playlist/add-clip` 405s not because "add-clip"
+is a real action, but because the router reads it as `{id}="add-clip"` and
+hits the GET-only handler). A 405 on a one-segment playlist path is
+therefore **not evidence the path is real** — both rounds of "five shapes
+all returned 405" were most likely this same false-positive, not five near-
+misses. Two-segment guesses (`/api/playlist/{id}/clips`, `/api/playlist/{id}/songs`)
+gave real 404s instead, and a clip-centric guess
+(`/api/gen/{id}/add_to_playlist/`) also 404'd. The real endpoint's shape is
+simply not guessable from Suno's existing naming conventions — it needs to be
+read off an actual network request while a human clicks "add to playlist" in
+the UI.
+
+The playlist object itself (from `/api/playlist/create`, `{name}` body) does
+carry `is_public` and `is_hidden` fields directly on it, so once clip-adding
+is solved, making a playlist public is likely a normal field update on
+whatever the update endpoint turns out to be — not a separate mystery.
 
 ## Verification (the `browser-token` header)
 
@@ -339,7 +376,84 @@ surgical single-stem edits ("just the bass, just this 8 bars") that
 `render-state`+`infill` can't target cleanly, but not a near-term win for the
 scripted single-shot generate pipeline this project runs today.
 
+### Studio 2.0 concrete facts (2026-09-17, unofficial fan guide — unverified, worth testing before relying on)
+
+Sourced from lilsynn.com/Suno, a fan-maintained guide backed by a public
+GitHub repo, generated 2026-09-17 — more organized than a forum post but
+still unofficial; treat every number here as "worth testing," not confirmed.
+
+- **Studio exports/downloads reportedly don't count against the normal
+  monthly download quota** — Premier Studio can export 32-bit/48kHz
+  multitrack + stems "without the normal download limitations." **Worth
+  testing directly against this account's quota** (documented above under
+  Worth knowing — was at 46/60 used, 7 bonus remaining as of 2026-09-18): if
+  true, routing remaining Vombatus downloads through a Studio export instead
+  of the regular per-clip download avoids the quota entirely.
+- **All three v6 models cap at 8 minutes per generation** (`v6`, `v6-wild`
+  Pro/Premier-only; `v6-mini` free-tier). Cuts it close for Contrapunctus
+  track 9 (Duration 8:00 exactly, per its README) — worth confirming that
+  track actually rendered to length rather than getting truncated.
+- **Stem-separation credit costs:** Auto Split 50 credits/extraction (≤12
+  categories); Split from Mix and Advanced Split both 10 credits/stem
+  (Advanced Split, ~100 instrument categories, is Premier-only).
+- **Every generation produces exactly two takes**, held in Take Lanes.
+- **Remaster has three variation settings**: Subtle / Normal (default) /
+  High.
+- **Custom Models:** max 3 private models per account, minimum 6
+  owned-rights songs required to train one, ~2-5 minutes to train.
+- **Voice cloning:** record 15 seconds to 4 minutes, then the *best 2-minute
+  window* of that recording becomes the actual voice profile, not the whole
+  clip.
+- **Studio 1.x was slated for deprecation "around early September 2026"** —
+  work done with 2.0-only features (effects, automation, MIDI, synths)
+  reportedly does not round-trip back to a 1.x project.
+- **Rights:** paid commercial-use rights only cover songs *downloaded while
+  subscribed* — subscribing later doesn't retroactively cover something
+  downloaded on the free tier. Relevant if any catalogue track was ever
+  pulled down before a subscription was active.
+- **A documented "audio recreation" rescue recipe** for salvaging a
+  degraded/bad-quality take from a reference: **v6-mini only**, Sample mode,
+  entire-song sample length, Weirdness 0%, Style Influence 85%, Audio
+  Influence 85%, Max Mode on, Personalize off, lyrics box = original lyrics
+  only, style box = one long fixed preservation-plus-quality prompt (ask the
+  guide's own text for the exact wording if this is ever tried). Claimed to
+  fix distortion/clipping, vocal-timbre drift and mud from a degraded
+  source — untested here, but a concrete enough recipe to be worth a try
+  before writing off an otherwise-good old take.
+- **Fake tags a fan guide explicitly warns not to trust**, because they read
+  like real parameters but aren't: `[VOCAL_LOCK: TRUE]`, `[STEREO_WIDTH:
+  90]`, `[EQ: +3DB@8KHZ]`, `[SEED: 12345]`. Worth knowing so a future session
+  doesn't burn a generation testing one of these as if it were a real
+  control.
+
 ## Worth knowing before trusting a result
+
+- **A burst of requests trips Suno's own rate limit, not just this proxy's.**
+  Checking `is_liked` on ~110 clips across 4 projects (one `/api/clip/{id}`
+  call per clip, roughly one every 300-400ms, no bigger gaps) got a real
+  `429` from Suno partway through (surfaced by the local proxy as a plain
+  `500` — the underlying `429` only showed up by reading the proxy's own
+  error body, `{"error":"...status code 429"}`). Once tripped, it wasn't
+  scoped to the endpoint being hammered — even `/api/billing/info/` started
+  500ing too, meaning the whole account/IP was rate-limited, not just the
+  hot path. Cool-down time unmeasured (2026-09-18, first time this was hit).
+  Lesson: pace bulk per-clip checks a lot more conservatively than "as fast
+  as fetch allows," and if a check starts failing, stop rather than retrying
+  into the same limit — a live browser tab as the same account may also be
+  affected while it's in effect.
+
+  **Tried again slower (600ms between clips, 1.5s between projects, 4 retries
+  with backoff per failure) — still failed the same way.** More than half the
+  `/api/clip/{id}` checks 500'd across a 109-clip run, and it still hard-crashed
+  partway through the 4th project. The retry-with-backoff logic likely made it
+  *worse*, not better: each failed check burned up to 4 more requests into a
+  limit that was already tripped, rather than backing off from it. **Bulk
+  per-clip `is_liked` scanning across a whole catalogue is the wrong tool for
+  this job, full stop** — don't reach for it again. The thing that actually
+  worked earlier in this catalogue's history was simpler: ask the human
+  directly which album they've finished their own "liking" pass on (they're
+  the one doing it), the way Tombeau's "eg I have complete the Tombeau albom"
+  was taken at face value and acted on directly, no bulk verification needed.
 
 - **`/api/feed/v3` ignores filters it doesn't recognise.** Four different bogus
   project filters each returned five clips. Use `/api/project/{id}`.
