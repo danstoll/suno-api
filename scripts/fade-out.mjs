@@ -19,7 +19,10 @@
  *   --curve NAME  ffmpeg fade curve; default qsin. See note below.
  *   --tail N      also trim N seconds of dead air off the end first
  *   --api URL     suno-api base; default http://localhost:3060
- *   --format wav|mp3  download format; default mp3
+ *
+ * Downloads always come from Suno as WAV now (MP3 downloads were
+ * discontinued 2026-09) and get re-encoded to mp3 below like everything
+ * else in this pipeline expects.
  *
  * On the curve: measured per-second RMS across a 7s fade on a real track --
  *   qsin  holds level ~3s then eases out, silent exactly at the end   <- default
@@ -41,7 +44,6 @@ const API = args.api ?? 'http://localhost:3060';
 const FADE = Number(args.seconds ?? 6);
 const TRIM_TAIL = Number(args.tail ?? 0);
 const CURVE = typeof args.curve === 'string' ? args.curve : 'qsin';
-const FORMAT = args.format === 'wav' ? 'wav' : 'mp3';   // Suno's download endpoint; WAV availability is probed in The Long Line v2 Task 15
 
 if (!args.clip && !args.file) {
   console.error('Need --clip <id> or --file <path>. See header for usage.');
@@ -76,64 +78,61 @@ if (args.clip) {
   if (!clip) throw new Error(`No clip found for ${args.clip} (status: ${clip?.status ?? 'unknown'})`);
   label = sanitise(clip.title || args.clip);
 
-  // Both of Suno's obvious download fields are dead ends as of 2026-08-28:
-  // `audio_url` now returns a literal `.../api/forbidden` placeholder for
-  // API-originated requests, and `media_urls[]`'s cdn1.suno.ai entry 403s
-  // with a CloudFront "MissingKey" error (needs a signed cookie we don't
-  // have); its *.cloudfront.net entry 200s but the bytes are encrypted
-  // garbage. The real mechanism, found via a live capture of the web UI's
-  // actual Download button (scripts/capture-suno-requests.js):
-  //   1. POST /api/gen/{id}/increment_action_count/  {action:"download_audio",
-  //      download_source:"clip_page"} — appears to kick off server-side
-  //      rendering (best-effort here; a fresh clip may need it, an
-  //      already-downloaded one may not, so failure here isn't fatal).
-  //   2. GET /api/download/clip/{id}?format=mp3 — poll until the body's
-  //      `status` flips from "processing" to "ready", at which point it
-  //      carries a `download_url`: a normal, temporary, presigned S3 URL
-  //      (AWSAccessKeyId/Signature/Expires query params) good for a few
-  //      minutes and fetchable with a plain unauthenticated request.
-  // Both calls go through /api/raw since neither is wrapped. Verified
-  // end-to-end same day: downloaded and ffprobe'd a real, valid mp3 this way.
+  // 2026-09-18: Suno discontinued MP3 downloads and retired the
+  // increment_action_count + /api/download/clip flow this script used to
+  // use (it now 401s "not_authorized" regardless of format — that is NOT a
+  // per-clip permission the account is missing, it's a dead endpoint).
+  // Two false leads ruled out first: media_urls[]'s cloudfront.net entry
+  // still 200s with plausible headers but the bytes are corrupt ("moov atom
+  // not found"); a per-clip `is_download_unlocked` field on GET /api/clip
+  // looked like the gate but was a red herring — it has no bearing on the
+  // endpoint below.
+  //
+  // The real current mechanism, read out of the Suno Explorer extension's
+  // own source (shared/wav-api.js, shared/wav-queue.js — a real Chrome
+  // extension the user pointed at, not observed via network capture this
+  // time): WAV only, no MP3 equivalent exists.
+  //   1. POST /api/gen/{id}/convert_wav/ — kicks off conversion. 204 on
+  //      success; 402 means the account needs Suno Pro/Premier; 403 means
+  //      this specific clip isn't WAV-convertible.
+  //   2. GET /api/gen/{id}/wav_file/ — poll; body is `{}` while converting,
+  //      then gains a `wav_file_url` key: a presigned S3 URL, fetchable with
+  //      a plain unauthenticated request. Verified end-to-end 2026-09-18:
+  //      real playable 16-bit/48kHz PCM WAV, correct duration, matches
+  //      source. (The `_paid_wm` in the S3 key name is not an audible
+  //      watermark — checked.)
+  // Both calls go through /api/raw since neither is wrapped.
   try {
-    await rawPost(`/api/gen/${args.clip}/increment_action_count/`,
-      { action: 'download_audio', download_source: 'clip_page' });
+    await rawPost(`/api/gen/${args.clip}/convert_wav/`, null);
   } catch (err) {
-    console.warn(`  (increment_action_count failed, continuing anyway: ${err.message})`);
+    if (/\b402\b/.test(err.message)) throw new Error(`WAV requires Suno Pro or Premier: ${err.message}`);
+    if (/\b403\b/.test(err.message)) throw new Error(`Clip ${args.clip} is not WAV-convertible: ${err.message}`);
+    console.warn(`  (convert_wav trigger failed, polling anyway in case it's already converted: ${err.message})`);
   }
 
   let downloadUrl;
   let lastPollError;
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 40; i++) {
     let d;
     try {
-      d = await rawGet(`/api/download/clip/${args.clip}?format=${FORMAT}`);
+      d = await rawGet(`/api/gen/${args.clip}/wav_file/`);
     } catch (err) {
       // A single flaky poll (dev-server hiccup, transient network blip)
-      // shouldn't kill the whole 60s budget — note it and keep polling.
+      // shouldn't kill the whole budget — note it and keep polling.
       lastPollError = err;
-      console.warn(`  (poll ${i + 1}/30 failed, retrying: ${err.message})`);
-      await new Promise((r) => setTimeout(r, 2000));
+      console.warn(`  (poll ${i + 1}/40 failed, retrying: ${err.message})`);
+      await new Promise((r) => setTimeout(r, 3000));
       continue;
     }
-    if (d?.status === 'ready' && d?.download_url) { downloadUrl = d.download_url; break; }
-    // Only "processing" is a known in-progress state (per the live capture).
-    // Anything else — an error status, ok:false, ready-without-a-url — is
-    // not something more waiting will fix, so surface it immediately rather
-    // than burning the full 60s to report the same unhelpful timeout.
-    if (d?.status && d.status !== 'processing') {
-      throw new Error(`Unexpected download status for clip ${args.clip}: ${JSON.stringify(d).slice(0, 300)}`);
-    }
-    if (d && d.ok === false) {
-      throw new Error(`Download request rejected for clip ${args.clip}: ${JSON.stringify(d).slice(0, 300)}`);
-    }
-    await new Promise((r) => setTimeout(r, 2000));
+    if (d?.wav_file_url) { downloadUrl = d.wav_file_url; break; }
+    await new Promise((r) => setTimeout(r, 3000));
   }
   if (!downloadUrl) {
     const suffix = lastPollError ? ` (last poll error: ${lastPollError.message})` : '';
-    throw new Error(`Download never became ready for clip ${args.clip} after 60s${suffix}`);
+    throw new Error(`WAV conversion never finished for clip ${args.clip} after 120s${suffix}`);
   }
 
-  input = path.join(outDir, `${label}.src.${FORMAT}`);
+  input = path.join(outDir, `${label}.src.wav`);
   console.log(`Downloading "${clip.title}" (${clip.duration}s)...`);
   const audio = await fetch(downloadUrl);
   // The URL carries temporary AWS SigV2 query params — drop them from any
