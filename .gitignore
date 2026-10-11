@@ -72,3 +72,7 @@ master/
 
 # local semgrep guardian auth/session state, not project source
 .semgrep/
+
+# python cache and rendered audio
+__pycache__/
+quotes/*.mp3

@@ -8,26 +8,36 @@ found on 2026-09-18.
 
 ## Priority tests (do these first, before the general walkthrough below)
 
-### Test A — Studio export vs. download quota
+### Test A — Studio export vs. download quota, AND whether opening Studio itself costs credits
 
 A fan guide claims Premier's Studio export doesn't count against the normal
-monthly download quota (this account was at 46/60 used, 7 bonus remaining,
-as of 2026-09-18 — checked directly via `/api/billing/info/`). This is worth
-confirming before relying on it for the remaining Vombatus downloads.
+monthly download quota. Separately, the human has direct experience that
+just **opening** a track in Studio can itself chew credits, before any
+export happens — worth isolating that cost too, not just the export/quota
+question. Live baseline, checked 2026-09-19 via `/api/billing/info/`:
+`download_usage.current_period_downloads_used: 58` (limit 60, plus 7 bonus),
+`monthly_usage: 2147` (limit 10000 credits). The chat session running this
+will re-check that same endpoint before and after each step below and
+report the deltas back — the desktop agent doesn't need to call the API
+itself, just narrate each step clearly and pause briefly after each one so
+the numbers can be captured in between.
 
-1. Note: don't bother re-checking the current download count yourselves —
-   the account may currently be rate-limited from an unrelated bulk check
-   (see `suno-api/CAPABILITIES.md`'s "Worth knowing" section, 2026-09-18
-   entry) and hammering `/api/billing/info/` again right after a 429 makes
-   it worse, not better. Whoever picks this up in chat will check the
-   before/after count once the rate limit has had time to clear.
-2. Open any track, click `open_in_studio` (or however "Open in Studio" is
-   currently labelled) to open it as a Studio project.
-3. Use Studio's own **Export** function (not the regular track-level
-   Download button) to export the track — try a full-song WAV export first.
-4. Report back exactly what export options Studio offered and which one was
-   used, so the download count can be checked against the right kind of
-   export afterward.
+1. **Pause here.** Say "about to open a track in Studio" and stop — the
+   chat session will snapshot billing info first.
+2. Open any one Vombatus track, click `open_in_studio` (or however "Open in
+   Studio" is currently labelled) to open it as a Studio project. Report
+   back once the project is actually open, before touching anything else.
+3. **Pause here.** Say "Studio project is open, nothing else clicked yet" —
+   this isolates whether opening alone cost anything.
+4. Use Studio's own **Export** function (not the regular track-level
+   Download button) to export the track — try a full-song WAV export
+   first. Note every export option offered (format, bit depth, stems vs.
+   full mix) before picking one.
+5. **Pause here.** Say "export done, format was X" — final snapshot compares
+   both the credit balance and the download count against the export
+   actually used.
+6. Report back exactly what export options Studio offered and which one was
+   used, so the numbers can be matched to the right kind of export.
 
 ### Test B — find the "add a song to a playlist" endpoint
 

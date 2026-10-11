@@ -1,0 +1,209 @@
+[
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\01 Prélude non mesuré (Radio Check).mp3",
+    "text": {
+      "TXXX": "comment\u0000Suno base track with hand-added ElevenLabs radio-check intro + hiss/squelch SFX",
+      "TIT2": "Prelude non mesure (Radio Check)",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TRCK": "1/10",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2533120,
+      "sha256": "b776ae7f2eb0a4a2e462cdb054db99e0832664cde79007cdab1fa918253420f5"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\02 Ouverture (The Parade).mp3",
+    "text": {
+      "TXXX": "lyrics-eng\u0000[Call | a single distant unaccompanied brass call, alone, echoing]\n[Ouverture | slow ceremonial 4/4, heavy dotted rhythms, harpsichord and strings, D major, grand]\n[Procession | full orchestra at its most stately, everything correct and polished]\n[Turn | the dotted rhythm tightens, strings sharpen, something underneath is wrong]\n[Fugue | fast 6/8 at 168 BPM, distorted guitars enter with the fugue subject, double-kick]\n[Unison | harpsichord and lead guitar play fast runs in exact unison, virtuosic, relentless]\n[Too Fast | tempo pushes, the playing gets tighter and harder, D minor, strained]\n[Outro | the ceremonial dotted rhythm returns, worn out and slower, ending on a bleak D minor chord] | comment\u0000made with suno; created=2026-09-16T21:12:14Z; id=0537527b-c287-4ba9-a3e7-a8ec5cc98d38",
+      "TIT2": "Ouverture (The Parade)",
+      "TCON": "Baroque Progressive Metal",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TRCK": "2/10",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2473025,
+      "sha256": "a7df499868420039d9d38e4a631ff3e92f335defb59d7be6cf0345dd3c477928"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\03 Tambourin (Wet Season).mp3",
+    "text": {
+      "TXXX": "comment\u0000Suno base track with hand-added ElevenLabs SFX layer",
+      "TIT2": "Tambourin",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TRCK": "3/10",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2341907,
+      "sha256": "94e89d3897b9eb15fbd46a2636f95048919be6ae8a0155df14fb5bf0d363401d"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\04 Les Barricades (What I Don't Say).mp3",
+    "text": {
+      "TXXX": "lyrics-eng\u0000[Rondeau | harpsichord alone, broken chords circling gently in 3/4, B flat major]\n[Couplet | clean tapped guitar takes the pattern, harpsichord answers, warm and interlocking]\n[Rondeau | the opening theme returns exactly as before]\n[Couplet | piano and cello join, richer, still circling, a faint static drone appears underneath]\n[Rondeau | the theme returns again, unchanged, while the drone grows]\n[Couplet | the loveliest section, guitar and harpsichord in full flow, the drone now clearly audible]\n[Outro | the theme one last time, gentle and untroubled, the drone louder than the melody, then cut] | comment\u0000made with suno; created=2026-09-16T21:12:59Z; id=c357fa38-8e25-466d-be7d-0332367d73d9",
+      "TIT2": "Les Barricades (What I Don't Say)",
+      "TCON": "Baroque Progressive Metal",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TRCK": "4/10",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2501074,
+      "sha256": "0fd477f1aff3d8cabfd2f9494db482f8cc482d76a1a6fef64a04337148d7b942"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\05 Trois Heures (Three in the Morning).mp3",
+    "text": {
+      "TXXX": "comment\u0000Suno base track with hand-added ElevenLabs SFX layer",
+      "TIT2": "Trois Heures",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TRCK": "5/10",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 1917898,
+      "sha256": "d20bd8ddf3934a732570eead6a8d2ea33136e3c1e1146e9631d1a0d526a2bce2"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\06 Sarabande pour les Vivants (Still Here).mp3",
+    "text": {
+      "TXXX": "comment\u0000made with suno; created=2026-09-18T17:59:40Z; id=e13114b6-49fd-48ab-9cb9-5749bba067aa",
+      "TRCK": "6",
+      "TIT2": "Sarabande pour les Vivants (Still Here)",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TCON": "Baroque Progressive Metal",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2219922,
+      "sha256": "1c63dfa15bf440ab1e577c77fdb8bcfeb158ac85bad729f5c6aeee0cb0c867d2"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\07 Tombeau (After).mp3",
+    "text": {
+      "TYER": "2026",
+      "TALB": "Tombeau",
+      "TXXX": "comment\u0000Suno base track with hand-added ElevenLabs SFX layer",
+      "TIT2": "Tombeau",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TCON": "Baroque Progressive Metal",
+      "TRCK": "7/10",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2385275,
+      "sha256": "506f6a8b9d86a62d24178656b6e06643b6468428f19be0ca61dce2b5270c2ce7"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\08 Passacaille (The Work).mp3",
+    "text": {
+      "TXXX": "comment\u0000made with suno; created=2026-09-18T17:46:36Z; id=ddfa25bc-e92a-4603-bd05-114d37c4a6a4",
+      "TRCK": "8",
+      "TIT2": "Passacaille (The Work)",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TCON": "Baroque Progressive Metal",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2708734,
+      "sha256": "ffd687bb9c076aa11ba2cbddf58d4e965df354f725bf07c69785203f4c1e5133"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\09 Gigue (Still Here).mp3",
+    "text": {
+      "TXXX": "comment\u0000made with suno; created=2026-09-18T18:01:43Z; id=93b3ed5e-912d-490e-8698-7262b8021944",
+      "TRCK": "9",
+      "TIT2": "Gigue (Still Here)",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TALB": "Tombeau",
+      "TCON": "Baroque Progressive Metal",
+      "TYER": "2026",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2773810,
+      "sha256": "e9ff188a272aa7f41cbe96bf3a933ad0edd33648069910df12998fea4ce40b5b"
+    },
+    "written": null
+  },
+  {
+    "file": "R:\\Music\\Vombatus\\Tombeau\\10 Menuet (Ordinary Tuesday).mp3",
+    "text": {
+      "TYER": "2026",
+      "TALB": "Tombeau",
+      "TXXX": "comment\u0000Suno base track with hand-added ElevenLabs SFX layer",
+      "TIT2": "Menuet",
+      "TPE1": "Vombatus",
+      "TPE2": "Vombatus",
+      "TCON": "Baroque Progressive Metal",
+      "TRCK": "10/10",
+      "TSSE": "Lavf61.7.100"
+    },
+    "apic": {
+      "mime": "image/png",
+      "picType": 3,
+      "bytes": 2609717,
+      "sha256": "a166d757fe9e26ec4adcd96231e30cd8181791a1d9f63daabf0d3377f25b16f1"
+    },
+    "written": null
+  }
+]

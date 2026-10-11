@@ -90,7 +90,7 @@ go stale together — rotating one means rotating the other.
 | Var | Purpose |
 |-----|---------|
 | `SUNO_COOKIE` | Suno session cookie. **Rotates** — see below. |
-| `SUNO_MODEL` | Overrides the default `mv` model. Blank = `chirp-fenix`. |
+| `SUNO_MODEL` | Overrides the default `mv` model. Blank = `chirp-hawk`. |
 | `TWOCAPTCHA_KEY` | 2captcha.com key for automatic captcha solving. **Funded** — $20 balance as of 2026-08-04. |
 | `MANUAL_CAPTCHA` | `unset`/`false` = auto only · `true` = manual only · `fallback` = auto, then manual on error |
 | `BROWSER_HEADLESS` | `true` normally; manual mode forces visible for the request. |
@@ -174,8 +174,8 @@ third-party code that handles account credentials. Read it properly before adopt
 ## Default model
 
 Upstream pinned `chirp-v3-5` (Suno v3.5, ~2024) and never moved it. This fork
-defaults to **`chirp-fenix`** (Suno v5.5, released 2026-03-26) and makes it
-overridable via `SUNO_MODEL` — Suno ships codenames faster than we can track.
+tracks Suno's newest model instead and makes the choice overridable via
+`SUNO_MODEL` — Suno ships codenames faster than we can track by hand.
 
 Known `mv` values, oldest → newest:
 
@@ -187,17 +187,48 @@ Known `mv` values, oldest → newest:
 | `chirp-auk` | v4.5 |
 | `chirp-bluejay` | v4.5+ |
 | `chirp-crow` | v5.0 |
-| `chirp-fenix` | v5.5 ← default |
+| `chirp-fenix` | v5.5 |
+| `chirp-hawk` | v6.0 ← default |
 
 Defined at `DEFAULT_MODEL` in [src/lib/SunoApi.ts](src/lib/SunoApi.ts). A
 per-request `model` field overrides the default. An unrecognised `mv` is rejected
 by Suno rather than silently downgraded — if generation starts failing right
 after a Suno release, try setting `SUNO_MODEL` to the previous codename.
 
-**Verified against the live API on 2026-08-02**: `POST /api/generate` returned
-`"model_name":"chirp-fenix"` echoed back by Suno, ran through
-`queued → streaming → complete`, and produced a playable 4.4MB MP3. The codename
-came from third-party docs originally; this confirms Suno itself accepts it.
+**`chirp-hawk` verified from a live browser capture, 2026-09-13.** A manual
+create on suno.com sent `mv: "chirp-hawk"` on `POST /api/generate/v2-web/`.
+The clip came back with `major_model_version: "v6"` and a `V6` UI badge, and
+`uses_latest_model: true`. This is a real capture, not a guess — see
+`scripts/capture-suno-requests.js` for how to take one yourself.
+
+**v6 is a family, not one model.** The create-menu screen shows three tiers:
+"v6 Pro" (checked by default — "Powerful. Versatile. Refined."), "v6-wild"
+("Best for experimental ideas"), and "v6-mini" (free, "more efficient"). The
+capture above only covers "v6 Pro". `chirp-hawk` is confirmed as that one
+tier's `mv` value; the codenames for v6-wild and v6-mini are still unknown —
+pick each one in the UI and capture a generate call to learn them.
+
+**`GET /api/session`'s `models[]` list changed shape the same day.** It now
+returns only 5 entries — `chirp-v2-xxl-alpha` through `chirp-auk` (v4.5) — with
+`is_default_model: false` on every one. `chirp-fenix`, `chirp-crow`,
+`chirp-bluejay` and the old `chirp-goose` early-access codename are gone from
+that list. Two readings fit the data: Suno stopped listing current-generation
+models there and kept only legacy downgrade options, or this account's live
+model is now chosen by a mechanism `models[]` does not describe at all. Either
+way, do not use `models[]` alone to pick `DEFAULT_MODEL` any more — confirm
+against a real capture, as above.
+
+**`chirp-fenix` is UNVERIFIED as a per-request `mv` value against the current
+API.** It worked on 2026-08-02 (see below), but that was before the v6
+cutover. It has not been re-tested since. If a script pins `SUNO_MODEL` or
+`model` to `chirp-fenix` and generation starts failing, this is the first
+thing to check.
+
+**Old verification, now superseded.** Verified against the live API on
+2026-08-02: `POST /api/generate` returned `"model_name":"chirp-fenix"` echoed
+back by Suno, ran through `queued → streaming → complete`, and produced a
+playable 4.4MB MP3. The codename came from third-party docs originally; this
+confirmed Suno itself accepted it, at the time.
 
 ## Endings cut abruptly — fix locally, not with credits
 
@@ -250,6 +281,16 @@ writing a Studio project version. Local post-processing is deterministic, free,
 and works on every track including ones already exported.
 
 ## Recording an album, end to end
+
+**Plan the whole album in one doc before generating anything — see
+[ALBUM-TEMPLATE.md](ALBUM-TEMPLATE.md).** Album-level sections (concept,
+track table with Key/Time/BPM/Lead columns, sequencing, global settings,
+generation order, known risks) plus one section per track (style prompt,
+lyrics, settings, notes). Two headings in the per-track section are not
+optional — `## Suno Style Prompt` as a blockquote and `## Lyrics` — the
+generation script below parses those exact headings. Confirmed 2026-09-13:
+naming a specific key (`C major`, not just "major key") in the style prompt
+actually steers Suno; the vague version wastes the slot.
 
 **Default to single-shot generation for anything under ~4 minutes — not the
 split pipeline.** Suno's own docs say v4.5 supports up to an 8-minute first
@@ -416,10 +457,12 @@ Suno's changelog by hand; ask the API.
 Useful limits it reports: v5+ models accept `prompt` 5000 / `tags` 1000 /
 `title` 100 chars; v4 and v3.5 only `prompt` 3000 / `tags` 200.
 
-> **`chirp-goose` (v6) exists** and is listed for this account, but Suno
-> describes it as *"Early access model"*. The default stays `chirp-fenix`
-> deliberately — early-access models change without notice. Try it with
-> `SUNO_MODEL=chirp-goose`; revert if generations get strange.
+> **v6 shipped for real, under a new codename.** `chirp-goose` was the
+> early-access v6 codename and is gone now. A live capture on 2026-09-13
+> (manual create on suno.com) showed the real, general-release codename is
+> `chirp-hawk` — see "Default model" above. `models[]` here does not list it
+> at all any more; do not expect this endpoint to announce the next version
+> the same way.
 
 ### Replace Section is a condition, not an endpoint
 
@@ -523,6 +566,33 @@ The same payload carries slots this fork does not yet expose: `persona_id`,
 `user_uploaded_images_b64`. Captcha is checked separately via
 `POST /api/c/check {"ctype":"generation"}` → `{"required":false,...}`; when not
 required, `token` is simply `null`.
+
+**Two more fields, confirmed in the 2026-09-13 v6 capture:**
+
+- A top-level `duration` in seconds (180 and 220 seen). This is a real
+  request field, not just text read off the tags — it matches the new
+  "Duration" slider in the redesigned create panel's More Options.
+- A **third audio-reference mode**, alongside `cover_clip_id` and
+  `artist_clip_id`: `task: "playlist_condition"` with `playlist_id:
+  "inspiration"` (a sentinel string, not a real playlist id — the resulting
+  clip's own `playlist_id` comes back as the all-zero UUID) and
+  `playlist_clip_ids: ["<clip id>"]`. Confirmed end to end: one capture ran
+  two creates from the same prompt, one with this field set and one without.
+  The one WITH it named clip `0a46e104-...` — the existing track "07 please
+  and thank you" — as the reference, paired with `control_sliders.audio_weight:
+  0.5`. This is what the UI calls **Audio Influence**: attach an existing
+  track, then set how much it steers the new one via `audio_weight`. Neither
+  `task` nor `playlist_id`/`playlist_clip_ids` is sent by this fork today.
+
+Same capture's More Options panel also showed **Weirdness**, **Style
+Influence** and **Variety** sliders plus a **Personalize (My Taste)** toggle.
+The first two map to already-known fields — `control_sliders.weirdness_constraint`
+and `control_sliders.style_weight`. Variety likely maps to
+`control_sliders.aug_creativity` (seen as `0` and `2` across creates, which
+tracks a Low/Medium/High-style control rather than a percentage) but that is
+not yet pinned down against a specific slider value — worth confirming on the
+next capture. **Personalize** sent no field in either capture here, because it
+was left off; toggle it on in a future capture to learn its name.
 
 ### Live web-client capture, 2026-08-04
 
@@ -656,6 +726,8 @@ Interactive docs: `http://localhost:3060/docs` (Swagger UI, served by the app).
   dropped the obsolete `version:` key.
 - **`ecosystem.config.js`** added for the native PM2 run.
 - **Default model** `chirp-v3-5` → `chirp-fenix`, env-overridable. Swagger docs updated.
+- **Default model bumped again** `chirp-fenix` → `chirp-hawk` (Suno v6), 2026-09-13,
+  after a live capture confirmed the real codename. See "Default model" above.
 - **Cherry-picked upstream PR [#277](https://github.com/gcui-art/suno-api/pull/277)** —
   `MANUAL_CAPTCHA` mode. Fixes issue [#263](https://github.com/gcui-art/suno-api/issues/263):
   Suno's v5.5 UI dropped the `.custom-textarea` selector the automated captcha

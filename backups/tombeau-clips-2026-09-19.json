@@ -1,0 +1,4297 @@
+{
+  "captured_at": "2026-09-20T02:21:34.918Z",
+  "note": "Read-only snapshot taken before the cover-art batch run. Includes track 9 (Gigue), which is not on the playlist.",
+  "playlist_v1": {
+    "entity_type": "playlist_schema",
+    "id": "0cee9fe6-91fc-4d1e-bfae-e7035ad99ebc",
+    "name": "Tombeau",
+    "playlist_clips": [
+      {
+        "clip": {
+          "status": "complete",
+          "title": "1. Prélude non mesuré (Radio Check)",
+          "play_count": 5,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "49b5a27d-e95f-4fed-a23f-ca8e15d68619",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/49b5a27d-e95f-4fed-a23f-ca8e15d68619.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_49b5a27d-e95f-4fed-a23f-ca8e15d68619.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_49b5a27d-e95f-4fed-a23f-ca8e15d68619.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Solo French Baroque harpsichord, instrumental, unmeasured prelude with no bar lines and no fixed tempo, D minor, free rubato, spread rolled chords, delicate ornaments and mordents, long silences between gestures, intimate close-mic with audible key and quill action, resonant wooden room, faint radio static and a single squelch break at the very opening, contemplative, suspended, tender, unhurried",
+            "negative_tags": "drums, percussion, guitar, bass, electronic beat, vocals, strict tempo, orchestra",
+            "prompt": "[Intro | the hiss of an open radio net, one squelch break, then silence]\n[Prelude | solo harpsichord, a slow ornamented melody, free time, no pulse, phrases separated by silence]\n[Motif | the central phrase played whole and unhurried, plainly, like a message sent by hand]\n[Outro | one last spread chord, allowed to decay completely, faint static underneath]",
+            "type": "gen",
+            "duration": 149.92,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "control_sliders": {
+              "style_weight": 0.85,
+              "weirdness_constraint": 0.3,
+              "aug_creativity": 0
+            },
+            "vox_render_mode": "strict",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "camcorder",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:31:13.759Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 5,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:20:54.193Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-16T21:11:42.336Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 1,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 1,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "2. Ouverture (The Parade)",
+          "play_count": 4,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "0537527b-c287-4ba9-a3e7-a8ec5cc98d38",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/0537527b-c287-4ba9-a3e7-a8ec5cc98d38.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_0537527b-c287-4ba9-a3e7-a8ec5cc98d38.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_0537527b-c287-4ba9-a3e7-a8ec5cc98d38.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Progressive metal built on a French Baroque overture, instrumental, opens in majestic slow 4/4 at 60 BPM in D major with heavy over-dotted rhythms, a solitary distant brass call, grand harpsichord and full string orchestra, ceremonial and stately, then breaks into a fast fugal section in 6/8 at 168 BPM in D minor with distorted guitars, double-kick drums, virtuosic unison runs between harpsichord and lead guitar, tightening and increasingly frantic, ending grim and exhausted",
+            "negative_tags": "vocals, electronic, breakbeat, pop, lo-fi",
+            "prompt": "[Call | a single distant unaccompanied brass call, alone, echoing]\n[Ouverture | slow ceremonial 4/4, heavy dotted rhythms, harpsichord and strings, D major, grand]\n[Procession | full orchestra at its most stately, everything correct and polished]\n[Turn | the dotted rhythm tightens, strings sharpen, something underneath is wrong]\n[Fugue | fast 6/8 at 168 BPM, distorted guitars enter with the fugue subject, double-kick]\n[Unison | harpsichord and lead guitar play fast runs in exact unison, virtuosic, relentless]\n[Too Fast | tempo pushes, the playing gets tighter and harder, D minor, strained]\n[Outro | the ceremonial dotted rhythm returns, worn out and slower, ending on a bleak D minor chord]",
+            "type": "gen",
+            "duration": 329.56,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "is_max_mode": true,
+            "control_sliders": {
+              "style_weight": 0.75,
+              "weirdness_constraint": 0.4,
+              "aug_creativity": 0
+            },
+            "vox_render_mode": "strict",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "scribbles",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:32:29.101Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 4,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:20:57.877Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "progressive metal, Baroque",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-16T21:12:06.154Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 1,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 3,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "3. Tambourin (Wet Season)",
+          "play_count": 3,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "ecbbc911-00b4-453c-a8ea-72b411801b7c",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/ecbbc911-00b4-453c-a8ea-72b411801b7c.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_ecbbc911-00b4-453c-a8ea-72b411801b7c.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_ecbbc911-00b4-453c-a8ea-72b411801b7c.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Big beat electronic instrumental in F sharp minor: chopped stuttering harpsichord loop, fast Baroque tambourin drum-and-drone figure, gritty distorted acid bass, hard sampled breakbeats, heartbeat kick, siren stabs, filtered risers, heavy distorted guitars entering late; rain on tin roof, generator hum and insects; raw loud late-90s rave production at 160 BPM, relentless 4/4 drive.",
+            "negative_tags": "vocals, ambient, ballad, orchestra, slow, trap",
+            "prompt": "[Intro | heavy rain on a tin roof and a generator hum, then a single harpsichord phrase that stutters and repeats]\n[Beat | hard sampled breakbeat drops in at 160 BPM, distorted acid bass underneath]\n[Scan | the harpsichord loop chops faster, siren stabs, filtered riser, tension climbing]\n[Drop | full big beat, bass at maximum grit, drums raw and loud, humid and heavy]\n[Guitars | heavy distorted guitars join the loop, metal and rave together]\n[Breakdown | strips back to the stuttering harpsichord, rain, and a heartbeat kick]\n[Final Drop | hardest section, breakbeat and guitars locked together]\n[Outro | the beat cuts dead, rain continues, the harpsichord loop keeps stuttering alone, then stops mid-phrase]",
+            "type": "gen",
+            "duration": 238.76,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "control_sliders": {
+              "style_weight": 0.7,
+              "weirdness_constraint": 0.59,
+              "aug_creativity": 1
+            },
+            "vox_render_mode": "strict",
+            "playlist_id": "00000000-0000-0000-0000-000000000000",
+            "playlist_clip_ids": [
+              "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+            ],
+            "task": "playlist_condition",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "black_and_white_photograph",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:34:33.428Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 3,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:21:00.302Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "big beat, electronic, rave",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-16T21:12:30.074Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 1,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 5,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "4. Les Barricades (What I Don't Say)",
+          "play_count": 4,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "c357fa38-8e25-466d-be7d-0332367d73d9",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/c357fa38-8e25-466d-be7d-0332367d73d9.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_c357fa38-8e25-466d-be7d-0332367d73d9.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_c357fa38-8e25-466d-be7d-0332367d73d9.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Baroque chamber music, clean warm interlocking production with an almost imperceptibly rising distorted radio-static drone, gentle endless 3/4 at 92 BPM in B flat major, harpsichord and virtuosic clean tapped electric guitar passing hypnotic style brisé broken chords, warm grand piano and soft cello entering through rondeau returns, instrumental",
+            "negative_tags": "vocals, drums, breakbeat, heavy metal, aggressive, orchestra",
+            "prompt": "[Rondeau | harpsichord alone, broken chords circling gently in 3/4, B flat major]\n[Couplet | clean tapped guitar takes the pattern, harpsichord answers, warm and interlocking]\n[Rondeau | the opening theme returns exactly as before]\n[Couplet | piano and cello join, richer, still circling, a faint static drone appears underneath]\n[Rondeau | the theme returns again, unchanged, while the drone grows]\n[Couplet | the loveliest section, guitar and harpsichord in full flow, the drone now clearly audible]\n[Outro | the theme one last time, gentle and untroubled, the drone louder than the melody, then cut]",
+            "type": "gen",
+            "duration": 300,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "is_max_mode": true,
+            "control_sliders": {
+              "style_weight": 0.8,
+              "weirdness_constraint": 0.35,
+              "aug_creativity": 1
+            },
+            "vox_render_mode": "strict",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "scribbles",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:35:43.190Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 4,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:38:30.445Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "Baroque chamber music, drone, instrumental",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-16T21:12:50.824Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 1,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 7,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "5. Trois Heures (Three in the Morning)",
+          "play_count": 5,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "05dd0d34-8e75-475a-9c7d-a21d1aecb63d",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/05dd0d34-8e75-475a-9c7d-a21d1aecb63d.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_05dd0d34-8e75-475a-9c7d-a21d1aecb63d.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_05dd0d34-8e75-475a-9c7d-a21d1aecb63d.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Dark minimal big beat, E flat minor, 140 BPM four-on-the-floor pressure, deep sub bass with controlled distortion, chopped harpsichord loop repeating with one note slightly wrong, tight dry sampled breakbeat, ticking Morse code percussion, distant rotor wash and filtered noise sweeps, abrupt cut to complete silence, then one quiet piano note with faint dawn birdsong; instrumental.",
+            "negative_tags": "vocals, uplifting, major key, orchestra, guitar solo, euphoric drop",
+            "prompt": "[Intro | Morse code ticking, deep sub bass pulse, bitter cold dry air, nothing else]\n[Loop | chopped harpsichord phrase repeats, one note slightly wrong each time]\n[Build | tight dry breakbeat enters, pressure rising, a distant rotor somewhere far off]\n[Laps | the loop speeds up and layers over itself, claustrophobic, no melody progression]\n[Peak | maximum pressure, bass distorting, drums hard and dry, still no release]\n[Cut | everything stops dead, complete silence]\n[Dawn | one quiet piano note, faint birdsong, nothing resolves, it just gets light]",
+            "type": "gen",
+            "duration": 269.84,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "control_sliders": {
+              "style_weight": 0.7,
+              "weirdness_constraint": 0.65,
+              "aug_creativity": 1
+            },
+            "vox_render_mode": "strict",
+            "playlist_id": "00000000-0000-0000-0000-000000000000",
+            "playlist_clip_ids": [
+              "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+            ],
+            "task": "playlist_condition",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "black_and_white_photograph",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:37:03.803Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 5,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:21:01.580Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "big beat, minimal, dark",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-18T17:56:12.362Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 0,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 8,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "6. Sarabande pour les Vivants (Still Here)",
+          "play_count": 4,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "e13114b6-49fd-48ab-9cb9-5749bba067aa",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/e13114b6-49fd-48ab-9cb9-5749bba067aa.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_e13114b6-49fd-48ab-9cb9-5749bba067aa.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_e13114b6-49fd-48ab-9cb9-5749bba067aa.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Neoclassical symphonic metal sarabande, instrumental, slow grave 3/4 with weight on the second beat, G minor, 62 BPM, begins with solo cello and grand piano alone, voices joining one by one, warm harpsichord ornaments, strings entering, then heavy distorted guitars and slow powerful drums beneath a soaring cello melody, noble, warm, unhurried, brotherhood, defiant tenderness, huge and generous rather than mournful",
+            "negative_tags": "vocals, fast tempo, breakbeat, electronic, bleak, thin",
+            "prompt": "[Sarabande | solo cello and grand piano, slow 3/4, weight on the second beat, G minor]\n[Second Voice | harpsichord joins with ornaments, the two answering each other]\n[Third | strings enter underneath, warm, the melody unchanged]\n[Band | heavy distorted guitars and slow powerful drums come in beneath, the sarabande holds]\n[Full | everyone at once, cello soaring over the top, warm and enormous]\n[Lift | the harmony opens toward major, the most hopeful moment yet, still slow]\n[Outro | the band drops away one voice at a time until only the cello and piano remain, quiet]",
+            "type": "gen",
+            "duration": 359.96,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "is_max_mode": true,
+            "control_sliders": {
+              "style_weight": 0.75,
+              "weirdness_constraint": 0.35,
+              "aug_creativity": 0
+            },
+            "vox_render_mode": "strict",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "polaroid",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:38:16.944Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 4,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:21:05.979Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "neoclassical, symphonic metal",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-18T17:59:34.387Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 0,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 9,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "7. Tombeau (After)",
+          "play_count": 5,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "7331305e-b53e-4bbc-8867-231865601f47",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/7331305e-b53e-4bbc-8867-231865601f47.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_7331305e-b53e-4bbc-8867-231865601f47.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_7331305e-b53e-4bbc-8867-231865601f47.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "French Baroque tombeau for viol and harpsichord with orchestra, instrumental, very slow 4/4 at 54 BPM, C minor, heavily over-dotted rhythms, dense ornaments and mordents, mournful cello in the manner of a bass viol, harpsichord, sparse grand piano, a solitary distant unaccompanied brass call, distant tolling bell, low strings, dignified grief, restrained and formal, with one brief bright quick passage of remembered joy two thirds through, then returning to the elegy",
+            "negative_tags": "vocals, drums, breakbeat, electronic, heavy metal, sentimental strings, cinematic swell",
+            "prompt": "[Call | one distant unaccompanied brass call, alone, then silence]\n[Tombeau | solo cello like a bass viol, very slow, heavily dotted, C minor, distant bell]\n[Harpsichord | ornamented harpsichord answers the cello, formal and restrained]\n[Motif | the album's phrase returns, slowed almost to a standstill, played once, plainly]\n[Lament | low strings enter, the cello climbs, grief held inside the form, never spilling over]\n[Remembered | suddenly quick and bright, a short dancing passage, warm and alive, out of nowhere]\n[Return | the dance fades back into the slow elegy, gentler than before]\n[Outro | one held cello note, the bell tolls once, unresolved, silence]",
+            "type": "gen",
+            "duration": 282.4,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "is_max_mode": true,
+            "control_sliders": {
+              "audio_weight": 0.2,
+              "style_weight": 0.8,
+              "weirdness_constraint": 0.3,
+              "aug_creativity": 0
+            },
+            "vox_render_mode": "strict",
+            "playlist_id": "00000000-0000-0000-0000-000000000000",
+            "playlist_clip_ids": [
+              "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+            ],
+            "task": "playlist_condition",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "film_strip",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:39:23.564Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 5,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:21:07.867Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "Baroque, tombeau, elegy",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-18T18:00:42.296Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 0,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 10,
+        "created_at": "2026-09-14T07:49:28.642Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "8. Passacaille (The Work)",
+          "play_count": 6,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "ddfa25bc-e92a-4603-bd05-114d37c4a6a4",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/ddfa25bc-e92a-4603-bd05-114d37c4a6a4.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_ddfa25bc-e92a-4603-bd05-114d37c4a6a4.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_ddfa25bc-e92a-4603-bd05-114d37c4a6a4.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Progressive metal passacaglia, instrumental, steady 96 BPM 3/4 in D minor, unchanged four-bar ground bass beneath harpsichorn ornamentation, clean tapped guitar, heavy distorted guitars and double kick, then hard breakbeat, strings and organ; layered variations build to a controlled full sound before dropping back to the bare bass.",
+            "negative_tags": "vocals, key change, tempo change, ballad, ambient",
+            "prompt": "[Ground | a four-bar bass line alone in 3/4, D minor, plain and repeating]\n[Variation 1 | harpsichord plays ornamented figures over the unchanged ground]\n[Variation 2 | clean tapped guitar takes over, the ground continues underneath]\n[Variation 3 | heavy distorted guitars and double-kick drums, the same ground, same tempo]\n[Variation 4 | a hard breakbeat runs over the identical bass line, the three worlds together]\n[Variation 5 | strings and organ, the fullest sound yet, the ground never varies]\n[Variation 6 | everything at once, strong and controlled, not frantic]\n[Outro | the layers drop away one by one until the bare ground bass plays alone and stops]",
+            "type": "gen",
+            "duration": 359.52,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "is_max_mode": true,
+            "control_sliders": {
+              "style_weight": 0.75,
+              "weirdness_constraint": 0.4,
+              "aug_creativity": 1
+            },
+            "vox_render_mode": "strict",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "renaissance",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:40:22.897Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 6,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:23:05.372Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "progressive metal, passacaglia",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-18T00:49:33.253Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 1,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 13,
+        "created_at": "2026-09-14T07:49:28.643Z"
+      },
+      {
+        "clip": {
+          "status": "complete",
+          "title": "10. Menuet (Ordinary Tuesday)",
+          "play_count": 5,
+          "upvote_count": 1,
+          "allow_comments": true,
+          "is_verified": false,
+          "id": "6236d846-805c-4ce1-8d99-e5117e06281a",
+          "entity_type": "song_schema",
+          "video_url": "",
+          "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+          "media_urls": [
+            {
+              "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/6236d846-805c-4ce1-8d99-e5117e06281a.m4a",
+              "content_type": "m4a-opus",
+              "delivery": "progressive",
+              "encoding": "1.0.0"
+            }
+          ],
+          "image_url": "https://cdn2.suno.ai/image_6236d846-805c-4ce1-8d99-e5117e06281a.jpeg",
+          "image_large_url": "https://cdn2.suno.ai/image_large_6236d846-805c-4ce1-8d99-e5117e06281a.jpeg",
+          "major_model_version": "v6",
+          "model_name": "chirp-hawk",
+          "metadata": {
+            "tags": "Gentle Baroque chamber trio, instrumental, 3/4 minuet, G major, 72 BPM, close-mic grand piano with a warm unhurried touch, soft cello, gentle fingerpicked clean electric guitar, simple ornaments, steady quiet pulse, domestic and small, morning light, contented, undramatic, intimate, no orchestra, ending with a faint radio hiss switching off into clean room silence",
+            "negative_tags": "drums, distortion, electronic beat, orchestra, vocals, epic, cinematic",
+            "prompt": "[Menuet | solo piano plays the album's motif whole and unhurried, G major, steady 3/4]\n[Trio | cello joins with a simple countermelody, warm and plain]\n[Guitar | gentle fingerpicked clean guitar joins, three voices, nothing showy]\n[Menuet | the motif returns once more, lightly ornamented, completely at ease]\n[Outro | the last phrase, a plain G major chord, the faint radio hiss switches off, room silence, end]",
+            "type": "gen",
+            "duration": 224.84,
+            "refund_credits": false,
+            "stream": true,
+            "make_instrumental": false,
+            "is_max_mode": true,
+            "control_sliders": {
+              "audio_weight": 0.5,
+              "style_weight": 0.8,
+              "weirdness_constraint": 0.25,
+              "aug_creativity": 0
+            },
+            "vox_render_mode": "strict",
+            "playlist_id": "00000000-0000-0000-0000-000000000000",
+            "playlist_clip_ids": [
+              "0abf0078-7b96-4331-8d85-af33c1b16b45",
+              "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+            ],
+            "task": "playlist_condition",
+            "can_remix": true,
+            "is_remix": false,
+            "priority": 10,
+            "has_stem": false,
+            "uses_latest_model": true,
+            "model_badges": {
+              "songcard": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "background_color": "0000004D",
+                  "border_color": "00000000"
+                }
+              },
+              "songrow": {
+                "display_name": "V6",
+                "light": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                },
+                "dark": {
+                  "text_color": "FD429C",
+                  "text_color_gradient": [
+                    "FD429C",
+                    "FF5126"
+                  ]
+                }
+              }
+            },
+            "image_config": {
+              "use_image_config_template": true,
+              "id": "film_strip",
+              "default_cover_style": "brand_refresh"
+            },
+            "is_mumble": false
+          },
+          "is_liked": true,
+          "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+          "display_name": "Daddy Wombat",
+          "handle": "daddywombat",
+          "is_handle_updated": false,
+          "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+          "is_trashed": false,
+          "is_hidden": false,
+          "created_at": "2026-09-14T03:43:55.854Z",
+          "is_public": false,
+          "reaction": {
+            "play_count": 5,
+            "skip_count": 0,
+            "flagged": false,
+            "reaction_type": "L",
+            "updated_at": "2026-09-18T17:39:04.980Z"
+          },
+          "is_persona_root": false,
+          "is_following_creator": false,
+          "albums": [],
+          "explicit": false,
+          "comment_count": 0,
+          "flag_count": 0,
+          "display_tags": "Baroque, chamber music, minuet",
+          "is_download_unlocked": true,
+          "download_unlocked_at": "2026-09-18T18:02:04.401Z",
+          "is_contest_clip": false,
+          "has_hook": false,
+          "batch_index": 0,
+          "action_config": {
+            "actions": [
+              {
+                "action_type": "add_to_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "like_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "share_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "dislike_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "report_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remove_from_playlist",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "play_next",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "add_to_queue",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "delete_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "edit_song_details",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_hook",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "download_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "open_in_studio",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "publish_song",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remaster",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_extend",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_cover",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "remix_reuse_style",
+                "disabled": false,
+                "visible": true
+              },
+              {
+                "action_type": "create_voice",
+                "disabled": false,
+                "visible": true
+              }
+            ]
+          }
+        },
+        "relative_index": 16,
+        "created_at": "2026-09-14T07:49:28.643Z"
+      }
+    ],
+    "image_url": "https://cdn2.suno.ai/image_bf9f21a6-94a0-4081-a70b-514c6a7e9e27.jpeg",
+    "num_total_results": 9,
+    "current_page": 1,
+    "is_owned": true,
+    "is_trashed": false,
+    "is_public": true,
+    "is_hidden": false,
+    "user_display_name": "Daddy Wombat",
+    "user_handle": "daddywombat",
+    "user_avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+    "user_is_verified": false,
+    "description": "",
+    "upvote_count": 0,
+    "dislike_count": 0,
+    "flag_count": 0,
+    "skip_count": 0,
+    "play_count": 0,
+    "song_count": 0,
+    "total_duration": 2514.7999999999997,
+    "is_discover_playlist": false
+  },
+  "playlist_v2": {
+    "metadata": {
+      "id": "0cee9fe6-91fc-4d1e-bfae-e7035ad99ebc",
+      "name": "Tombeau",
+      "song_count": 9,
+      "cover_url": "https://cdn2.suno.ai/image_bf9f21a6-94a0-4081-a70b-514c6a7e9e27.jpeg",
+      "cover_image_s3_id": "image_bf9f21a6-94a0-4081-a70b-514c6a7e9e27",
+      "cover_is_user_set": false,
+      "cover_image_grid": [
+        "https://cdn2.suno.ai/image_49b5a27d-e95f-4fed-a23f-ca8e15d68619.jpeg",
+        "https://cdn2.suno.ai/image_0537527b-c287-4ba9-a3e7-a8ec5cc98d38.jpeg",
+        "https://cdn2.suno.ai/image_ecbbc911-00b4-453c-a8ea-72b411801b7c.jpeg",
+        "https://cdn2.suno.ai/image_c357fa38-8e25-466d-be7d-0332367d73d9.jpeg"
+      ],
+      "owner": {
+        "user_id": -1,
+        "entity_type": "simple_profile_schema",
+        "external_user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+        "display_name": "Daddy Wombat",
+        "handle": "daddywombat",
+        "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+        "is_following": false,
+        "is_following_viewer": false,
+        "is_verified": false,
+        "stats": {
+          "followers_count": 4,
+          "likes_count": 152,
+          "clips_count": 15,
+          "last_login": ""
+        }
+      },
+      "is_public": true,
+      "created_at": "2026-09-14T07:49:26.355Z",
+      "updated_at": "2026-09-18T17:38:59.274Z",
+      "share_link": "/playlist/0cee9fe6-91fc-4d1e-bfae-e7035ad99ebc"
+    },
+    "relationship": {
+      "is_owned": true,
+      "is_collaborator": false,
+      "is_saved": false,
+      "is_pinned_in_library": false,
+      "can_edit": true,
+      "is_curator": false,
+      "viewer_is_blocking_owner": false,
+      "viewer_is_blocked_by_owner": false,
+      "is_trashed": false,
+      "is_hidden": false
+    },
+    "bio": {},
+    "stats": {
+      "track_count": 9,
+      "save_count": 0,
+      "like_count": 0,
+      "play_count": 10,
+      "total_duration_seconds": 2514
+    },
+    "deferred_fields": []
+  },
+  "clips": [
+    {
+      "status": "complete",
+      "title": "1. Prélude non mesuré (Radio Check)",
+      "play_count": 5,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "49b5a27d-e95f-4fed-a23f-ca8e15d68619",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/49b5a27d-e95f-4fed-a23f-ca8e15d68619.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_49b5a27d-e95f-4fed-a23f-ca8e15d68619.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_49b5a27d-e95f-4fed-a23f-ca8e15d68619.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Solo French Baroque harpsichord, instrumental, unmeasured prelude with no bar lines and no fixed tempo, D minor, free rubato, spread rolled chords, delicate ornaments and mordents, long silences between gestures, intimate close-mic with audible key and quill action, resonant wooden room, faint radio static and a single squelch break at the very opening, contemplative, suspended, tender, unhurried",
+        "negative_tags": "drums, percussion, guitar, bass, electronic beat, vocals, strict tempo, orchestra",
+        "prompt": "[Intro | the hiss of an open radio net, one squelch break, then silence]\n[Prelude | solo harpsichord, a slow ornamented melody, free time, no pulse, phrases separated by silence]\n[Motif | the central phrase played whole and unhurried, plainly, like a message sent by hand]\n[Outro | one last spread chord, allowed to decay completely, faint static underneath]",
+        "type": "gen",
+        "duration": 149.92,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "control_sliders": {
+          "style_weight": 0.85,
+          "weirdness_constraint": 0.3,
+          "aug_creativity": 0
+        },
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "camcorder",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:31:13.759Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 5,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:20:54.193Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-16T21:11:42.336Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 1,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "2. Ouverture (The Parade)",
+      "play_count": 4,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "0537527b-c287-4ba9-a3e7-a8ec5cc98d38",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/0537527b-c287-4ba9-a3e7-a8ec5cc98d38.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_0537527b-c287-4ba9-a3e7-a8ec5cc98d38.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_0537527b-c287-4ba9-a3e7-a8ec5cc98d38.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Progressive metal built on a French Baroque overture, instrumental, opens in majestic slow 4/4 at 60 BPM in D major with heavy over-dotted rhythms, a solitary distant brass call, grand harpsichord and full string orchestra, ceremonial and stately, then breaks into a fast fugal section in 6/8 at 168 BPM in D minor with distorted guitars, double-kick drums, virtuosic unison runs between harpsichord and lead guitar, tightening and increasingly frantic, ending grim and exhausted",
+        "negative_tags": "vocals, electronic, breakbeat, pop, lo-fi",
+        "prompt": "[Call | a single distant unaccompanied brass call, alone, echoing]\n[Ouverture | slow ceremonial 4/4, heavy dotted rhythms, harpsichord and strings, D major, grand]\n[Procession | full orchestra at its most stately, everything correct and polished]\n[Turn | the dotted rhythm tightens, strings sharpen, something underneath is wrong]\n[Fugue | fast 6/8 at 168 BPM, distorted guitars enter with the fugue subject, double-kick]\n[Unison | harpsichord and lead guitar play fast runs in exact unison, virtuosic, relentless]\n[Too Fast | tempo pushes, the playing gets tighter and harder, D minor, strained]\n[Outro | the ceremonial dotted rhythm returns, worn out and slower, ending on a bleak D minor chord]",
+        "type": "gen",
+        "duration": 329.56,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "is_max_mode": true,
+        "control_sliders": {
+          "style_weight": 0.75,
+          "weirdness_constraint": 0.4,
+          "aug_creativity": 0
+        },
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "scribbles",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:32:29.101Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 4,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:20:57.877Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "progressive metal, Baroque",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-16T21:12:06.154Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 1,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "3. Tambourin (Wet Season)",
+      "play_count": 3,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "ecbbc911-00b4-453c-a8ea-72b411801b7c",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/ecbbc911-00b4-453c-a8ea-72b411801b7c.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_ecbbc911-00b4-453c-a8ea-72b411801b7c.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_ecbbc911-00b4-453c-a8ea-72b411801b7c.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Big beat electronic instrumental in F sharp minor: chopped stuttering harpsichord loop, fast Baroque tambourin drum-and-drone figure, gritty distorted acid bass, hard sampled breakbeats, heartbeat kick, siren stabs, filtered risers, heavy distorted guitars entering late; rain on tin roof, generator hum and insects; raw loud late-90s rave production at 160 BPM, relentless 4/4 drive.",
+        "negative_tags": "vocals, ambient, ballad, orchestra, slow, trap",
+        "prompt": "[Intro | heavy rain on a tin roof and a generator hum, then a single harpsichord phrase that stutters and repeats]\n[Beat | hard sampled breakbeat drops in at 160 BPM, distorted acid bass underneath]\n[Scan | the harpsichord loop chops faster, siren stabs, filtered riser, tension climbing]\n[Drop | full big beat, bass at maximum grit, drums raw and loud, humid and heavy]\n[Guitars | heavy distorted guitars join the loop, metal and rave together]\n[Breakdown | strips back to the stuttering harpsichord, rain, and a heartbeat kick]\n[Final Drop | hardest section, breakbeat and guitars locked together]\n[Outro | the beat cuts dead, rain continues, the harpsichord loop keeps stuttering alone, then stops mid-phrase]",
+        "type": "gen",
+        "duration": 238.76,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "control_sliders": {
+          "style_weight": 0.7,
+          "weirdness_constraint": 0.59,
+          "aug_creativity": 1
+        },
+        "playlist_id": "00000000-0000-0000-0000-000000000000",
+        "playlist_clip_ids": [
+          "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+        ],
+        "task": "playlist_condition",
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "black_and_white_photograph",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:34:33.428Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 3,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:21:00.302Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "big beat, electronic, rave",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-16T21:12:30.074Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 1,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "4. Les Barricades (What I Don't Say)",
+      "play_count": 4,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "c357fa38-8e25-466d-be7d-0332367d73d9",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/c357fa38-8e25-466d-be7d-0332367d73d9.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_c357fa38-8e25-466d-be7d-0332367d73d9.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_c357fa38-8e25-466d-be7d-0332367d73d9.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Baroque chamber music, clean warm interlocking production with an almost imperceptibly rising distorted radio-static drone, gentle endless 3/4 at 92 BPM in B flat major, harpsichord and virtuosic clean tapped electric guitar passing hypnotic style brisé broken chords, warm grand piano and soft cello entering through rondeau returns, instrumental",
+        "negative_tags": "vocals, drums, breakbeat, heavy metal, aggressive, orchestra",
+        "prompt": "[Rondeau | harpsichord alone, broken chords circling gently in 3/4, B flat major]\n[Couplet | clean tapped guitar takes the pattern, harpsichord answers, warm and interlocking]\n[Rondeau | the opening theme returns exactly as before]\n[Couplet | piano and cello join, richer, still circling, a faint static drone appears underneath]\n[Rondeau | the theme returns again, unchanged, while the drone grows]\n[Couplet | the loveliest section, guitar and harpsichord in full flow, the drone now clearly audible]\n[Outro | the theme one last time, gentle and untroubled, the drone louder than the melody, then cut]",
+        "type": "gen",
+        "duration": 300,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "is_max_mode": true,
+        "control_sliders": {
+          "style_weight": 0.8,
+          "weirdness_constraint": 0.35,
+          "aug_creativity": 1
+        },
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "scribbles",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:35:43.190Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 4,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:38:30.445Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "Baroque chamber music, drone, instrumental",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-16T21:12:50.824Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 1,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "5. Trois Heures (Three in the Morning)",
+      "play_count": 5,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "05dd0d34-8e75-475a-9c7d-a21d1aecb63d",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/05dd0d34-8e75-475a-9c7d-a21d1aecb63d.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_05dd0d34-8e75-475a-9c7d-a21d1aecb63d.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_05dd0d34-8e75-475a-9c7d-a21d1aecb63d.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Dark minimal big beat, E flat minor, 140 BPM four-on-the-floor pressure, deep sub bass with controlled distortion, chopped harpsichord loop repeating with one note slightly wrong, tight dry sampled breakbeat, ticking Morse code percussion, distant rotor wash and filtered noise sweeps, abrupt cut to complete silence, then one quiet piano note with faint dawn birdsong; instrumental.",
+        "negative_tags": "vocals, uplifting, major key, orchestra, guitar solo, euphoric drop",
+        "prompt": "[Intro | Morse code ticking, deep sub bass pulse, bitter cold dry air, nothing else]\n[Loop | chopped harpsichord phrase repeats, one note slightly wrong each time]\n[Build | tight dry breakbeat enters, pressure rising, a distant rotor somewhere far off]\n[Laps | the loop speeds up and layers over itself, claustrophobic, no melody progression]\n[Peak | maximum pressure, bass distorting, drums hard and dry, still no release]\n[Cut | everything stops dead, complete silence]\n[Dawn | one quiet piano note, faint birdsong, nothing resolves, it just gets light]",
+        "type": "gen",
+        "duration": 269.84,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "control_sliders": {
+          "style_weight": 0.7,
+          "weirdness_constraint": 0.65,
+          "aug_creativity": 1
+        },
+        "playlist_id": "00000000-0000-0000-0000-000000000000",
+        "playlist_clip_ids": [
+          "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+        ],
+        "task": "playlist_condition",
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "black_and_white_photograph",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:37:03.803Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 5,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:21:01.580Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "big beat, minimal, dark",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-18T17:56:12.362Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 0,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "6. Sarabande pour les Vivants (Still Here)",
+      "play_count": 4,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "e13114b6-49fd-48ab-9cb9-5749bba067aa",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/e13114b6-49fd-48ab-9cb9-5749bba067aa.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_e13114b6-49fd-48ab-9cb9-5749bba067aa.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_e13114b6-49fd-48ab-9cb9-5749bba067aa.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Neoclassical symphonic metal sarabande, instrumental, slow grave 3/4 with weight on the second beat, G minor, 62 BPM, begins with solo cello and grand piano alone, voices joining one by one, warm harpsichord ornaments, strings entering, then heavy distorted guitars and slow powerful drums beneath a soaring cello melody, noble, warm, unhurried, brotherhood, defiant tenderness, huge and generous rather than mournful",
+        "negative_tags": "vocals, fast tempo, breakbeat, electronic, bleak, thin",
+        "prompt": "[Sarabande | solo cello and grand piano, slow 3/4, weight on the second beat, G minor]\n[Second Voice | harpsichord joins with ornaments, the two answering each other]\n[Third | strings enter underneath, warm, the melody unchanged]\n[Band | heavy distorted guitars and slow powerful drums come in beneath, the sarabande holds]\n[Full | everyone at once, cello soaring over the top, warm and enormous]\n[Lift | the harmony opens toward major, the most hopeful moment yet, still slow]\n[Outro | the band drops away one voice at a time until only the cello and piano remain, quiet]",
+        "type": "gen",
+        "duration": 359.96,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "is_max_mode": true,
+        "control_sliders": {
+          "style_weight": 0.75,
+          "weirdness_constraint": 0.35,
+          "aug_creativity": 0
+        },
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "polaroid",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:38:16.944Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 4,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:21:05.979Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "neoclassical, symphonic metal",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-18T17:59:34.387Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 0,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "7. Tombeau (After)",
+      "play_count": 5,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "7331305e-b53e-4bbc-8867-231865601f47",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/7331305e-b53e-4bbc-8867-231865601f47.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_7331305e-b53e-4bbc-8867-231865601f47.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_7331305e-b53e-4bbc-8867-231865601f47.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "French Baroque tombeau for viol and harpsichord with orchestra, instrumental, very slow 4/4 at 54 BPM, C minor, heavily over-dotted rhythms, dense ornaments and mordents, mournful cello in the manner of a bass viol, harpsichord, sparse grand piano, a solitary distant unaccompanied brass call, distant tolling bell, low strings, dignified grief, restrained and formal, with one brief bright quick passage of remembered joy two thirds through, then returning to the elegy",
+        "negative_tags": "vocals, drums, breakbeat, electronic, heavy metal, sentimental strings, cinematic swell",
+        "prompt": "[Call | one distant unaccompanied brass call, alone, then silence]\n[Tombeau | solo cello like a bass viol, very slow, heavily dotted, C minor, distant bell]\n[Harpsichord | ornamented harpsichord answers the cello, formal and restrained]\n[Motif | the album's phrase returns, slowed almost to a standstill, played once, plainly]\n[Lament | low strings enter, the cello climbs, grief held inside the form, never spilling over]\n[Remembered | suddenly quick and bright, a short dancing passage, warm and alive, out of nowhere]\n[Return | the dance fades back into the slow elegy, gentler than before]\n[Outro | one held cello note, the bell tolls once, unresolved, silence]",
+        "type": "gen",
+        "duration": 282.4,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "is_max_mode": true,
+        "control_sliders": {
+          "audio_weight": 0.2,
+          "style_weight": 0.8,
+          "weirdness_constraint": 0.3,
+          "aug_creativity": 0
+        },
+        "playlist_id": "00000000-0000-0000-0000-000000000000",
+        "playlist_clip_ids": [
+          "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+        ],
+        "task": "playlist_condition",
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "film_strip",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:39:23.564Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 5,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:21:07.867Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "Baroque, tombeau, elegy",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-18T18:00:42.296Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 0,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "8. Passacaille (The Work)",
+      "play_count": 6,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "ddfa25bc-e92a-4603-bd05-114d37c4a6a4",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/ddfa25bc-e92a-4603-bd05-114d37c4a6a4.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_ddfa25bc-e92a-4603-bd05-114d37c4a6a4.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_ddfa25bc-e92a-4603-bd05-114d37c4a6a4.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Progressive metal passacaglia, instrumental, steady 96 BPM 3/4 in D minor, unchanged four-bar ground bass beneath harpsichorn ornamentation, clean tapped guitar, heavy distorted guitars and double kick, then hard breakbeat, strings and organ; layered variations build to a controlled full sound before dropping back to the bare bass.",
+        "negative_tags": "vocals, key change, tempo change, ballad, ambient",
+        "prompt": "[Ground | a four-bar bass line alone in 3/4, D minor, plain and repeating]\n[Variation 1 | harpsichord plays ornamented figures over the unchanged ground]\n[Variation 2 | clean tapped guitar takes over, the ground continues underneath]\n[Variation 3 | heavy distorted guitars and double-kick drums, the same ground, same tempo]\n[Variation 4 | a hard breakbeat runs over the identical bass line, the three worlds together]\n[Variation 5 | strings and organ, the fullest sound yet, the ground never varies]\n[Variation 6 | everything at once, strong and controlled, not frantic]\n[Outro | the layers drop away one by one until the bare ground bass plays alone and stops]",
+        "type": "gen",
+        "duration": 359.52,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "is_max_mode": true,
+        "control_sliders": {
+          "style_weight": 0.75,
+          "weirdness_constraint": 0.4,
+          "aug_creativity": 1
+        },
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "renaissance",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:40:22.897Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 6,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:23:05.372Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "progressive metal, passacaglia",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-18T00:49:33.253Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 1,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "10. Menuet (Ordinary Tuesday)",
+      "play_count": 5,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "6236d846-805c-4ce1-8d99-e5117e06281a",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/6236d846-805c-4ce1-8d99-e5117e06281a.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_6236d846-805c-4ce1-8d99-e5117e06281a.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_6236d846-805c-4ce1-8d99-e5117e06281a.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Gentle Baroque chamber trio, instrumental, 3/4 minuet, G major, 72 BPM, close-mic grand piano with a warm unhurried touch, soft cello, gentle fingerpicked clean electric guitar, simple ornaments, steady quiet pulse, domestic and small, morning light, contented, undramatic, intimate, no orchestra, ending with a faint radio hiss switching off into clean room silence",
+        "negative_tags": "drums, distortion, electronic beat, orchestra, vocals, epic, cinematic",
+        "prompt": "[Menuet | solo piano plays the album's motif whole and unhurried, G major, steady 3/4]\n[Trio | cello joins with a simple countermelody, warm and plain]\n[Guitar | gentle fingerpicked clean guitar joins, three voices, nothing showy]\n[Menuet | the motif returns once more, lightly ornamented, completely at ease]\n[Outro | the last phrase, a plain G major chord, the faint radio hiss switches off, room silence, end]",
+        "type": "gen",
+        "duration": 224.84,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "is_max_mode": true,
+        "control_sliders": {
+          "audio_weight": 0.5,
+          "style_weight": 0.8,
+          "weirdness_constraint": 0.25,
+          "aug_creativity": 0
+        },
+        "playlist_id": "00000000-0000-0000-0000-000000000000",
+        "playlist_clip_ids": [
+          "0abf0078-7b96-4331-8d85-af33c1b16b45",
+          "49b5a27d-e95f-4fed-a23f-ca8e15d68619"
+        ],
+        "task": "playlist_condition",
+        "can_remix": true,
+        "is_remix": false,
+        "priority": 10,
+        "has_stem": false,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "film_strip",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-14T03:43:55.854Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 5,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:39:04.980Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "Baroque, chamber music, minuet",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-18T18:02:04.401Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 0,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "title": "9. Gigue (Still Here)",
+      "play_count": 2,
+      "upvote_count": 1,
+      "allow_comments": true,
+      "is_verified": false,
+      "id": "93b3ed5e-912d-490e-8698-7262b8021944",
+      "entity_type": "song_schema",
+      "video_url": "",
+      "audio_url": "https://studio-api.prod.suno.com/api/forbidden",
+      "media_urls": [
+        {
+          "url": "https://d2lwuy8qc234o3.cloudfront.net/1/clip/93b3ed5e-912d-490e-8698-7262b8021944.m4a",
+          "content_type": "m4a-opus",
+          "delivery": "progressive",
+          "encoding": "1.0.0"
+        }
+      ],
+      "image_url": "https://cdn2.suno.ai/image_93b3ed5e-912d-490e-8698-7262b8021944.jpeg",
+      "image_large_url": "https://cdn2.suno.ai/image_large_93b3ed5e-912d-490e-8698-7262b8021944.jpeg",
+      "major_model_version": "v6",
+      "model_name": "chirp-hawk",
+      "metadata": {
+        "tags": "Progressive metal with hard sampled breakbeat locked tightly to live double-kick drums; harpsichord, lead guitar, heavy distorted guitars, clean tapped guitar, full band and string orchestra; instrumental; relentless 176 BPM compound 12/8 gallop with tense 7/8 episodes, virtuosic harpsichord-lead guitar unisons, escalating traded solos, B minor shifting to triumphant D major, maximum-density layered arrangement and a dead-stop final chord.",
+        "prompt": "[Intro | harpsichord alone plays the album's motif fast and hard, deliberately, in 12/8]\n[Gigue | band crashes in at 176 BPM, galloping compound rhythm, B minor, exhilarating]\n[Unison | harpsichord and lead guitar play a fast run in exact unison, virtuosic]\n[Episode | shifts into gripping 7/8, tense and technical, double-kick driving]\n[Breakbeat | a hard sampled breakbeat drops in and locks in with the live drums, both together]\n[Trade | guitar, harpsichord and tapped clean guitar trade solos, faster each time]\n[Stretto | all the themes stack on top of each other, maximum density]\n[Turn | the harmony swings into D major, the gigue keeps going, triumphant]\n[Finale | full band and orchestra, motif hammered out at full speed in D major]\n[Outro | one last unison run, the band stops dead together on a single chord]",
+        "gpt_description_prompt": "A gigue closes a Baroque suite and it's fast, compound and joyful. This is the showpiece and the turn in the story: the motif comes back, but now the band plays it, at their tempo, deliberately, hard and fast and on purpose. It isn't gone. It's being played, and this time they're the ones holding the instrument.\n\nEverything on the album gets used here. The 12/8 gallops, there are 7/8 episodes where it grips and slips, there's a proper instrumental slugfest of harpsichord and guitar in unison, and there's a breakbeat that drops in and, for the first time, locks in with the band instead of interrupting. That beat is their own decade, and they're playing along with it instead of being hijacked by it. It ends in D major and it isn't subtle about it.",
+        "type": "gen",
+        "duration": 237.2,
+        "refund_credits": false,
+        "stream": true,
+        "make_instrumental": false,
+        "control_sliders": {
+          "aug_creativity": 1
+        },
+        "task": "agentic_thinking",
+        "can_remix": true,
+        "show_remix": true,
+        "is_remix": true,
+        "priority": 10,
+        "has_stem": false,
+        "video_is_stale": true,
+        "uses_latest_model": true,
+        "model_badges": {
+          "songcard": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "background_color": "0000004D",
+              "border_color": "00000000"
+            }
+          },
+          "songrow": {
+            "display_name": "V6",
+            "light": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            },
+            "dark": {
+              "text_color": "FD429C",
+              "text_color_gradient": [
+                "FD429C",
+                "FF5126"
+              ]
+            }
+          }
+        },
+        "image_config": {
+          "use_image_config_template": true,
+          "id": "camcorder",
+          "default_cover_style": "brand_refresh"
+        },
+        "is_mumble": false
+      },
+      "is_liked": true,
+      "user_id": "4fb40827-6dea-4d25-999f-c2998a9780d6",
+      "display_name": "Daddy Wombat",
+      "handle": "daddywombat",
+      "is_handle_updated": false,
+      "avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg",
+      "is_trashed": false,
+      "is_hidden": false,
+      "created_at": "2026-09-18T17:26:33.037Z",
+      "is_public": false,
+      "reaction": {
+        "play_count": 2,
+        "skip_count": 0,
+        "flagged": false,
+        "reaction_type": "L",
+        "updated_at": "2026-09-18T17:38:53.755Z"
+      },
+      "is_persona_root": false,
+      "is_following_creator": false,
+      "project": {
+        "id": "abed5af1-28da-4c7d-b90c-04b65965c00b",
+        "name": "TOMBEAU",
+        "description": "",
+        "is_trashed": false,
+        "is_public": false
+      },
+      "albums": [],
+      "ownership": {
+        "ownership_reason": "subscribed"
+      },
+      "explicit": false,
+      "comment_count": 0,
+      "flag_count": 0,
+      "display_tags": "progressive metal, breakbeat",
+      "is_download_unlocked": true,
+      "download_unlocked_at": "2026-09-18T18:01:39.302Z",
+      "is_contest_clip": false,
+      "has_hook": false,
+      "batch_index": 0,
+      "action_config": {
+        "actions": [
+          {
+            "action_type": "add_to_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "like_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "share_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "dislike_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "report_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remove_from_playlist",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "play_next",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "add_to_queue",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "delete_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "edit_song_details",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_hook",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "download_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "open_in_studio",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "publish_song",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remaster",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_extend",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_cover",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "remix_reuse_style",
+            "disabled": false,
+            "visible": true
+          },
+          {
+            "action_type": "create_voice",
+            "disabled": false,
+            "visible": true
+          }
+        ]
+      },
+      "clip_roots": {
+        "clips": [
+          {
+            "id": "6ea21067-c44d-4f11-af25-237391855a91",
+            "title": "9. Gigue (Still Here)",
+            "image_url": "https://cdn2.suno.ai/image_6ea21067-c44d-4f11-af25-237391855a91.jpeg",
+            "is_public": false,
+            "user_display_name": "Daddy Wombat",
+            "user_handle": "daddywombat",
+            "user_avatar_image_url": "https://cdn2.suno.ai/50c16a7e-d071-44aa-875d-5f162dc9391d.jpeg"
+          }
+        ],
+        "clip_attribution_type": "remix"
+      }
+    }
+  ]
+}

@@ -30,14 +30,30 @@ const logger = pino();
  *   chirp-auk      Suno v4.5
  *   chirp-bluejay  Suno v4.5+
  *   chirp-crow     Suno v5.0
- *   chirp-fenix    Suno v5.5   (released 2026-03-26, current default)
+ *   chirp-fenix    Suno v5.5
+ *   chirp-hawk     Suno v6.0 "v6 Pro"   (captured live 2026-09-13, current default)
+ *
+ * v6 is a FAMILY, not one model. Suno's create-menu screen (2026-09-13) shows
+ * three tiers: "v6 Pro" (checked/default), "v6-wild" (labelled for
+ * experimental ideas), and "v6-mini" (free, lighter). Only "v6 Pro" has a
+ * confirmed `mv` value so far — `chirp-hawk`, from a real capture. The
+ * `mv` codenames for v6-wild and v6-mini are UNKNOWN; they must be picked in
+ * the UI and captured the same way before this fork can target them.
+ *
+ * chirp-fenix, chirp-crow, chirp-bluejay and chirp-goose (the earlier,
+ * early-access v6 codename) no longer show up in `GET /api/session`'s
+ * `models[]` list. That list now shows only legacy fallback models, v4.5 and
+ * below. Suno picks the live model a different way and reports it back as
+ * `major_model_version` on the clip. So `chirp-fenix` as a per-request `mv`
+ * value is UNVERIFIED against the current API. It may still work. It may
+ * fail. Test it before you trust it.
  *
  * Override without a rebuild by setting SUNO_MODEL in .env — Suno ships new
  * codenames faster than this fork gets updated, and an unrecognised `mv` is
  * rejected by the API rather than silently downgraded. Per-request `model`
  * still wins over this default.
  */
-export const DEFAULT_MODEL = process.env.SUNO_MODEL || 'chirp-fenix';
+export const DEFAULT_MODEL = process.env.SUNO_MODEL || 'chirp-hawk';
 
 export interface AudioInfo {
   id: string; // Unique identifier for the audio

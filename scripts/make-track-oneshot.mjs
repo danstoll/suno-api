@@ -23,8 +23,16 @@
  *                  a stated target — confirmed 2026-08-28: a 5:00-worth-of-material
  *                  track came back at 2:28 with no duration set).
  *   --style-weight, --weirdness   0-1 floats (default 0.9 / 0.2)
+ *   --audio-weight N   0-1 float. Suno's "Audio Influence" slider. Only sent
+ *                  when set — omit it for a track with nothing to steer from.
+ *   --max-mode     Suno's "Max Mode" toggle. Sends metadata.is_max_mode: true.
+ *                  Off by default, matching this fork's old behaviour. v6
+ *                  tracks that need to run past ~2 minutes want this ON —
+ *                  see CLAUDE.md's "Default model" section.
  *   --negative "a, b, c"          negative tags
- *   --model M      mv value (default chirp-fenix)
+ *   --model M      mv value (default chirp-hawk — Suno v6, "v6 Pro". Was
+ *                  chirp-fenix (v5.5) before the 2026-09-13 v6 cutover; see
+ *                  CLAUDE.md.)
  *
  * Lyrics file format: a "## Lyrics" heading, then [Section] blocks. The style
  * prompt is read from the "## Suno Style Prompt" blockquote. Same format as
@@ -106,8 +114,10 @@ const projectId = args.project;
 const personaId = args.persona;
 const styleWeight = args["style-weight"] !== undefined ? Number(args["style-weight"]) : 0.9;
 const weirdness = args.weirdness !== undefined ? Number(args.weirdness) : 0.2;
+const audioWeight = args["audio-weight"] !== undefined ? Number(args["audio-weight"]) : undefined;
+const maxMode = Boolean(args["max-mode"]);
 const negativeTags = args.negative ? String(args.negative) : undefined;
-const model = args.model ? String(args.model) : 'chirp-fenix';
+const model = args.model ? String(args.model) : 'chirp-hawk';
 const duration = parseDuration(args.duration);
 
 const genBody = {
@@ -122,7 +132,12 @@ const genBody = {
   user_uploaded_images_b64: null,
   metadata: {
     create_mode: 'custom',
-    control_sliders: { style_weight: styleWeight, weirdness_constraint: weirdness }
+    is_max_mode: maxMode,
+    control_sliders: {
+      style_weight: styleWeight,
+      weirdness_constraint: weirdness,
+      ...(audioWeight !== undefined ? { audio_weight: audioWeight } : {})
+    }
   },
   override_fields: [],
   cover_clip_id: null, cover_start_s: null, cover_end_s: null,

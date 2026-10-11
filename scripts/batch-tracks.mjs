@@ -109,6 +109,8 @@ function runMakeTrack(t, dry) {
     if (t.persona) a.push('--persona', t.persona);
     if (t['style-weight'] !== undefined) a.push('--style-weight', String(t['style-weight']));
     if (t.weirdness !== undefined) a.push('--weirdness', String(t.weirdness));
+    if (t['audio-weight'] !== undefined) a.push('--audio-weight', String(t['audio-weight']));
+    if (t.maxMode) a.push('--max-mode');
     if (t.negative) a.push('--negative', t.negative);
     if (t.duration !== undefined) a.push('--duration', String(t.duration));
     if (t.model) a.push('--model', t.model);
