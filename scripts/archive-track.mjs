@@ -22,75 +22,91 @@
  *   --genre TEXT  ID3 genre; default "Children's Music"
  *   --year N      ID3 year; default current year
  *   --cover PATH  cover art file or URL; default is the clip's own Suno artwork
- *   --faded PATH  archive a local (faded) file instead of downloading the raw clip
+ *   --faded PATH  archive a local (faded) file; makes no network call
  *   --force       overwrite an existing file rather than refusing
  *
  * Prefer --faded: Suno's raw endings cut abruptly, so the faded render is
  * normally the one worth keeping.
+ *
+ * --clip downloads through Suno's WAV export (wav-download.mjs, shared with
+ * fade-out.mjs): MP3 downloads ended 2026-09-18 and the old clip URL is a placeholder.
+ * The WAV is encoded to 320k MP3 when tagged. It only works for clips owned by
+ * the logged-in account.
  */
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, copyFileSync, writeFileSync, statSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { downloadClipWav } from './wav-download.mjs';
 
-const args = parseArgs(process.argv.slice(2));
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+const args = isMain ? parseArgs(process.argv.slice(2)) : {};
 const API = args.api ?? 'http://localhost:3060';
 const ROOT = args.root ?? '\\\\Storage\\Media\\Music';
-
-if (!args.clip && !args.faded) {
-  console.error('Need --clip <id> or --faded <path>. See header.');
-  process.exit(1);
-}
-if (!args.album) { console.error('Need --album "<name>".'); process.exit(1); }
-
-let title = args.title;
-let sourceFile = args.faded;
-
-if (args.clip) {
-  const clips = JSON.parse(execFileSync('curl',
-    ['-s', '--max-time', '120', `${API}/api/get?ids=${args.clip}`], { encoding: 'utf8', maxBuffer: 32e6 }));
-  const clip = clips?.[0];
-  if (!clip) throw new Error(`Clip ${args.clip} not found — is the dev server running?`);
-  if (clip.status !== 'complete') throw new Error(`Clip is "${clip.status}", not complete.`);
-  if (!clip.audio_url) throw new Error('Clip has no audio_url.');
-  title = title ?? stripTrackNumber(clip.title);
-  if (!sourceFile) {
-    const tmp = path.join(process.cwd(), `.archive-${args.clip.slice(0, 8)}.mp3`);
-    console.log(`Downloading "${clip.title}" (${clip.duration}s)...`);
-    execFileSync('curl', ['-s', '--max-time', '600', '-o', tmp, clip.audio_url], { stdio: 'inherit' });
-    sourceFile = tmp;
-  }
-}
-
-if (!sourceFile || !existsSync(sourceFile)) throw new Error(`Source not found: ${sourceFile}`);
-if (!title) title = path.basename(sourceFile).replace(/\.(faded|src)?\.?mp3$/i, '');
-
-// F:\music\<Artist>\<Album>\NN Title.mp3 — the layout every music player and
-// media server already expects, so the library is browsable without extra work.
-const ARTIST = args.artist ?? 'Daddy Wombat';
+let title;
+let sourceFile;
 // True only when fetchCover downloaded a throwaway file that we should clean up.
 let coverIsTemp = true;
-const albumDir = path.join(ROOT, sanitise(ARTIST), sanitise(args.album));
-mkdirSync(albumDir, { recursive: true });
 
-const prefix = args.track ? `${String(args.track).padStart(2, '0')} ` : '';
-const dest = path.join(albumDir, `${prefix}${sanitise(title)}.mp3`);
+if (isMain) await main();
 
-if (existsSync(dest) && !args.force) {
-  console.error(`Refusing to overwrite ${dest} — pass --force if that's intended.`);
-  process.exit(1);
-}
+async function main() {
+  if (!args.clip && !args.faded) {
+    console.error('Need --clip <id> or --faded <path>. See header.');
+    process.exit(1);
+  }
+  if (!args.album) { console.error('Need --album "<name>".'); process.exit(1); }
 
-await writeTagged(sourceFile, dest);
-const kb = Math.round(statSync(dest).size / 1024);
-console.log(`\nArchived: ${dest}  (${kb} KB)`);
+  title = args.title;
+  sourceFile = args.faded;
 
-// A sidecar note so a track can be traced back to the clip it came from,
-// which matters once there are several takes of the same song.
-if (args.clip) {
-  writeFileSync(dest.replace(/\.mp3$/, '.txt'),
-    `title:    ${title}\nalbum:    ${args.album}\ntrack:    ${args.track ?? '-'}\n` +
-    `clip_id:  ${args.clip}\nsource:   ${sourceFile === args.faded ? 'faded render' : 'suno cdn'}\n`);
+  if (args.clip) {
+    // --faded alone never reaches here, so it makes no network call.
+    const clip = await fetchClip(API, args.clip);
+    title = title ?? stripTrackNumber(clip.title);
+    if (!sourceFile) {
+      const tmp = path.join(process.cwd(), `.archive-${args.clip.slice(0, 8)}.wav`);
+      console.log(`Downloading "${clip.title}" (${clip.duration}s) as WAV...`);
+      await downloadClipWav(API, args.clip, tmp);
+      sourceFile = tmp;
+    }
+  }
+
+  if (!sourceFile || !existsSync(sourceFile)) throw new Error(`Source not found: ${sourceFile}`);
+  if (!title) title = path.basename(sourceFile).replace(/\.(faded|src)?\.?(mp3|wav)$/i, '');
+
+  // F:\music\<Artist>\<Album>\NN Title.mp3 -- the layout every music player and
+  // media server already expects, so the library is browsable without extra work.
+  const ARTIST = args.artist ?? 'Daddy Wombat';
+  const albumDir = path.join(ROOT, sanitise(ARTIST), sanitise(args.album));
+  mkdirSync(albumDir, { recursive: true });
+
+  const prefix = args.track ? `${String(args.track).padStart(2, '0')} ` : '';
+  const dest = path.join(albumDir, `${prefix}${sanitise(title)}.mp3`);
+
+  if (existsSync(dest) && !args.force) {
+    console.error(`Refusing to overwrite ${dest} -- pass --force if that's intended.`);
+    process.exit(1);
+  }
+
+  try {
+    await writeTagged(sourceFile, dest, ARTIST);
+  } finally {
+    // The WAV is our own throwaway download; a --faded file is the user's.
+    if (args.clip && !args.faded) { try { rmSync(sourceFile, { force: true }); } catch { /* best effort */ } }
+  }
+  const kb = Math.round(statSync(dest).size / 1024);
+  console.log(`\nArchived: ${dest}  (${kb} KB)`);
+
+  // A sidecar note so a track can be traced back to the clip it came from,
+  // which matters once there are several takes of the same song.
+  if (args.clip) {
+    writeFileSync(dest.replace(/\.mp3$/, '.txt'),
+      `title:    ${title}\nalbum:    ${args.album}\ntrack:    ${args.track ?? '-'}\n` +
+      `clip_id:  ${args.clip}\nsource:   ${args.faded ? 'faded render' : 'suno wav export'}\n`);
+  }
 }
 
 // ---------------------------------------------------------------- helpers
@@ -108,7 +124,7 @@ if (args.clip) {
  * newer and technically better, and is exactly the sort of thing that makes a
  * track show up blank in one app and fine in another.
  */
-async function writeTagged(srcMp3, destMp3) {
+async function writeTagged(srcMp3, destMp3, ARTIST) {
   const meta = {
     title,
     artist: ARTIST,
@@ -124,8 +140,12 @@ async function writeTagged(srcMp3, destMp3) {
 
   const cmd = ['-v', 'error', '-y', '-i', srcMp3];
   if (cover) cmd.push('-i', cover);
-  // Copy the audio untouched — this is a tagging pass, not a re-encode.
-  cmd.push('-map', '0:a', '-c:a', 'copy');
+  // MP3 sources (a --faded render) are copied untouched; a WAV from the
+  // download flow has to be encoded.
+  const isMp3 = /\.mp3$/i.test(srcMp3);
+  cmd.push('-map', '0:a');
+  if (isMp3) cmd.push('-c:a', 'copy');
+  else cmd.push('-c:a', 'libmp3lame', '-b:a', '320k');
   if (cover) cmd.push('-map', '1:v', '-c:v', 'mjpeg', '-disposition:v:0', 'attached_pic',
                       '-metadata:s:v', 'title=Album cover', '-metadata:s:v', 'comment=Cover (front)');
   cmd.push('-id3v2_version', '3', '-write_id3v1', '1');
@@ -137,6 +157,7 @@ async function writeTagged(srcMp3, destMp3) {
     console.log(`  tagged: ${meta.artist} — ${meta.album}${meta.track ? ` [${meta.track}]` : ''}${cover ? ' + cover' : ' (no cover)'}`);
   } catch (e) {
     // Never lose the audio because tagging failed.
+    if (!isMp3) throw new Error(`Encoding ${srcMp3} to MP3 failed: ${e?.message ?? e}`);
     console.warn('  ! tagging failed, copying untagged:', e?.message ?? e);
     copyFileSync(srcMp3, destMp3);
   } finally {
@@ -170,8 +191,18 @@ async function fetchCover() {
   } catch { return null; }
 }
 
+/** Look up a clip's metadata (title, duration, status) and require it to be complete. */
+export async function fetchClip(api, clipId, fetchImpl = fetch) {
+  const res = await fetchImpl(`${api}/api/get?ids=${clipId}`);
+  if (!res.ok) throw new Error(`${api} returned ${res.status} -- is the dev server running?`);
+  const clip = (await res.json())?.[0];
+  if (!clip) throw new Error(`Clip ${clipId} not found -- is the dev server running?`);
+  if (clip.status !== 'complete') throw new Error(`Clip is "${clip.status}", not complete.`);
+  return clip;
+}
+
 /** "01 Waffle Wednesday" -> "Waffle Wednesday" (the number comes from --track) */
-function stripTrackNumber(s) {
+export function stripTrackNumber(s) {
   return String(s ?? '').replace(/^\s*\d{1,2}[\s.\-_]+/, '').trim();
 }
 

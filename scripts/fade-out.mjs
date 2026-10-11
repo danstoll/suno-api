@@ -38,6 +38,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
+import { downloadClipWav } from './wav-download.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const API = args.api ?? 'http://localhost:3060';
@@ -78,69 +79,11 @@ if (args.clip) {
   if (!clip) throw new Error(`No clip found for ${args.clip} (status: ${clip?.status ?? 'unknown'})`);
   label = sanitise(clip.title || args.clip);
 
-  // 2026-09-18: Suno discontinued MP3 downloads and retired the
-  // increment_action_count + /api/download/clip flow this script used to
-  // use (it now 401s "not_authorized" regardless of format — that is NOT a
-  // per-clip permission the account is missing, it's a dead endpoint).
-  // Two false leads ruled out first: media_urls[]'s cloudfront.net entry
-  // still 200s with plausible headers but the bytes are corrupt ("moov atom
-  // not found"); a per-clip `is_download_unlocked` field on GET /api/clip
-  // looked like the gate but was a red herring — it has no bearing on the
-  // endpoint below.
-  //
-  // The real current mechanism, read out of the Suno Explorer extension's
-  // own source (shared/wav-api.js, shared/wav-queue.js — a real Chrome
-  // extension the user pointed at, not observed via network capture this
-  // time): WAV only, no MP3 equivalent exists.
-  //   1. POST /api/gen/{id}/convert_wav/ — kicks off conversion. 204 on
-  //      success; 402 means the account needs Suno Pro/Premier; 403 means
-  //      this specific clip isn't WAV-convertible.
-  //   2. GET /api/gen/{id}/wav_file/ — poll; body is `{}` while converting,
-  //      then gains a `wav_file_url` key: a presigned S3 URL, fetchable with
-  //      a plain unauthenticated request. Verified end-to-end 2026-09-18:
-  //      real playable 16-bit/48kHz PCM WAV, correct duration, matches
-  //      source. (The `_paid_wm` in the S3 key name is not an audible
-  //      watermark — checked.)
-  // Both calls go through /api/raw since neither is wrapped.
-  try {
-    await rawPost(`/api/gen/${args.clip}/convert_wav/`, null);
-  } catch (err) {
-    if (/\b402\b/.test(err.message)) throw new Error(`WAV requires Suno Pro or Premier: ${err.message}`);
-    if (/\b403\b/.test(err.message)) throw new Error(`Clip ${args.clip} is not WAV-convertible: ${err.message}`);
-    console.warn(`  (convert_wav trigger failed, polling anyway in case it's already converted: ${err.message})`);
-  }
-
-  let downloadUrl;
-  let lastPollError;
-  for (let i = 0; i < 40; i++) {
-    let d;
-    try {
-      d = await rawGet(`/api/gen/${args.clip}/wav_file/`);
-    } catch (err) {
-      // A single flaky poll (dev-server hiccup, transient network blip)
-      // shouldn't kill the whole budget — note it and keep polling.
-      lastPollError = err;
-      console.warn(`  (poll ${i + 1}/40 failed, retrying: ${err.message})`);
-      await new Promise((r) => setTimeout(r, 3000));
-      continue;
-    }
-    if (d?.wav_file_url) { downloadUrl = d.wav_file_url; break; }
-    await new Promise((r) => setTimeout(r, 3000));
-  }
-  if (!downloadUrl) {
-    const suffix = lastPollError ? ` (last poll error: ${lastPollError.message})` : '';
-    throw new Error(`WAV conversion never finished for clip ${args.clip} after 120s${suffix}`);
-  }
-
+  // MP3 downloads are gone (2026-09-18); the WAV flow lives in wav-download.mjs
+  // so archive-track.mjs shares it.
   input = path.join(outDir, `${label}.src.wav`);
   console.log(`Downloading "${clip.title}" (${clip.duration}s)...`);
-  const audio = await fetch(downloadUrl);
-  // The URL carries temporary AWS SigV2 query params — drop them from any
-  // error text so a shared/logged batch output doesn't include credentials,
-  // even short-lived ones.
-  if (!audio.ok) throw new Error(`Download failed: ${audio.status} (${downloadUrl.split('?')[0]})`);
-  const { writeFileSync } = await import('node:fs');
-  writeFileSync(input, Buffer.from(await audio.arrayBuffer()));
+  await downloadClipWav(API, args.clip, input);
 }
 
 if (!existsSync(input)) throw new Error(`Input not found: ${input}`);
@@ -187,45 +130,6 @@ printTail(out, newDur);
 
 function ffprobe(a) {
   return execFileSync('ffprobe', a, { encoding: 'utf8' });
-}
-
-async function rawGet(sunoPath) {
-  const res = await fetch(`${API}/api/raw?path=${encodeURIComponent(sunoPath)}`);
-  const json = await parseRawResponse(res, sunoPath);
-  if (json?.suno_status !== 200) {
-    throw new Error(`${sunoPath} -> suno ${json?.suno_status}: ${JSON.stringify(json?.data ?? null).slice(0, 200)}`);
-  }
-  return json.data;
-}
-
-async function rawPost(sunoPath, body) {
-  const res = await fetch(`${API}/api/raw`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path: sunoPath, method: 'POST', body })
-  });
-  const json = await parseRawResponse(res, sunoPath);
-  if (json?.suno_status !== 200 && json?.suno_status !== 204) {
-    throw new Error(`${sunoPath} -> suno ${json?.suno_status}: ${JSON.stringify(json?.data ?? null).slice(0, 200)}`);
-  }
-  return json.data;
-}
-
-/**
- * /api/raw always wraps with local HTTP 200 on a real Suno response, but our
- * own dev server can still fail before reaching that point (a 500 from a
- * crash/overload, a Next.js HTML error page, a proxy timeout page) — none of
- * which are JSON. Surfacing the wrapper's own HTTP status and a snippet of
- * whatever it actually returned beats a bare, path-less `SyntaxError:
- * Unexpected token '<'...` when triaging a failed batch run later.
- */
-async function parseRawResponse(res, sunoPath) {
-  const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(`${sunoPath} -> /api/raw returned non-JSON (local HTTP ${res.status}): ${text.slice(0, 200)}`);
-  }
 }
 
 /** Print a per-second RMS bar chart of the final 12s, so the fade is visible. */
