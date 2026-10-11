@@ -2,7 +2,7 @@ import unittest, os, sys, importlib.util
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE.parent.parent / 'daddy-wombat-tunes' / 'the-long-line' / 'source'
+SRC = HERE.parent.parent / 'daddy-wombat-tunes' / 'vombatus' / 'the-long-line' / 'source'
 spec = importlib.util.spec_from_file_location('slice_midi', HERE / 'slice-midi.py')
 sm = importlib.util.module_from_spec(spec); spec.loader.exec_module(sm)
 

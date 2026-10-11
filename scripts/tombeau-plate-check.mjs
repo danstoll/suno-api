@@ -7,7 +7,7 @@ import path from 'node:path';
 import { extractFromFile } from './extract-cover.mjs';
 
 const MP3DIR = 'R:\\Music\\Vombatus\\Tombeau';
-const PLATEDIR = 'F:\\Projects\\DaddyWombat\\daddy-wombat-tunes\\artwork\\plates\\tombeau';
+const PLATEDIR = 'F:\\Projects\\DaddyWombat\\daddy-wombat-tunes\\vombatus\\tombeau\\artwork\\plates';
 
 const plates = readdirSync(PLATEDIR).filter(f => f.endsWith('.png')).sort();
 const mp3s = readdirSync(MP3DIR).filter(f => f.toLowerCase().endsWith('.mp3')).sort();
@@ -31,7 +31,7 @@ for (let i = 0; i < 10; i++) {
 }
 
 // Album cover candidate
-const cover = 'F:\\Projects\\DaddyWombat\\daddy-wombat-tunes\\artwork\\tombeau-cover.png';
+const cover = 'F:\\Projects\\DaddyWombat\\daddy-wombat-tunes\\vombatus\\tombeau\\artwork\\tombeau-cover.png';
 const cBuf = readFileSync(cover);
 console.log(`\nalbum cover: ${cBuf.length} bytes  sha256=${sha(cBuf)}`);
 console.log(`PNG magic ok: ${cBuf.slice(1, 4).toString('latin1') === 'PNG'}`);
