@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const i = process.argv.indexOf('--root');
+if (i > 0 && !process.argv[i + 1]?.trim() || process.argv[i + 1]?.startsWith('--')) { console.error('--root needs a directory.'); process.exit(2); }
 const root = i > 0 ? path.resolve(process.argv[i + 1]) : path.resolve(repo, '..');
 const files = [
   ...readdirSync(path.join(repo, 'batches/archive')).filter((f) => f.endsWith('.json')).map((f) => path.join('batches/archive', f)),
@@ -21,8 +22,8 @@ let missing = 0, total = 0;
 for (const f of files) {
   const paths = new Set(readFileSync(path.join(repo, f), 'utf8').match(/\.\.\/daddy-wombat-tunes\/[^"]+/g) ?? []);
   for (const p of [...paths].sort()) {
-    // Paths are relative to the working directory the scripts run from: the suno-api/ root.
-    const ok = existsSync(path.resolve(root, 'suno-api', p));
+    // '../x' is relative to the suno-api/ root, so it is 'x' inside the DaddyWombat root.
+    const ok = existsSync(path.join(root, p.slice(3)));
     total++; if (!ok) missing++;
     console.log(`${ok ? 'OK     ' : 'MISSING'} ${f}: ${p}`);
   }
