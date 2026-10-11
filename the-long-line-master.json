@@ -3,7 +3,7 @@
   "artist": "Daddy Wombat",
   "year": 2026,
   "genre": "Focus Sessions",
-  "cover": "../daddy-wombat-tunes/artwork/covers/the-long-line-cover-v1-2.png",
+  "cover": "../daddy-wombat-tunes/archive/draft-covers/the-long-line-cover-v1-2.png",
   "outDir": "master/the-long-line",
   "leadInSeconds": 0.5,
   "tailSeconds": 1.0,

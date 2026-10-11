@@ -9,8 +9,8 @@ GeneralUser GS, and encodes MP3. Prints a duration report and exits 1 if any
 slice lands outside ±10% of its target (spec §5).
 
     python tools/slice-midi.py --manifest the-long-line-slices.json \
-        --source-dir ../daddy-wombat-tunes/the-long-line/source \
-        --out-dir ../daddy-wombat-tunes/the-long-line/refs [--only 01,06] [--midi-only]
+        --source-dir ../daddy-wombat-tunes/vombatus/the-long-line/source \
+        --out-dir ../daddy-wombat-tunes/vombatus/the-long-line/refs [--only 01,06] [--midi-only]
 
 Bars in the manifest are FILE bars (1-based, inclusive). Movement I's file
 holds the Adagio as bars 1-4 and the Vivace as bars 5-65.
