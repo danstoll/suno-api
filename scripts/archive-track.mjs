@@ -89,8 +89,13 @@ async function main() {
   let downloaded = false;
   if (args.clip && !sourceFile) {
     sourceFile = path.join(process.cwd(), `.archive-${args.clip.slice(0, 8)}.wav`);
-    console.log(`Downloading "${clip.title}" (${clip.duration}s) as WAV...`);
-    await downloadClipWav(API, args.clip, sourceFile);
+    // A WAV kept from an earlier failed encode is reused: each export costs quota.
+    if (existsSync(sourceFile) && statSync(sourceFile).size > 0) {
+      console.log(`Reusing ${path.basename(sourceFile)} from an earlier run.`);
+    } else {
+      console.log(`Downloading "${clip.title}" (${clip.duration}s) as WAV...`);
+      await downloadClipWav(API, args.clip, sourceFile);
+    }
     downloaded = true;
   }
   if (!sourceFile || !existsSync(sourceFile)) throw new Error(`Source not found: ${sourceFile}`);
@@ -172,7 +177,10 @@ async function writeTagged(srcMp3, destMp3, ARTIST) {
     console.log(`  tagged: ${meta.artist} — ${meta.album}${meta.track ? ` [${meta.track}]` : ''}${coverUsed ? ' + cover' : ' (no cover)'}`);
   } catch (e) {
     // Never lose the audio because tagging failed.
-    if (!isMp3) throw new Error(`Encoding ${srcMp3} to MP3 failed (the downloaded WAV is kept): ${e?.message ?? e}`);
+    if (!isMp3) {
+      try { rmSync(destMp3, { force: true }); } catch { /* best effort */ } // no partial file to block a retry
+      throw new Error(`Encoding ${srcMp3} to MP3 failed (the downloaded WAV is kept): ${e?.message ?? e}`);
+    }
     console.warn('  ! tagging failed, copying untagged:', e?.message ?? e);
     copyFileSync(srcMp3, destMp3);
   } finally {
