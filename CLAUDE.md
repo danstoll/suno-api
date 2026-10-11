@@ -698,12 +698,12 @@ Wrapper over the endpoints below. `BASE=http://localhost:3060`.
 | `generate` | `POST /api/generate` | `{prompt, make_instrumental, model, wait_audio}` |
 | | `POST /api/custom_generate` | Adds `{tags, title, negative_tags}` for full control |
 | `status` | `GET /api/get?ids=<id,id>` | Omit `ids` for all. Poll until `status` is `complete`. |
-| `download` | — | Not an endpoint. Fetch the `audio_url` from `status`. |
+| `download` | — | Not an endpoint, and `audio_url` is a placeholder since MP3 downloads ended 2026-09-18. Use the WAV flow: `scripts/wav-download.mjs` (via `fade-out.mjs --clip` or `archive-track.mjs --clip`). Own clips only. |
 | `extend` | `POST /api/extend_audio` | `{audio_id, prompt, continue_at, tags, title, model}` |
 | `concat` | `POST /api/concat` | `{clip_id}` — stitches an extended clip into one track |
 
 Typical flow: `generate` → poll `status` until complete → `download` the
-`audio_url`. To lengthen a track: `extend` from a clip id, then `concat`.
+WAV export (see `download` above). To lengthen a track: `extend` from a clip id, then `concat`.
 
 `wait_audio: true` blocks until generation finishes instead of returning
 immediately — convenient for scripts, but long enough to hit client timeouts.
