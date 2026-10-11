@@ -62,20 +62,13 @@ async function main() {
   title = args.title;
   sourceFile = args.faded;
 
+  let clip;
   if (args.clip) {
     // --faded alone never reaches here, so it makes no network call.
-    const clip = await fetchClip(API, args.clip);
+    clip = await fetchClip(API, args.clip);
     title = title ?? stripTrackNumber(clip.title);
-    if (!sourceFile) {
-      const tmp = path.join(process.cwd(), `.archive-${args.clip.slice(0, 8)}.wav`);
-      console.log(`Downloading "${clip.title}" (${clip.duration}s) as WAV...`);
-      await downloadClipWav(API, args.clip, tmp);
-      sourceFile = tmp;
-    }
   }
-
-  if (!sourceFile || !existsSync(sourceFile)) throw new Error(`Source not found: ${sourceFile}`);
-  if (!title) title = path.basename(sourceFile).replace(/\.(faded|src)?\.?(mp3|wav)$/i, '');
+  if (!title && sourceFile) title = path.basename(sourceFile).replace(/\.(faded|src)?\.?(mp3|wav)$/i, '');
 
   // F:\music\<Artist>\<Album>\NN Title.mp3 -- the layout every music player and
   // media server already expects, so the library is browsable without extra work.
@@ -86,17 +79,26 @@ async function main() {
   const prefix = args.track ? `${String(args.track).padStart(2, '0')} ` : '';
   const dest = path.join(albumDir, `${prefix}${sanitise(title)}.mp3`);
 
+  // Checked BEFORE the download: a WAV export is slow and counts against the
+  // monthly download quota, so don't fetch one we would refuse to write.
   if (existsSync(dest) && !args.force) {
     console.error(`Refusing to overwrite ${dest} -- pass --force if that's intended.`);
     process.exit(1);
   }
 
-  try {
-    await writeTagged(sourceFile, dest, ARTIST);
-  } finally {
-    // The WAV is our own throwaway download; a --faded file is the user's.
-    if (args.clip && !args.faded) { try { rmSync(sourceFile, { force: true }); } catch { /* best effort */ } }
+  let downloaded = false;
+  if (args.clip && !sourceFile) {
+    sourceFile = path.join(process.cwd(), `.archive-${args.clip.slice(0, 8)}.wav`);
+    console.log(`Downloading "${clip.title}" (${clip.duration}s) as WAV...`);
+    await downloadClipWav(API, args.clip, sourceFile);
+    downloaded = true;
   }
+  if (!sourceFile || !existsSync(sourceFile)) throw new Error(`Source not found: ${sourceFile}`);
+
+  await writeTagged(sourceFile, dest, ARTIST);
+  // The WAV is our own throwaway download; a --faded file is the user's. If
+  // writeTagged threw, the WAV stays so a retry need not download it again.
+  if (downloaded) { try { rmSync(sourceFile, { force: true }); } catch { /* best effort */ } }
   const kb = Math.round(statSync(dest).size / 1024);
   console.log(`\nArchived: ${dest}  (${kb} KB)`);
 
@@ -152,12 +154,25 @@ async function writeTagged(srcMp3, destMp3, ARTIST) {
   for (const [k, v] of Object.entries(meta)) cmd.push('-metadata', `${k}=${v}`);
   cmd.push(destMp3);
 
+  let coverUsed = !!cover;
   try {
-    execFileSync('ffmpeg', cmd, { stdio: 'inherit' });
-    console.log(`  tagged: ${meta.artist} — ${meta.album}${meta.track ? ` [${meta.track}]` : ''}${cover ? ' + cover' : ' (no cover)'}`);
+    try {
+      execFileSync('ffmpeg', cmd, { stdio: 'inherit' });
+    } catch (e) {
+      // A bad cover file must not cost the audio: retry once without it.
+      if (!cover) throw e;
+      coverUsed = false;
+      console.warn('  ! ffmpeg failed with the cover, retrying without it');
+      const noCover = ['-v', 'error', '-y', '-i', srcMp3, '-map', '0:a',
+        ...(isMp3 ? ['-c:a', 'copy'] : ['-c:a', 'libmp3lame', '-b:a', '320k']),
+        '-id3v2_version', '3', '-write_id3v1', '1',
+        ...Object.entries(meta).flatMap(([k, v]) => ['-metadata', `${k}=${v}`]), destMp3];
+      execFileSync('ffmpeg', noCover, { stdio: 'inherit' });
+    }
+    console.log(`  tagged: ${meta.artist} — ${meta.album}${meta.track ? ` [${meta.track}]` : ''}${coverUsed ? ' + cover' : ' (no cover)'}`);
   } catch (e) {
     // Never lose the audio because tagging failed.
-    if (!isMp3) throw new Error(`Encoding ${srcMp3} to MP3 failed: ${e?.message ?? e}`);
+    if (!isMp3) throw new Error(`Encoding ${srcMp3} to MP3 failed (the downloaded WAV is kept): ${e?.message ?? e}`);
     console.warn('  ! tagging failed, copying untagged:', e?.message ?? e);
     copyFileSync(srcMp3, destMp3);
   } finally {

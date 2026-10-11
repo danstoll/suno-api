@@ -703,7 +703,7 @@ Wrapper over the endpoints below. `BASE=http://localhost:3060`.
 | `concat` | `POST /api/concat` | `{clip_id}` — stitches an extended clip into one track |
 
 Typical flow: `generate` → poll `status` until complete → `download` the
-the WAV export (see `download` above). To lengthen a track: `extend` from a clip id, then `concat`.
+WAV export (see `download` above). To lengthen a track: `extend` from a clip id, then `concat`.
 
 `wait_audio: true` blocks until generation finishes instead of returning
 immediately — convenient for scripts, but long enough to hit client timeouts.
