@@ -56,3 +56,6 @@ spliced/
 
 # profile-capture.mjs persistent browser profile (holds a live Suno session)
 .suno-profile/
+
+# Playlist downloads (scripts/download-playlist.mjs)
+playlists/
