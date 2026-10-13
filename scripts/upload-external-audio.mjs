@@ -17,6 +17,7 @@
  *   1. POST /api/uploads/audio/                       -> presigned S3 upload
  *   2. (upload the raw file bytes to S3 directly)
  *   3. POST /api/uploads/audio/{id}/upload-finish/     -> confirms the S3 part
+ *      (then poll GET /api/uploads/audio/{id}/ until the upload check completes)
  *   4. POST /api/uploads/audio/{id}/initialize-clip/   -> {clip_id}
  *   5. POST /api/gen/{clip_id}/set_metadata/           -> names it
  *
@@ -31,6 +32,7 @@
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { waitForUploadCheck } from './upload-check.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const API = args.api ?? 'http://localhost:3060';
@@ -80,6 +82,16 @@ await rawPost(`/api/uploads/audio/${id}/upload-finish/`, {
 });
 console.log('  upload-finish: ok');
 
+// Suno checks the upload (catalog match) after upload-finish. Wait for it, so a
+// refusal shows its reason instead of an empty 400 from initialize-clip.
+const check = await waitForUploadCheck(() => getUpload(`/api/uploads/audio/${id}/`));
+if (check.outcome === 'error') {
+  console.error(`Suno refused the upload: ${check.data?.error_message ?? '(no message)'} [${check.data?.error_type ?? 'unknown type'}]`);
+  process.exit(1);
+}
+if (check.outcome === 'missing') { console.error('Suno no longer has this upload'); process.exit(1); }
+console.log(check.outcome === 'complete' ? '  upload check: complete' : '  upload check: timed out after 2 min, trying anyway');
+
 // 4. Turn it into a real clip.
 const clipResult = await rawPost(`/api/uploads/audio/${id}/initialize-clip/`, {});
 const clipId = clipResult?.clip_id;
@@ -93,6 +105,12 @@ console.log(`\nDone. clip_id: ${clipId}  (title: "${args.title}")`);
 console.log('This clip now behaves like any other Suno clip — check /api/get?ids= to confirm status.');
 
 // ---------------------------------------------------------------- helpers
+
+async function getUpload(sunoPath) {
+  const res = await fetch(`${API}/api/raw?path=${encodeURIComponent(sunoPath)}`);
+  const json = await parseRawResponse(res, sunoPath);
+  return { status: json?.suno_status, data: json?.data };
+}
 
 async function rawGet(sunoPath) {
   const res = await fetch(`${API}/api/raw?path=${encodeURIComponent(sunoPath)}`);
