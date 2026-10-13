@@ -10,7 +10,7 @@ export async function waitForUploadCheck(getUpload, { intervalMs = 3000, timeout
       if (data?.status === 'complete') return { outcome: 'complete', data };
       if (data?.status === 'error') return { outcome: 'error', data };
     }
-    if (waited >= timeoutMs) return { outcome: 'timeout', data };
+    if (waited >= timeoutMs) return { outcome: 'timeout', status, data };
     await sleep(intervalMs);
     waited += intervalMs;
   }

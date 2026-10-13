@@ -90,7 +90,7 @@ if (check.outcome === 'error') {
   process.exit(1);
 }
 if (check.outcome === 'missing') { console.error('Suno no longer has this upload'); process.exit(1); }
-console.log(check.outcome === 'complete' ? '  upload check: complete' : '  upload check: timed out after 2 min, trying anyway');
+console.log(check.outcome === 'complete' ? '  upload check: complete' : `  upload check: timed out after 2 min (last poll: suno ${check.status ?? "none"}), trying anyway`);
 
 // 4. Turn it into a real clip.
 const clipResult = await rawPost(`/api/uploads/audio/${id}/initialize-clip/`, {});
