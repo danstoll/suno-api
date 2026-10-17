@@ -731,7 +731,842 @@
           }
         }
       }
-    }
+    },
+  "/api/activity": {
+        "get": {
+          "summary": "List recent activity events.",
+          "description": "Newest-first event log that backs the /status page. `inFlight` counts events still pending.",
+          "tags": [
+            "default"
+          ],
+          "parameters": [
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "description": "Max events, 1 to 300. Default 100.",
+              "schema": {
+                "type": "integer"
+              },
+              "example": 100
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "now": 1760000000000,
+                    "count": 1,
+                    "inFlight": 0,
+                    "events": [
+                      {
+                        "status": "ok"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "summary": "Clear the activity log.",
+          "description": "",
+          "tags": [
+            "default"
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "cleared": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/browser_token": {
+        "get": {
+          "summary": "Is a browser token held?",
+          "description": "Suno's verification token (`browser-token` header), sent from the user's own browser by `scripts/capture-browser-token.js`. The token is never returned.",
+          "tags": [
+            "default"
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "held": true
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "summary": "Store a browser token.",
+          "description": "Token must be at least 40 characters. The response gives only its length.",
+          "tags": [
+            "default"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "token"
+                  ],
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Value of the `browser-token` header."
+                    },
+                    "provider": {
+                      "type": "string",
+                      "description": "Optional token provider."
+                    }
+                  }
+                },
+                "example": {
+                  "token": "<browser-token value>",
+                  "provider": "hcaptcha"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "held": true,
+                    "length": 812,
+                    "provider": "hcaptcha"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Need { token }.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Need { token }."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/capture_token": {
+        "get": {
+          "summary": "Is a browser token held?",
+          "description": "",
+          "tags": [
+            "default"
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "held": true
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "summary": "Open a browser and wait for a verification token.",
+          "description": "Opens a browser and waits for you to make a generation by hand. It can wait up to an hour. Returns at once if a token is already held. The token stays on the server.",
+          "tags": [
+            "default"
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "held": true,
+                    "captured": true
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/cookie_status": {
+        "get": {
+          "summary": "Expiry date of the Suno session cookie.",
+          "description": "Returns the date only. The cookie is never returned.",
+          "tags": [
+            "default"
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "expires_at": "2026-12-31T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/raw": {
+        "get": {
+          "summary": "Authenticated GET to any Suno API path.",
+          "description": "Reaches Suno endpoints that have no typed route. Path must begin with `/api/`. Suno's own status is in `suno_status`, so a 404 is a usable probe result.",
+          "tags": [
+            "default"
+          ],
+          "parameters": [
+            {
+              "name": "path",
+              "in": "query",
+              "required": true,
+              "description": "Suno path, for example /api/project/default.",
+              "schema": {
+                "type": "string"
+              },
+              "example": "/api/project/default"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "suno_status": 200,
+                    "path": "/api/project/default",
+                    "data": {}
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Query param 'path' is required",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Query param 'path' is required"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "summary": "Authenticated call with any method.",
+          "description": "Non-GET methods must be named here, so a stray GET never changes anything.",
+          "tags": [
+            "default"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "path"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Suno path, begins with /api/."
+                    },
+                    "method": {
+                      "type": "string",
+                      "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE"
+                      ],
+                      "default": "POST"
+                    },
+                    "body": {
+                      "type": "object",
+                      "description": "JSON body to send."
+                    }
+                  }
+                },
+                "example": {
+                  "path": "/api/example",
+                  "method": "POST",
+                  "body": {}
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "suno_status": 200,
+                    "path": "/api/example",
+                    "method": "POST",
+                    "data": {}
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Field 'path' is required.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Field 'path' is required."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal server error."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/replace_section": {
+        "post": {
+          "summary": "Replace a time window inside a song (infill).",
+          "description": "Regenerates one window and keeps the rest. Costs about 4 credits. It returns only the window plus the lead-in and lead-out, not the finished song. Join it with `scripts/splice-infill.mjs`.",
+          "tags": [
+            "default"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "continue_clip_id",
+                    "infill_start_s",
+                    "infill_end_s"
+                  ],
+                  "properties": {
+                    "continue_clip_id": {
+                      "type": "string",
+                      "description": "Clip to edit. Aliases: clip_id, audio_id."
+                    },
+                    "infill_start_s": {
+                      "type": "number",
+                      "description": "Window start, seconds."
+                    },
+                    "infill_end_s": {
+                      "type": "number",
+                      "description": "Window end, seconds."
+                    },
+                    "lyrics": {
+                      "type": "string",
+                      "description": "New lyrics for the window."
+                    },
+                    "context_start_s": {
+                      "type": "number",
+                      "description": "Default: start minus 15."
+                    },
+                    "context_end_s": {
+                      "type": "number",
+                      "description": "Default: end plus 15."
+                    },
+                    "include_history_s": {
+                      "type": "number",
+                      "description": "Lead-in kept, seconds."
+                    },
+                    "include_future_s": {
+                      "type": "number",
+                      "description": "Lead-out kept, seconds."
+                    },
+                    "task": {
+                      "type": "string",
+                      "description": "Default `infill`."
+                    },
+                    "tags": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "model": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "continue_clip_id": "00000000-0000-0000-0000-000000000000",
+                  "infill_start_s": 29,
+                  "infill_end_s": 40,
+                  "lyrics": "new words for this window"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": [
+                    {
+                      "id": "00000000-0000-0000-0000-000000000000",
+                      "status": "submitted",
+                      "title": "Example"
+                    }
+                  ]
+                }
+              }
+            },
+            "400": {
+              "description": "'continue_clip_id' (aliases: clip_id, audio_id) is required.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "'continue_clip_id' (aliases: clip_id, audio_id) is required."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Suno refused the request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "error": "Replace section failed.",
+                    "detail": "Suno's message"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/session": {
+        "get": {
+          "summary": "Models, roles and feature flags for the account.",
+          "description": "Use it to find which `mv` model values and features the account can use.",
+          "tags": [
+            "default"
+          ],
+          "parameters": [
+            {
+              "name": "raw",
+              "in": "query",
+              "required": false,
+              "description": "`true` returns Suno's payload as it is.",
+              "schema": {
+                "type": "boolean"
+              },
+              "example": false
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "models": [
+                      {
+                        "external_key": "chirp-auk",
+                        "name": "v4.5",
+                        "major_version": 4,
+                        "max_lengths": {
+                          "prompt": 5000
+                        }
+                      }
+                    ],
+                    "roles": [],
+                    "flags": [
+                      "edit-mode-infill"
+                    ]
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal server error."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/stems": {
+        "get": {
+          "summary": "List the stems of a clip.",
+          "description": "Reads an existing split. To create one, use /api/generate_stems. A clip with no split returns `pages: 0` and an empty list.",
+          "tags": [
+            "default"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "required": true,
+              "description": "Clip ID.",
+              "schema": {
+                "type": "string"
+              },
+              "example": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "required": false,
+              "description": "Page number, from 0. Default 0.",
+              "schema": {
+                "type": "integer"
+              },
+              "example": 0
+            },
+            {
+              "name": "all",
+              "in": "query",
+              "required": false,
+              "description": "`true` returns every page.",
+              "schema": {
+                "type": "boolean"
+              },
+              "example": false
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "clip_id": "00000000-0000-0000-0000-000000000000",
+                    "pages": 1,
+                    "returned_pages": [
+                      0
+                    ],
+                    "count": 1,
+                    "stems": [
+                      {
+                        "id": "00000000-0000-0000-0000-000000000000",
+                        "stem": "Vocals",
+                        "title": "Example (Vocals)",
+                        "status": "complete",
+                        "duration": 180.2,
+                        "audio_url": "https://example.com/stem.mp3",
+                        "quiet": false
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Query param 'id' (clip id) is required.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Query param 'id' (clip id) is required."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal server error."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/studio_project": {
+        "get": {
+          "summary": "Read a Suno Studio project (read only).",
+          "description": "Studio times are in beats: seconds = beats / bps. Find a project id in `metadata.studio_project_id` of a clip of type `studio_export` or `edit_v3_export`.",
+          "tags": [
+            "default"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "required": true,
+              "description": "Studio project ID.",
+              "schema": {
+                "type": "string"
+              },
+              "example": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+              "name": "full",
+              "in": "query",
+              "required": false,
+              "description": "`true` returns the whole state document.",
+              "schema": {
+                "type": "boolean"
+              },
+              "example": false
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": {
+                    "id": "00000000-0000-0000-0000-000000000000",
+                    "title": "Example",
+                    "latest_version_id": "00000000-0000-0000-0000-000000000000",
+                    "archived": false,
+                    "used_replace_section": false,
+                    "timing": {
+                      "type": "fixed",
+                      "bps": 2,
+                      "lock_bps": true
+                    },
+                    "tracks": [
+                      {
+                        "id": "t1",
+                        "name": "Vocals",
+                        "type": "audio",
+                        "muted": false,
+                        "solo": false,
+                        "clip_count": 1,
+                        "take_lane_count": 0
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Query param 'id' (studio_project_id) is required.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Query param 'id' (studio_project_id) is required."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Internal server error."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    
   },
   "components": {
     "schemas": {
