@@ -9,10 +9,10 @@ const nextConfig = {
   },
   experimental: {
     serverMinification: false, // the server minification unfortunately breaks the selector class names
-    // Load Playwright from node_modules at run time. Webpack turns its
-    // require.resolve() into a number, and `next build` then fails in Docker.
   },
   agentRules: false,
+  // Load Playwright from node_modules at run time. Webpack turns its
+  // require.resolve() into a number, and `next build` then fails in Docker.
   serverExternalPackages: ["rebrowser-playwright-core", "ghost-cursor-playwright", "@playwright/browser-chromium"],
 };  
 
