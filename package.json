@@ -22,7 +22,6 @@
     "bufferutil": "^4.0.8",
     "chromium-bidi": "^0.10.1",
     "cookie": "^1.0.2",
-    "electron": "^33.2.1",
     "ghost-cursor-playwright": "^2.1.0",
     "js-cookie": "^3.0.5",
     "next": "14.2.35",
