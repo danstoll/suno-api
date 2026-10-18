@@ -28,6 +28,7 @@ const COLOURS: Record<string, string> = {
 };
 
 export default function StatusPage() {
+  const [now, setNow] = useState(0);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [inFlight, setInFlight] = useState(0);
   const [credits, setCredits] = useState<string>('…');
@@ -45,6 +46,7 @@ export default function StatusPage() {
         const j = await r.json();
         if (!alive) return;
         setEvents(j.events ?? []);
+        setNow(Date.now());
         setInFlight(j.inFlight ?? 0);
         setErr('');
       } catch (e: any) {
@@ -81,7 +83,7 @@ export default function StatusPage() {
   }, [paused]);
 
   const ago = (t: number) => {
-    const s = Math.round((Date.now() - t) / 1000);
+    const s = Math.round((now - t) / 1000);
     if (s < 60) return `${s}s ago`;
     if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s ago`;
     return `${Math.floor(s / 3600)}h ago`;
