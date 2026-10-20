@@ -80,6 +80,12 @@ valid cookie usually generates with no browser launch at all. The thing that
 actually expires is the **cookie** — and rotating that is a DevTools job done in
 a browser, which is a PC task regardless of where the service runs.
 
+## Before a PR
+
+There is no CI. Run `npm run check` (`tsc --noEmit`, `npm run lint`, then `npm test`,
+which runs every `src/**/*.test.mjs` with `node --test`). Tests must never call
+Suno live.
+
 ## Configuration
 
 All config lives in `.env` in the repo root (never committed — see `.gitignore`).
