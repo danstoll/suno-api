@@ -13,6 +13,7 @@ import { createCursor, Cursor } from 'ghost-cursor-playwright';
 import { promises as fs } from 'fs';
 import path from 'node:path';
 import { rawPathError } from './rawPath.mjs';
+import { createWriteQueue } from './writeQueue.mjs';
 
 // sunoApi instance caching
 const globalForSunoApi = global as unknown as { sunoApiCache?: Map<string, SunoApi> };
@@ -93,6 +94,8 @@ class SunoApi {
   private static CLERK_VERSION = '5.117.0';
 
   private readonly client: AxiosInstance;
+  // Calls that create or change clips run one at a time, in order. Reads skip it.
+  private readonly writes = createWriteQueue();
   private sid?: string;
   private currentToken?: string;
   private deviceId?: string;
@@ -1048,7 +1051,7 @@ class SunoApi {
    * @returns A promise that resolves to an AudioInfo object representing the concatenated audio.
    * @throws Error if the response status is not 200.
    */
-  public async concatenate(clip_id: string, project_id?: string): Promise<AudioInfo> {
+  async concatenateNow(clip_id: string, project_id?: string): Promise<AudioInfo> {
     await this.keepAlive(false);
     const payload: any = { clip_id: clip_id };
     // Without this the concat lands in the default workspace even when the
@@ -1133,7 +1136,7 @@ class SunoApi {
    * @param continue_clip_id 
    * @returns A promise that resolves to an array of AudioInfo objects representing the generated songs.
    */
-  private async generateSongs(
+  async generateSongsNow(
     prompt: string,
     isCustom: boolean,
     tags?: string,
@@ -1337,7 +1340,7 @@ class SunoApi {
    * @param song_id The ID of the song to generate stems for.
    * @returns A promise that resolves to an AudioInfo object representing the generated stems.
    */
-  public async generateStems(song_id: string): Promise<AudioInfo[]> {
+  async generateStemsNow(song_id: string): Promise<AudioInfo[]> {
     await this.keepAlive(false);
     const response = await this.client.post(
       `${SunoApi.BASE_URL}/api/edit/stems/${song_id}`, {}
@@ -1508,7 +1511,7 @@ class SunoApi {
    * `stem_condition_infill` and the `stem_*` fields; a plain whole-song replace
    * uses task `infill` and omits them.
    */
-  public async generateInfill(opts: {
+  async generateInfillNow(opts: {
     /** Clip to edit. Sent as `continue_clip_id`. */
     continue_clip_id: string;
     infill_start_s: number;
@@ -1684,6 +1687,26 @@ class SunoApi {
       duration: audio.metadata?.duration
     }));
   }
+  /** Queued: runs after earlier writes finish. See {@link generateSongsNow}. */
+  private generateSongs(...args: Parameters<SunoApi['generateSongsNow']>) {
+    return this.writes.run(() => this.generateSongsNow(...args));
+  }
+
+  /** Queued: runs after earlier writes finish. See {@link concatenateNow}. */
+  public concatenate(...args: Parameters<SunoApi['concatenateNow']>) {
+    return this.writes.run(() => this.concatenateNow(...args));
+  }
+
+  /** Queued: runs after earlier writes finish. See {@link generateStemsNow}. */
+  public generateStems(...args: Parameters<SunoApi['generateStemsNow']>) {
+    return this.writes.run(() => this.generateStemsNow(...args));
+  }
+
+  /** Queued: runs after earlier writes finish. See {@link generateInfillNow}. */
+  public generateInfill(...args: Parameters<SunoApi['generateInfillNow']>) {
+    return this.writes.run(() => this.generateInfillNow(...args));
+  }
+
   /**
    * Authenticated passthrough to any Suno API path.
    *
@@ -1705,6 +1728,16 @@ class SunoApi {
   public async raw(
     path: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
+    body?: any
+  ): Promise<{ status: number; data: any }> {
+    // Only GET is a read; any other method may change clips, so it queues.
+    if (method !== 'GET') return this.writes.run(() => this.rawNow(path, method, body));
+    return this.rawNow(path, method, body);
+  }
+
+  private async rawNow(
+    path: string,
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     body?: any
   ): Promise<{ status: number; data: any }> {
     await this.keepAlive(false);
