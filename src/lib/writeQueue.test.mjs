@@ -40,8 +40,36 @@ test('reads outside the queue are not blocked by a slow write', async () => {
   const q = createWriteQueue();
   let release;
   const slow = q.run(() => new Promise((r) => (release = r)));
+  await tick(0);
   const read = await Promise.resolve('read done');
   assert.equal(read, 'read done');
   release();
   await slow;
+});
+
+test('a write that waits too long rejects, never runs, and the queue moves on', async () => {
+  const q = createWriteQueue({ maxWaitMs: 30 });
+  let release;
+  const hung = q.run(() => new Promise((r) => (release = r)));
+  let ran = false;
+  const stale = q.run(async () => {
+    ran = true;
+  });
+  await assert.rejects(stale, /Write queue timeout/);
+  const next = q.run(async () => 'next');
+  release('hung done');
+  assert.equal(await hung, 'hung done');
+  assert.equal(await next, 'next');
+  assert.equal(ran, false);
+});
+
+test('the wait limit does not cut short a write that is already running', async () => {
+  const q = createWriteQueue({ maxWaitMs: 10 });
+  assert.equal(
+    await q.run(async () => {
+      await tick(40);
+      return 'slow ok';
+    }),
+    'slow ok'
+  );
 });
