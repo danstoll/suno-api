@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ['paperclip'],
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(ttf|html)$/i,
