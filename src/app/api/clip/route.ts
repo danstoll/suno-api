@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { sunoApi } from "@/lib/SunoApi";
-import { corsHeaders } from "@/lib/utils";
+import { corsHeaders, errorResponse } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -28,16 +28,8 @@ export async function GET(req: NextRequest) {
           ...corsHeaders
         }
       });
-    } catch (error) {
-      console.error('Error fetching audio:', error);
-
-      return new NextResponse(JSON.stringify({ error: 'Internal server error' }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders
-        }
-      });
+    } catch (error: any) {
+      return errorResponse(error, 'fetching audio');
     }
   } else {
     return new NextResponse('Method Not Allowed', {

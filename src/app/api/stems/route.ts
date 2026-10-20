@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { sunoApi } from '@/lib/SunoApi';
-import { corsHeaders } from '@/lib/utils';
+import { corsHeaders, errorResponse } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,8 +71,7 @@ export async function GET(req: NextRequest) {
 
     return json({ clip_id: id, pages, returned_pages: wanted, count: stems.length, stems }, 200);
   } catch (error: any) {
-    console.error('stems error:', error);
-    return json({ error: 'Internal server error. ' + (error?.message ?? error) }, 500);
+    return errorResponse(error, 'stems');
   }
 }
 

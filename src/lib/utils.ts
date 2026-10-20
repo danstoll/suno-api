@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+import { mapError } from "./errorMapping.mjs";
 import pino from "pino";
 import { Page } from "rebrowser-playwright-core";
 
@@ -116,3 +118,22 @@ export const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
+/**
+ * Turn a thrown error into a JSON response with CORS headers.
+ * Keeps Suno's status when it sent one (402, 4xx, 5xx); 503 for network
+ * errors; 500 otherwise.
+ * @param error The caught error
+ * @param context Label for the log line, e.g. 'generating audio'
+ * @param extra Extra fields merged into the body (e.g. `detail`)
+ */
+export const errorResponse = (error: any, context: string, extra?: Record<string, unknown>): NextResponse => {
+  console.error(`Error ${context}:`, error);
+  if (error?.response) {
+    console.error('Response error:', JSON.stringify(error.response.data));
+  }
+  const { status, body } = mapError(error);
+  return new NextResponse(JSON.stringify({ ...body, ...extra }), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+  });
+};

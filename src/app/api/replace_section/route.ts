@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { sunoApi } from '@/lib/SunoApi';
-import { corsHeaders } from '@/lib/utils';
+import { corsHeaders, errorResponse } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,11 +57,7 @@ export async function POST(req: NextRequest) {
 
     return json(audios, 200);
   } catch (error: any) {
-    console.error('replace_section error:', error);
-    const detail = error?.response?.data ?? error?.message ?? String(error);
-    // Surface Suno's own validation message — while the payload shape is still
-    // being pinned down, that message is the most useful thing we can return.
-    return json({ error: 'Replace section failed.', detail }, 500);
+    return errorResponse(error, 'replace_section', { detail: error?.response?.data ?? error?.message ?? String(error) });
   }
 }
 
