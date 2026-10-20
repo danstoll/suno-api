@@ -17,7 +17,9 @@ test('rejects .. segments, plain and encoded', () => {
     '/api/.%2e/x',
     '/api/%252e%252e/x',
     '/api/a/..%2fx',
-    '/api/a\\..\\x'
+    '/api/a\\..\\x',
+    '/api/a%3F/../../x',
+    '/api/a%23/../x'
   ]) {
     assert.match(rawPathError(p) ?? '', /\.\./, p);
   }
@@ -37,6 +39,10 @@ test('rejects a missing /api/ prefix and non-strings', () => {
 
 test('rejects malformed percent-escapes', () => {
   assert.ok(rawPathError('/api/%zz'));
+});
+
+test('allows an encoded URL in the query', () => {
+  assert.equal(rawPathError('/api/foo?redirect=https%3A%2F%2Fsuno.com'), null);
 });
 
 test('allows ".." inside a segment name', () => {

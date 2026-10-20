@@ -11,7 +11,8 @@ export function rawPathError(path) {
     return `Path must start with /api/ — got '${path}'`;
   }
   // Decode repeatedly so %252e%252e is caught too; a malformed escape is rejected.
-  let decoded = path;
+  // Split off the query/fragment BEFORE decoding, so an encoded ? or # cannot hide a '..'.
+  let decoded = path.split(/[?#]/)[0];
   for (let i = 0; i < 3; i++) {
     let next;
     try {
@@ -22,8 +23,7 @@ export function rawPathError(path) {
     if (next === decoded) break;
     decoded = next;
   }
-  const pathOnly = decoded.split(/[?#]/)[0];
-  if (pathOnly.split(/[/\\]/).includes('..')) {
+  if (decoded.split(/[/\\]/).includes('..')) {
     return "Path must not contain '..' segments.";
   }
   if (decoded.includes('://') || decoded.startsWith('//')) {
