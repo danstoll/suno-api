@@ -1051,6 +1051,7 @@ class SunoApi {
    * @returns A promise that resolves to an AudioInfo object representing the concatenated audio.
    * @throws Error if the response status is not 200.
    */
+  /** @internal Unqueued. Call `concatenate` instead; calling this inside a queued task would deadlock. */
   async concatenateNow(clip_id: string, project_id?: string): Promise<AudioInfo> {
     await this.keepAlive(false);
     const payload: any = { clip_id: clip_id };
@@ -1136,6 +1137,7 @@ class SunoApi {
    * @param continue_clip_id 
    * @returns A promise that resolves to an array of AudioInfo objects representing the generated songs.
    */
+  /** @internal Unqueued. Call `generateSongs` instead; calling this inside a queued task would deadlock. */
   async generateSongsNow(
     prompt: string,
     isCustom: boolean,
@@ -1340,6 +1342,7 @@ class SunoApi {
    * @param song_id The ID of the song to generate stems for.
    * @returns A promise that resolves to an AudioInfo object representing the generated stems.
    */
+  /** @internal Unqueued. Call `generateStems` instead; calling this inside a queued task would deadlock. */
   async generateStemsNow(song_id: string): Promise<AudioInfo[]> {
     await this.keepAlive(false);
     const response = await this.client.post(
@@ -1511,6 +1514,7 @@ class SunoApi {
    * `stem_condition_infill` and the `stem_*` fields; a plain whole-song replace
    * uses task `infill` and omits them.
    */
+  /** @internal Unqueued. Call `generateInfill` instead; calling this inside a queued task would deadlock. */
   async generateInfillNow(opts: {
     /** Clip to edit. Sent as `continue_clip_id`. */
     continue_clip_id: string;
