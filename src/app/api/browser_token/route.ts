@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { sunoApi } from '@/lib/SunoApi';
-import { corsHeaders } from '@/lib/utils';
+import { corsHeaders, errorResponse } from '@/lib/utils';
 
 /**
  * Receive a verification token captured from the user's own browser.
@@ -28,7 +28,7 @@ export async function GET() {
     const api = await sunoApi((await cookies()).toString());
     return json({ held: api.hasBrowserToken() });
   } catch (error: any) {
-    return json({ error: error?.message ?? String(error) }, 500);
+    return errorResponse(error, 'handling request');
   }
 }
 
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     api.setBrowserToken(token, typeof body?.provider === 'string' ? body.provider : undefined);
     return json({ held: true, length: token.length, provider: body?.provider ?? null });
   } catch (error: any) {
-    return json({ error: error?.message ?? String(error) }, 500);
+    return errorResponse(error, 'handling request');
   }
 }
 

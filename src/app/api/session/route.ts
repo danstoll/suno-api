@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { sunoApi } from '@/lib/SunoApi';
-import { corsHeaders } from '@/lib/utils';
+import { corsHeaders, errorResponse } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,8 +47,7 @@ export async function GET(req: NextRequest) {
       200
     );
   } catch (error: any) {
-    console.error('session error:', error);
-    return json({ error: 'Internal server error. ' + (error?.message ?? error) }, 500);
+    return errorResponse(error, 'session');
   }
 }
 
