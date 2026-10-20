@@ -35,3 +35,9 @@ test('non-Error throw is 500', () => {
   assert.equal(mapError(undefined).status, 500);
   assert.equal(mapError('x').body.error, 'Internal error: Unknown error occurred');
 });
+
+test('object detail is stringified, odd status becomes 500', () => {
+  const r = mapError({ response: { status: 302, data: { detail: [{ msg: 'x' }] } } });
+  assert.equal(r.status, 500);
+  assert.equal(r.body.error, 'API Error: [{"msg":"x"}]');
+});

@@ -4,15 +4,19 @@
  * @param {any} error
  * @returns {{ status: number, body: { error: string } }}
  */
+const asText = (v) => (typeof v === 'string' ? v : v == null ? undefined : JSON.stringify(v));
+
 export function mapError(error) {
   if (error?.response) {
-    const { status, data, statusText } = error.response;
-    if (status === 402) {
-      return { status: 402, body: { error: data?.detail || 'Payment required' } };
+    const { status: raw, data, statusText } = error.response;
+    const detail = asText(data?.detail);
+    const status = raw >= 400 && raw <= 599 ? raw : 500;
+    if (raw === 402) {
+      return { status: 402, body: { error: detail || 'Payment required' } };
     }
     return {
-      status: status || 500,
-      body: { error: 'API Error: ' + (data?.detail || statusText || 'Unknown error') }
+      status,
+      body: { error: 'API Error: ' + (detail || statusText || 'Unknown error') }
     };
   }
   if (error?.request) {
