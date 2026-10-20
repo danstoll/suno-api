@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { sunoApi } from '@/lib/SunoApi';
+import { sunoApi, RawPathError } from '@/lib/SunoApi';
 import { corsHeaders } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +36,9 @@ export async function GET(req: NextRequest) {
     // not exist", which is a useful probe result, not a failure of this route.
     return json({ suno_status: status, path, data }, 200);
   } catch (error: any) {
+    if (error instanceof RawPathError) {
+      return json({ error: error.message }, 400);
+    }
     console.error('raw GET error:', error);
     return json({ error: 'Internal server error. ' + (error?.message ?? error) }, 500);
   }
@@ -59,6 +62,9 @@ export async function POST(req: NextRequest) {
 
     return json({ suno_status: status, path, method: upper, data }, 200);
   } catch (error: any) {
+    if (error instanceof RawPathError) {
+      return json({ error: error.message }, 400);
+    }
     console.error('raw POST error:', error);
     return json({ error: 'Internal server error. ' + (error?.message ?? error) }, 500);
   }

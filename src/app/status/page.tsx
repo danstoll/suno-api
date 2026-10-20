@@ -33,6 +33,7 @@ export default function StatusPage() {
   const [inFlight, setInFlight] = useState(0);
   const [credits, setCredits] = useState<string>('…');
   const [captcha, setCaptcha] = useState<string>('…');
+  const [cookieExp, setCookieExp] = useState<{ text: string; level: 'ok' | 'warn' | 'error' }>({ text: '…', level: 'ok' });
   const [err, setErr] = useState<string>('');
   const [paused, setPaused] = useState(false);
 
@@ -63,6 +64,11 @@ export default function StatusPage() {
         if (alive && j?.credits_left !== undefined) {
           setCredits(`${j.credits_left} / ${j.monthly_limit}`);
         }
+      } catch { /* leave previous value */ }
+      try {
+        const r = await fetch('/api/cookie_status', { cache: 'no-store' });
+        const j = await r.json();
+        if (alive) setCookieExp(describeExpiry(j?.expires_at, Date.now()));
       } catch { /* leave previous value */ }
       try {
         const r = await fetch('/api/raw', {
@@ -97,6 +103,7 @@ export default function StatusPage() {
         <Stat label="in flight" value={String(inFlight)} highlight={inFlight > 0} />
         <Stat label="captcha" value={captcha} highlight={captcha === 'CHALLENGING'} />
         <Stat label="credits" value={credits} />
+        <Stat label="cookie expires" value={cookieExp.text} colour={cookieExp.level === 'ok' ? undefined : COLOURS[cookieExp.level === 'warn' ? 'pending' : 'error']} />
         <button onClick={() => setPaused((p) => !p)} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
           {paused ? 'resume' : 'pause'}
         </button>
@@ -146,11 +153,21 @@ export default function StatusPage() {
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+/** Expiry text and severity: warn at 7 days or less, error when expired or unknown. */
+function describeExpiry(iso: unknown, nowMs: number): { text: string; level: 'ok' | 'warn' | 'error' } {
+  const t = typeof iso === 'string' ? Date.parse(iso) : NaN;
+  if (Number.isNaN(t)) return { text: 'unknown', level: 'error' };
+  const date = new Date(t).toISOString().slice(0, 10);
+  const days = Math.floor((t - nowMs) / 86400000);
+  if (t <= nowMs) return { text: `${date} · expired`, level: 'error' };
+  return { text: `${date} · ${days}d left`, level: days <= 7 ? 'warn' : 'ok' };
+}
+
+function Stat({ label, value, highlight, colour }: { label: string; value: string; highlight?: boolean; colour?: string }) {
   return (
     <div>
       <div style={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: '1.1rem', fontWeight: 600, color: highlight ? COLOURS.pending : undefined }}>{value}</div>
+      <div style={{ fontSize: '1.1rem', fontWeight: 600, color: colour ?? (highlight ? COLOURS.pending : undefined) }}>{value}</div>
     </div>
   );
 }
