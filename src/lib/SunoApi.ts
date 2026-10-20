@@ -12,6 +12,7 @@ import { BrowserContext, Page, Locator, chromium, firefox } from 'rebrowser-play
 import { createCursor, Cursor } from 'ghost-cursor-playwright';
 import { promises as fs } from 'fs';
 import path from 'node:path';
+import { rawPathError } from './rawPath.mjs';
 
 // sunoApi instance caching
 const globalForSunoApi = global as unknown as { sunoApiCache?: Map<string, SunoApi> };
@@ -1708,12 +1709,9 @@ class SunoApi {
   ): Promise<{ status: number; data: any }> {
     await this.keepAlive(false);
 
-    if (!path.startsWith('/api/')) {
-      throw new Error(`Path must start with /api/ — got '${path}'`);
-    }
-    // Defence in depth: reject anything that could escape the fixed host.
-    if (path.includes('://') || path.startsWith('//')) {
-      throw new Error('Path must be a bare path, not a URL.');
+    const pathError = rawPathError(path);
+    if (pathError) {
+      throw new RawPathError(pathError);
     }
 
     const url = `${SunoApi.BASE_URL}${path}`;
@@ -1732,6 +1730,8 @@ class SunoApi {
     return { status: response.status, data: response.data };
   }
 }
+
+export class RawPathError extends Error {}
 
 export const sunoApi = async (cookie?: string) => {
   const resolvedCookie = cookie && cookie.includes('__client') ? cookie : process.env.SUNO_COOKIE; // Check for bad `Cookie` header (It's too expensive to actually parse the cookies *here*)
