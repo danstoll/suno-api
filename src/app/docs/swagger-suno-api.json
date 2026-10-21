@@ -1173,6 +1173,75 @@
           }
         }
       },
+      "/api/remaster": {
+        "post": {
+          "summary": "Remaster a clip (upsample).",
+          "description": "Sends a generate call with task `upsample` for an existing clip. Returns the new clip(s). Costs credits.",
+          "tags": [
+            "default"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "clip_id"
+                  ],
+                  "properties": {
+                    "clip_id": {
+                      "type": "string",
+                      "description": "Clip to remaster. Alias: audio_id."
+                    },
+                    "model": {
+                      "type": "string",
+                      "description": "Default: the fork default model."
+                    }
+                  }
+                },
+                "example": {
+                  "clip_id": "00000000-0000-0000-0000-000000000000"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "example": [
+                    {
+                      "id": "00000000-0000-0000-0000-000000000000",
+                      "status": "submitted",
+                      "title": "Example"
+                    }
+                  ]
+                }
+              }
+            },
+            "400": {
+              "description": "'clip_id' (alias: audio_id) is required.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "/api/replace_section": {
         "post": {
           "summary": "Replace a time window inside a song (infill).",
