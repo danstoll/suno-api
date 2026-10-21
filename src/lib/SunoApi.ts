@@ -14,6 +14,7 @@ import { promises as fs } from 'fs';
 import path from 'node:path';
 import { rawPathError } from './rawPath.mjs';
 import { createWriteQueue } from './writeQueue.mjs';
+import { buildRemasterPayload } from './remaster.mjs';
 
 // sunoApi instance caching
 const globalForSunoApi = global as unknown as { sunoApiCache?: Map<string, SunoApi> };
@@ -1709,6 +1710,45 @@ class SunoApi {
   /** Queued: runs after earlier writes finish. See {@link generateInfillNow}. */
   public generateInfill(...args: Parameters<SunoApi['generateInfillNow']>) {
     return this.writes.run(() => this.generateInfillNow(...args));
+  }
+
+  /** @internal Unqueued. Call `remaster` instead; calling this inside a queued task would deadlock. */
+  async remasterNow(clipId: string, model?: string): Promise<AudioInfo[]> {
+    await this.keepAlive(false);
+    const payload = buildRemasterPayload({
+      clipId,
+      model: model || DEFAULT_MODEL,
+      token: await this.getCaptcha(),
+      tokenProvider: this.tokenProvider ?? null,
+      uuid: randomUUID()
+    });
+    const response = await this.client.post(`${SunoApi.BASE_URL}/api/generate/v2-web/`, payload, {
+      timeout: 30000
+    });
+    if (response.status !== 200) {
+      throw new Error('Error response: ' + response.statusText);
+    }
+    return (response.data?.clips ?? []).map((audio: any) => ({
+      id: audio.id,
+      title: audio.title,
+      image_url: audio.image_url,
+      lyric: audio.metadata?.prompt ? this.parseLyrics(audio.metadata.prompt) : '',
+      audio_url: audio.audio_url,
+      video_url: audio.video_url,
+      created_at: audio.created_at,
+      model_name: audio.model_name,
+      status: audio.status,
+      gpt_description_prompt: audio.metadata?.gpt_description_prompt,
+      prompt: audio.metadata?.prompt,
+      type: audio.metadata?.type,
+      tags: audio.metadata?.tags,
+      duration: audio.metadata?.duration
+    }));
+  }
+
+  /** Queued: runs after earlier writes finish. See {@link remasterNow}. */
+  public remaster(...args: Parameters<SunoApi['remasterNow']>) {
+    return this.writes.run(() => this.remasterNow(...args));
   }
 
   /**

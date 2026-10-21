@@ -618,11 +618,12 @@ cannot mutate: a non-GET method must be named explicitly in a POST body.
 
 ### Confirmed present but still unwrapped
 
-From clip `action_config.actions`: `remaster`, `remix_cover`,
+`POST /api/remaster { clip_id, model? }` is wrapped (task `upsample`,
+`upsample_clip_id`). The field names come from existing clips, not a live
+capture — verify with one real call before relying on it.
+
+From clip `action_config.actions`, still unwrapped: `remix_cover`,
 `remix_reuse_style`, `create_hook`, `download_as_video`, `edit_song_details`.
-Remaster's shape is already visible in existing clips
-(`task: "upsample"`, `upsample_clip_id`, `edited_clip_id`), so it is the
-easiest next one to add.
 
 ## CLI usage (`sunocli.sh`)
 
