@@ -20,11 +20,13 @@ interface ActivityEvent {
   detail?: string;
 }
 
-const COLOURS: Record<string, string> = {
-  pending: '#d98d0b',
-  ok: '#1a9e4b',
-  error: '#d02f2f',
-  info: '#5b6472'
+// Full class names, so Tailwind can see them. Colours come from the
+// --color-status-* tokens in globals.css.
+const STATUS_TEXT: Record<ActivityEvent['status'], string> = {
+  pending: 'text-status-pending',
+  ok: 'text-status-ok',
+  error: 'text-status-error',
+  info: 'text-status-info'
 };
 
 export default function StatusPage() {
@@ -112,15 +114,15 @@ export default function StatusPage() {
   };
 
   return (
-    <main style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', padding: '1.5rem', maxWidth: 1100, margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>suno-api · status</h1>
+    <main className="font-[ui-monospace,SFMono-Regular,Menlo,monospace] p-6 max-w-[1100px] mx-auto">
+      <h1 className="text-xl mb-3">suno-api · status</h1>
 
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', padding: '0.75rem 1rem', border: '1px solid #8884', borderRadius: 8, marginBottom: '1rem' }}>
+      <div className="flex gap-6 flex-wrap px-4 py-3 border border-foreground/25 rounded-lg mb-4">
         <Stat label="in flight" value={String(inFlight)} highlight={inFlight > 0} />
         <Stat label="captcha" value={captcha} highlight={captcha === 'CHALLENGING'} />
         <Stat label="credits" value={credits} />
-        <Stat label="cookie expires" value={cookieExp.text} colour={cookieExp.level === 'ok' ? undefined : COLOURS[cookieExp.level === 'warn' ? 'pending' : 'error']} />
-        <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
+        <Stat label="cookie expires" value={cookieExp.text} colour={cookieExp.level === 'ok' ? undefined : STATUS_TEXT[cookieExp.level === 'warn' ? 'pending' : 'error']} />
+        <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} className="ml-auto cursor-pointer">
           {paused ? 'resume' : 'pause'}
         </button>
         <button
@@ -136,43 +138,43 @@ export default function StatusPage() {
               setErr(e?.message ?? 'clear failed');
             }
           }}
-          style={{ cursor: 'pointer' }}
+          className="cursor-pointer"
         >clear</button>
       </div>
 
-      {err && <p style={{ color: COLOURS.error }}>⚠ {err} — is the dev server running?</p>}
+      {err && <p className={STATUS_TEXT.error}>⚠ {err} — is the dev server running?</p>}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-        <caption style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+      <table className="w-full border-collapse text-[0.82rem]">
+        <caption className="sr-only">
           Recent API activity, newest first
         </caption>
         <thead>
-          <tr style={{ textAlign: 'left', borderBottom: '1px solid #8886' }}>
-            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 90 }}>when</th>
-            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 80 }}>kind</th>
-            <th scope="col" style={{ padding: '0.35rem 0.5rem' }}>what</th>
-            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 80 }}>status</th>
-            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 70 }}>took</th>
+          <tr className="text-left border-b border-foreground/40">
+            <th scope="col" className="px-2 py-[0.35rem] w-[90px]">when</th>
+            <th scope="col" className="px-2 py-[0.35rem] w-20">kind</th>
+            <th scope="col" className="px-2 py-[0.35rem]">what</th>
+            <th scope="col" className="px-2 py-[0.35rem] w-20">status</th>
+            <th scope="col" className="px-2 py-[0.35rem] w-[70px]">took</th>
           </tr>
         </thead>
         <tbody>
           {events.length === 0 && (
-            <tr><td colSpan={5} style={{ padding: '1rem 0.5rem', opacity: 0.6 }}>
+            <tr><td colSpan={5} className="px-2 py-4 opacity-60">
               No activity yet. Start a generation and it will appear here.
             </td></tr>
           )}
           {events.map((e) => (
-            <tr key={e.id} style={{ borderBottom: '1px solid #8883' }}>
-              <td style={{ padding: '0.3rem 0.5rem', opacity: 0.7 }}>{ago(e.at)}</td>
-              <td style={{ padding: '0.3rem 0.5rem', opacity: 0.8 }}>{e.kind}</td>
-              <td style={{ padding: '0.3rem 0.5rem' }}>
+            <tr key={e.id} className="border-b border-foreground/20">
+              <td className="px-2 py-[0.3rem] opacity-70">{ago(e.at)}</td>
+              <td className="px-2 py-[0.3rem] opacity-80">{e.kind}</td>
+              <td className="px-2 py-[0.3rem]">
                 {e.label}
-                {e.detail && <div style={{ opacity: 0.6, fontSize: '0.75rem' }}>{e.detail}</div>}
+                {e.detail && <div className="opacity-60 text-xs">{e.detail}</div>}
               </td>
-              <td style={{ padding: '0.3rem 0.5rem', color: COLOURS[e.status], fontWeight: 600 }}>
+              <td className={`px-2 py-[0.3rem] font-semibold ${STATUS_TEXT[e.status]}`}>
                 {e.status === 'pending' ? '● running' : e.status}
               </td>
-              <td style={{ padding: '0.3rem 0.5rem', opacity: 0.7 }}>
+              <td className="px-2 py-[0.3rem] opacity-70">
                 {e.ms !== undefined ? `${(e.ms / 1000).toFixed(1)}s` : ''}
               </td>
             </tr>
@@ -196,8 +198,8 @@ function describeExpiry(iso: unknown, nowMs: number): { text: string; level: 'ok
 function Stat({ label, value, highlight, colour }: { label: string; value: string; highlight?: boolean; colour?: string }) {
   return (
     <div>
-      <div style={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: '1.1rem', fontWeight: 600, color: colour ?? (highlight ? COLOURS.pending : undefined) }}>{value}</div>
+      <div className="text-[0.7rem] opacity-60 uppercase">{label}</div>
+      <div className={`text-[1.1rem] font-semibold ${colour ?? (highlight ? STATUS_TEXT.pending : '')}`}>{value}</div>
     </div>
   );
 }
