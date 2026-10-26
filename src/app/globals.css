@@ -14,20 +14,17 @@
   }
 }
 
-@layer base {
-  :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 255, 255, 255;
-    --background-end-rgb: 255, 255, 255;
-  }
+@theme {
+  --color-foreground: #000;
+  --color-background: #fff;
+  --color-accent: var(--color-indigo-900);
+  --color-accent-soft: var(--color-indigo-300);
+  --color-muted: var(--color-gray-300);
+}
 
+@layer base {
   body {
-    color: rgb(var(--foreground-rgb));
-    background: linear-gradient(
-        to bottom,
-        transparent,
-        rgb(var(--background-end-rgb))
-      )
-      rgb(var(--background-start-rgb));
+    color: var(--color-foreground);
+    background: var(--color-background);
   }
 }
