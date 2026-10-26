@@ -104,7 +104,7 @@ export default function StatusPage() {
         <Stat label="captcha" value={captcha} highlight={captcha === 'CHALLENGING'} />
         <Stat label="credits" value={credits} />
         <Stat label="cookie expires" value={cookieExp.text} colour={cookieExp.level === 'ok' ? undefined : COLOURS[cookieExp.level === 'warn' ? 'pending' : 'error']} />
-        <button type="button" onClick={() => setPaused((p) => !p)} aria-pressed={paused} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
+        <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
           {paused ? 'resume' : 'pause'}
         </button>
         <button
@@ -112,8 +112,13 @@ export default function StatusPage() {
           aria-label="Clear activity log"
           onClick={async () => {
             if (!window.confirm('Clear the whole activity log? This cannot be undone.')) return;
-            await fetch('/api/activity', { method: 'DELETE' });
-            setEvents([]);
+            try {
+              const r = await fetch('/api/activity', { method: 'DELETE' });
+              if (!r.ok) throw new Error(`clear failed (${r.status})`);
+              setEvents([]);
+            } catch (e: any) {
+              setErr(e?.message ?? 'clear failed');
+            }
           }}
           style={{ cursor: 'pointer' }}
         >clear</button>
