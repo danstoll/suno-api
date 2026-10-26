@@ -81,11 +81,27 @@ export default function StatusPage() {
       } catch { /* leave previous value */ }
     };
 
-    tick();
-    slowTick();
-    const fast = setInterval(tick, 2000);
-    const slow = setInterval(slowTick, 30000);
-    return () => { alive = false; clearInterval(fast); clearInterval(slow); };
+    // Poll only while the tab is visible. A hidden tab makes no requests;
+    // becoming visible again polls once straight away, then resumes the timers.
+    let fast: ReturnType<typeof setInterval> | undefined;
+    let slow: ReturnType<typeof setInterval> | undefined;
+    const stop = () => { clearInterval(fast); clearInterval(slow); fast = slow = undefined; };
+    const start = () => {
+      if (fast !== undefined) return;
+      tick();
+      slowTick();
+      fast = setInterval(tick, 2000);
+      slow = setInterval(slowTick, 30000);
+    };
+    const onVisibility = () => (document.hidden ? stop() : start());
+
+    document.addEventListener('visibilitychange', onVisibility);
+    if (!document.hidden) start();
+    return () => {
+      alive = false;
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [paused]);
 
   const ago = (t: number) => {
