@@ -41,3 +41,13 @@ test('object detail is stringified, odd status becomes 500', () => {
   assert.equal(r.status, 500);
   assert.equal(r.body.error, 'API Error: [{"msg":"x"}]');
 });
+
+// Error shapes the activity, cookie_status and chat completions routes hit.
+test('local failure with no response (activity, cookie_status) is a 500 body', () => {
+  assert.deepEqual(mapError(new TypeError('bad url')), { status: 500, body: { error: 'Internal error: bad url' } });
+});
+
+test('chat completions: Suno error without detail no longer needs error.response.data', () => {
+  assert.deepEqual(mapError({ response: { status: 401, data: {} } }), { status: 401, body: { error: 'API Error: Unknown error' } });
+  assert.equal(mapError(new Error('no response')).status, 500);
+});

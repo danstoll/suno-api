@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { DEFAULT_MODEL, sunoApi } from "@/lib/SunoApi";
-import { corsHeaders } from "@/lib/utils";
+import { corsHeaders, errorResponse } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -42,14 +42,7 @@ export async function POST(req: NextRequest) {
       headers: corsHeaders
     });
   } catch (error: any) {
-    console.error('Error generating audio:', JSON.stringify(error.response.data));
-    return new NextResponse(JSON.stringify({ error: 'Internal server error: ' + JSON.stringify(error.response.data.detail) }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders
-      }
-    });
+    return errorResponse(error, 'generating audio');
   }
 }
 

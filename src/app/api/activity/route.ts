@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { list, clear } from '@/lib/activity';
-import { corsHeaders } from '@/lib/utils';
+import { corsHeaders, errorResponse } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,21 +11,29 @@ export const dynamic = 'force-dynamic';
  *   DELETE /api/activity             -> clear the log
  */
 export async function GET(req: NextRequest) {
-  const limitRaw = new URL(req.url).searchParams.get('limit');
-  const limit = Math.min(Math.max(Number(limitRaw ?? 100) || 100, 1), 300);
-  const events = list(limit);
-  return json({
-    now: Date.now(),
-    count: events.length,
-    // A single number the page can headline: is anything actually in flight?
-    inFlight: events.filter((e) => e.status === 'pending').length,
-    events
-  });
+  try {
+    const limitRaw = new URL(req.url).searchParams.get('limit');
+    const limit = Math.min(Math.max(Number(limitRaw ?? 100) || 100, 1), 300);
+    const events = list(limit);
+    return json({
+      now: Date.now(),
+      count: events.length,
+      // A single number the page can headline: is anything actually in flight?
+      inFlight: events.filter((e) => e.status === 'pending').length,
+      events
+    });
+  } catch (error: any) {
+    return errorResponse(error, 'reading activity');
+  }
 }
 
 export async function DELETE() {
-  clear();
-  return json({ cleared: true });
+  try {
+    clear();
+    return json({ cleared: true });
+  } catch (error: any) {
+    return errorResponse(error, 'clearing activity');
+  }
 }
 
 export async function OPTIONS() {
