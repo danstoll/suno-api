@@ -120,11 +120,22 @@ export default function StatusPage() {
         <Stat label="captcha" value={captcha} highlight={captcha === 'CHALLENGING'} />
         <Stat label="credits" value={credits} />
         <Stat label="cookie expires" value={cookieExp.text} colour={cookieExp.level === 'ok' ? undefined : COLOURS[cookieExp.level === 'warn' ? 'pending' : 'error']} />
-        <button onClick={() => setPaused((p) => !p)} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
+        <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
           {paused ? 'resume' : 'pause'}
         </button>
         <button
-          onClick={async () => { await fetch('/api/activity', { method: 'DELETE' }); setEvents([]); }}
+          type="button"
+          aria-label="Clear activity log"
+          onClick={async () => {
+            if (!window.confirm('Clear the whole activity log? This cannot be undone.')) return;
+            try {
+              const r = await fetch('/api/activity', { method: 'DELETE' });
+              if (!r.ok) throw new Error(`clear failed (${r.status})`);
+              setEvents([]);
+            } catch (e: any) {
+              setErr(e?.message ?? 'clear failed');
+            }
+          }}
           style={{ cursor: 'pointer' }}
         >clear</button>
       </div>
@@ -132,13 +143,16 @@ export default function StatusPage() {
       {err && <p style={{ color: COLOURS.error }}>⚠ {err} — is the dev server running?</p>}
 
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+        <caption style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+          Recent API activity, newest first
+        </caption>
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '1px solid #8886' }}>
-            <th style={{ padding: '0.35rem 0.5rem', width: 90 }}>when</th>
-            <th style={{ padding: '0.35rem 0.5rem', width: 80 }}>kind</th>
-            <th style={{ padding: '0.35rem 0.5rem' }}>what</th>
-            <th style={{ padding: '0.35rem 0.5rem', width: 80 }}>status</th>
-            <th style={{ padding: '0.35rem 0.5rem', width: 70 }}>took</th>
+            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 90 }}>when</th>
+            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 80 }}>kind</th>
+            <th scope="col" style={{ padding: '0.35rem 0.5rem' }}>what</th>
+            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 80 }}>status</th>
+            <th scope="col" style={{ padding: '0.35rem 0.5rem', width: 70 }}>took</th>
           </tr>
         </thead>
         <tbody>
