@@ -1,7 +1,7 @@
 # suno-api (homelab fork) — AI Assistant Context
 
 Maintained fork of [gcui-art/suno-api](https://github.com/gcui-art/suno-api).
-Fork: [danstoll/suno-api](https://github.com/danstoll/suno-api).
+Fork: [danstoll/suno-api](https://git.leforge.lan/danstoll/suno-api) on Gitea (origin). GitHub is a backup copy only: make changes on Gitea.
 
 Unofficial REST wrapper around Suno's internal API. It authenticates as **your
 own Suno account** using a browser session cookie — there is no official API key.
