@@ -1,5 +1,6 @@
 const DEFAULT_MAX_WAIT_S = 120;
 const DEFAULT_FLOW_MAX_S = 600;
+const DEFAULT_MANUAL_MAX_S = 900;
 const RUN_MARGIN_S = 60;
 
 function positive(v) {
@@ -7,11 +8,17 @@ function positive(v) {
   return Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
-/** Cap on one running write: WRITE_QUEUE_MAX_RUN_S, else CAPTCHA_FLOW_MAX_S (600) + 60s margin. */
+/**
+ * Cap on one running write: WRITE_QUEUE_MAX_RUN_S, else the automatic flow
+ * (CAPTCHA_FLOW_MAX_S, 600) plus the manual fallback (CAPTCHA_MANUAL_MAX_S, 900)
+ * plus a 60s margin, since MANUAL_CAPTCHA=fallback runs both in one write.
+ */
 function defaultMaxRunMs() {
   const s =
     positive(process.env.WRITE_QUEUE_MAX_RUN_S) ??
-    (positive(process.env.CAPTCHA_FLOW_MAX_S) ?? DEFAULT_FLOW_MAX_S) + RUN_MARGIN_S;
+    (positive(process.env.CAPTCHA_FLOW_MAX_S) ?? DEFAULT_FLOW_MAX_S) +
+      (positive(process.env.CAPTCHA_MANUAL_MAX_S) ?? DEFAULT_MANUAL_MAX_S) +
+      RUN_MARGIN_S;
   return s * 1000;
 }
 
@@ -31,7 +38,7 @@ function defaultMaxWaitMs(maxRunMs) {
  * - `maxRunMs`: a running task that has not settled within this time rejects
  *   its caller with a timeout error and the queue moves on. The hung task
  *   itself cannot be cancelled; it is abandoned. Default follows
- *   CAPTCHA_FLOW_MAX_S plus a margin (WRITE_QUEUE_MAX_RUN_S overrides).
+ *   CAPTCHA_FLOW_MAX_S + CAPTCHA_MANUAL_MAX_S plus a margin (WRITE_QUEUE_MAX_RUN_S overrides).
  */
 export function createWriteQueue({ maxRunMs = defaultMaxRunMs(), maxWaitMs } = {}) {
   if (maxWaitMs === undefined) maxWaitMs = defaultMaxWaitMs(maxRunMs);

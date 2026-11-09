@@ -89,3 +89,11 @@ test('default waiter limit is not below the run cap', async () => {
   assert.equal(await slow, 'slow');
   assert.equal(await behind, 'behind');
 });
+
+test('a late settle after the run cap is ignored and does not release the next write early', async () => {
+  const q = createWriteQueue({ maxRunMs: 20, maxWaitMs: 1000 });
+  const hung = q.run(() => tick(60).then(() => 'late'));
+  await assert.rejects(hung, /ran over 20ms/);
+  assert.equal(await q.run(async () => 'next'), 'next');
+  await tick(60);
+});
