@@ -7,6 +7,7 @@ import { record, settle } from '@/lib/activity';
 import * as cookie from 'cookie';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { setTimeout as sleepMs } from 'node:timers/promises';
 import { Solver } from '@2captcha/captcha-solver';
 import { paramsCoordinates } from '@2captcha/captcha-solver/dist/structs/2captcha';
 import { BrowserContext, Page, Locator, chromium, firefox } from 'rebrowser-playwright-core';
@@ -789,10 +790,10 @@ class SunoApi {
     const deadline = Date.now() + maxSeconds * 1000;
     let delayMs = 15_000;
     while (Date.now() < deadline) {
-      // sleep() takes SECONDS, not milliseconds — every other call in this file
-      // is sleep(0.5) / sleep(2). Passing it 15_000 sleeps for four hours, which
-      // silently wedges the whole request.
-      await sleep(Math.min(delayMs, Math.max(0, deadline - Date.now())) / 1000);
+      // Milliseconds here (sleepMs), unlike sleep(), which takes SECONDS.
+      // Abortable: a released write wakes now, not after up to 60s of backoff.
+      await sleepMs(Math.min(delayMs, Math.max(0, deadline - Date.now())),
+        undefined, { signal: writeSignal.getStore() }).catch(() => {});
       // A released write must stop here, not retry its cancelled check until
       // the budget runs out and then escalate into a browser.
       throwIfWriteAborted();
