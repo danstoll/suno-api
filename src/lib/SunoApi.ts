@@ -411,6 +411,7 @@ class SunoApi {
     if (sig) {
       if (sig.aborted) { closeBrowser(); throw new Error('Write aborted before the browser started'); }
       sig.addEventListener('abort', closeBrowser, { once: true });
+      browser.on('disconnected', () => sig.removeEventListener('abort', closeBrowser));
     }
     const context = await browser.newContext({ userAgent: this.userAgent, locale: process.env.BROWSER_LOCALE, viewport: null });
     const cookies = [];
