@@ -103,6 +103,14 @@ go stale together — rotating one means rotating the other.
 | `CAPTCHA_WAIT_MAX_S` | Idle-poll seconds before escalating. `0` = escalate immediately. |
 | `CAPTCHA_FLOW_MAX_S` | Hard cap on the **automatic** flow. Default 600. |
 | `CAPTCHA_MANUAL_MAX_S` | Hard cap on the **manual** flow. Default 900. |
+| `WRITE_QUEUE_MAX_RUN_S` | Cap on one running write (writes run one at a time). A write over the cap rejects its caller and the queue moves on. Default `CAPTCHA_FLOW_MAX_S` + `CAPTCHA_MANUAL_MAX_S` + 60 = **1560**, so `fallback` mode can run both flows. |
+| `WRITE_QUEUE_MAX_WAIT_S` | How long a queued write may wait to start before it rejects. Default 120. |
+
+**The waiter limit is never below the run cap.** The code uses
+`max(WRITE_QUEUE_MAX_WAIT_S, run cap)`, so a value below the run cap has no
+effect. A write queued behind a long generate is not rejected early. Both vars
+need a positive number; anything else falls back to the default. Source:
+[src/lib/writeQueue.mjs](src/lib/writeQueue.mjs).
 
 With `TWOCAPTCHA_KEY` blank, set `MANUAL_CAPTCHA=fallback` — otherwise a captcha
 challenge simply fails the request.
