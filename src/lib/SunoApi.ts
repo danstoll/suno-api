@@ -6,6 +6,7 @@ import { isPage, sleep, waitForRequests } from '@/lib/utils';
 import { record, settle } from '@/lib/activity';
 import * as cookie from 'cookie';
 import { randomUUID } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { Solver } from '@2captcha/captcha-solver';
 import { paramsCoordinates } from '@2captcha/captcha-solver/dist/structs/2captcha';
 import { BrowserContext, Page, Locator, chromium, firefox } from 'rebrowser-playwright-core';
@@ -15,6 +16,11 @@ import path from 'node:path';
 import { rawPathError } from './rawPath.mjs';
 import { createWriteQueue } from './writeQueue.mjs';
 import { buildRemasterPayload } from './remaster.mjs';
+
+// The AbortSignal of the queued write now running. The write queue fires it at
+// the run cap; launchBrowser and the axios client read it so the browser and the
+// Suno call stop with the write instead of outliving it.
+const writeSignal = new AsyncLocalStorage<AbortSignal>();
 
 // sunoApi instance caching
 const globalForSunoApi = global as unknown as { sunoApiCache?: Map<string, SunoApi> };
@@ -180,6 +186,8 @@ class SunoApi {
       }
     });
     this.client.interceptors.request.use(config => {
+      const sig = writeSignal.getStore();
+      if (sig && !config.signal) config.signal = sig;
       if (this.currentToken && !config.headers.Authorization)
         config.headers.Authorization = `Bearer ${this.currentToken}`;
       // Verification now rides in a header, not the body. Without it Suno
@@ -398,6 +406,12 @@ class SunoApi {
       args,
       headless: yn(process.env.BROWSER_HEADLESS, { default: true })
     });
+    const sig = writeSignal.getStore();
+    const closeBrowser = () => { try { browser.close().catch(() => {}); } catch { /* already gone */ } };
+    if (sig) {
+      if (sig.aborted) { closeBrowser(); throw new Error('Write aborted before the browser started'); }
+      sig.addEventListener('abort', closeBrowser, { once: true });
+    }
     const context = await browser.newContext({ userAgent: this.userAgent, locale: process.env.BROWSER_LOCALE, viewport: null });
     const cookies = [];
     const lax: 'Lax' | 'Strict' | 'None' = 'Lax';
@@ -1694,22 +1708,22 @@ class SunoApi {
   }
   /** Queued: runs after earlier writes finish. See {@link generateSongsNow}. */
   private generateSongs(...args: Parameters<SunoApi['generateSongsNow']>) {
-    return this.writes.run(() => this.generateSongsNow(...args));
+    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.generateSongsNow(...args)));
   }
 
   /** Queued: runs after earlier writes finish. See {@link concatenateNow}. */
   public concatenate(...args: Parameters<SunoApi['concatenateNow']>) {
-    return this.writes.run(() => this.concatenateNow(...args));
+    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.concatenateNow(...args)));
   }
 
   /** Queued: runs after earlier writes finish. See {@link generateStemsNow}. */
   public generateStems(...args: Parameters<SunoApi['generateStemsNow']>) {
-    return this.writes.run(() => this.generateStemsNow(...args));
+    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.generateStemsNow(...args)));
   }
 
   /** Queued: runs after earlier writes finish. See {@link generateInfillNow}. */
   public generateInfill(...args: Parameters<SunoApi['generateInfillNow']>) {
-    return this.writes.run(() => this.generateInfillNow(...args));
+    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.generateInfillNow(...args)));
   }
 
   /** @internal Unqueued. Call `remaster` instead; calling this inside a queued task would deadlock. */
@@ -1748,7 +1762,7 @@ class SunoApi {
 
   /** Queued: runs after earlier writes finish. See {@link remasterNow}. */
   public remaster(...args: Parameters<SunoApi['remasterNow']>) {
-    return this.writes.run(() => this.remasterNow(...args));
+    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.remasterNow(...args)));
   }
 
   /**
@@ -1775,7 +1789,7 @@ class SunoApi {
     body?: any
   ): Promise<{ status: number; data: any }> {
     // Only GET is a read; any other method may change clips, so it queues.
-    if (method !== 'GET') return this.writes.run(() => this.rawNow(path, method, body));
+    if (method !== 'GET') return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.rawNow(path, method, body)));
     return this.rawNow(path, method, body);
   }
 

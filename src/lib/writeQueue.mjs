@@ -36,8 +36,8 @@ function defaultMaxWaitMs(maxRunMs) {
  *   submitted rejects with a timeout error and never runs. Default is at
  *   least `maxRunMs`, so a write behind a long generate is not rejected early.
  * - `maxRunMs`: a running task that has not settled within this time rejects
- *   its caller with a timeout error and the queue moves on. The hung task
- *   itself cannot be cancelled; it is abandoned. Default follows
+ *   its caller with a timeout error, the queue moves on, and the AbortSignal
+ *   passed to the task fires. A task that ignores the signal is abandoned. Default follows
  *   CAPTCHA_FLOW_MAX_S + CAPTCHA_MANUAL_MAX_S plus a margin (WRITE_QUEUE_MAX_RUN_S overrides).
  */
 export function createWriteQueue({ maxRunMs = defaultMaxRunMs(), maxWaitMs } = {}) {
@@ -63,16 +63,19 @@ export function createWriteQueue({ maxRunMs = defaultMaxRunMs(), maxWaitMs } = {
           clearTimeout(waitTimer);
           if (timedOut) return finished();
           started = true;
+          const controller = new AbortController();
           const runTimer = setTimeout(() => {
             reject(
               new Error(
                 `Write queue timeout: write ran over ${maxRunMs}ms and was released`
               )
             );
+            // Tell the abandoned task to stop (close browser, cancel HTTP).
+            controller.abort(new Error(`Write released after ${maxRunMs}ms`));
             finished();
           }, maxRunMs);
           return Promise.resolve()
-            .then(task)
+            .then(() => task(controller.signal))
             .then(resolve, reject)
             .then(() => {
               clearTimeout(runTimer);

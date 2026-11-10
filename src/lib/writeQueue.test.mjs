@@ -97,3 +97,25 @@ test('a late settle after the run cap is ignored and does not release the next w
   assert.equal(await q.run(async () => 'next'), 'next');
   await tick(60);
 });
+
+test('the run cap fires the AbortSignal the task received', async () => {
+  const q = createWriteQueue({ maxRunMs: 20, maxWaitMs: 1000 });
+  let seen;
+  const hung = q.run((signal) => {
+    seen = signal;
+    return new Promise(() => {});
+  });
+  await assert.rejects(hung, /released/);
+  assert.equal(seen.aborted, true);
+  assert.match(String(seen.reason.message), /released/);
+});
+
+test('a write that finishes in time is not aborted', async () => {
+  const q = createWriteQueue({ maxRunMs: 50, maxWaitMs: 1000 });
+  let seen;
+  await q.run(async (signal) => {
+    seen = signal;
+  });
+  await tick(80);
+  assert.equal(seen.aborted, false);
+});
