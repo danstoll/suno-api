@@ -73,3 +73,27 @@ test('the wait limit does not cut short a write that is already running', async 
     'slow ok'
   );
 });
+
+test('a never-settling write is released at maxRunMs and the next write runs', async () => {
+  const q = createWriteQueue({ maxRunMs: 30, maxWaitMs: 1000 });
+  const hung = q.run(() => new Promise(() => {}));
+  const next = q.run(async () => 'ok');
+  await assert.rejects(hung, /ran over 30ms/);
+  assert.equal(await next, 'ok');
+});
+
+test('default waiter limit is not below the run cap', async () => {
+  const q = createWriteQueue({ maxRunMs: 80 });
+  const slow = q.run(() => tick(60).then(() => 'slow'));
+  const behind = q.run(async () => 'behind');
+  assert.equal(await slow, 'slow');
+  assert.equal(await behind, 'behind');
+});
+
+test('a late settle after the run cap is ignored and does not release the next write early', async () => {
+  const q = createWriteQueue({ maxRunMs: 20, maxWaitMs: 1000 });
+  const hung = q.run(() => tick(60).then(() => 'late'));
+  await assert.rejects(hung, /ran over 20ms/);
+  assert.equal(await q.run(async () => 'next'), 'next');
+  await tick(60);
+});
