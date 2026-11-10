@@ -22,6 +22,11 @@ import { buildRemasterPayload } from './remaster.mjs';
 // Suno call stop with the write instead of outliving it.
 const writeSignal = new AsyncLocalStorage<AbortSignal>();
 
+/** Throw the release reason if the running write was released by the run cap. */
+function throwIfWriteAborted() {
+  writeSignal.getStore()?.throwIfAborted();
+}
+
 // sunoApi instance caching
 const globalForSunoApi = global as unknown as { sunoApiCache?: Map<string, SunoApi> };
 const cache = globalForSunoApi.sunoApiCache || new Map<string, SunoApi>();
@@ -450,8 +455,14 @@ class SunoApi {
     // Force the browser to be visible even if BROWSER_HEADLESS=true is set.
     const prevHeadless = process.env.BROWSER_HEADLESS;
     process.env.BROWSER_HEADLESS = 'false';
-    const browser = await this.launchBrowser();
-    process.env.BROWSER_HEADLESS = prevHeadless;
+    let browser: BrowserContext;
+    try {
+      browser = await this.launchBrowser();
+    } finally {
+      // Restore even when the launch throws (an aborted write), or every later
+      // browser opens visible.
+      process.env.BROWSER_HEADLESS = prevHeadless;
+    }
 
     const page = await browser.newPage();
     await page.goto('https://suno.com/create', { waitUntil: 'domcontentloaded', timeout: 0 });
@@ -468,11 +479,14 @@ class SunoApi {
     return new Promise<string | null>((resolve, reject) => {
       let captured = false;
       const settled = { done: false };
+      const sig = writeSignal.getStore();
+      const onAbort = () => finish(reject, sig!.reason);
       const finish = (fn: Function, v?: any) => {
         if (settled.done) return;
         settled.done = true;
         clearInterval(poll);
         clearTimeout(cap);
+        sig?.removeEventListener('abort', onAbort);
         try { browser.browser()?.close(); } catch { /* already gone */ }
         fn(v);
       };
@@ -615,6 +629,13 @@ class SunoApi {
       browser.browser()?.on('disconnected', () => {
         if (!captured) finish(reject, new Error('Browser disconnected before captcha solved'));
       });
+
+      // Exit 4 — the run cap released this write. Settle with its reason. This
+      // runs in the abort dispatch itself, before the browser's async 'close'
+      // event, so the cause is not reported as a user cancel. Armed last so
+      // finish() sees poll and cap initialised.
+      if (sig?.aborted) onAbort();
+      else sig?.addEventListener('abort', onAbort, { once: true });
     });
   }
 
@@ -749,6 +770,7 @@ class SunoApi {
       try {
         return this.rememberToken(await this.getCaptchaAuto());
       } catch (e: any) {
+        throwIfWriteAborted(); // released by the run cap: do not open a second browser
         logger.warn({ err: e?.message ?? String(e) },
           'Automatic CAPTCHA failed — falling back to MANUAL mode');
         return this.rememberToken(await this.getCaptchaManual());
@@ -771,10 +793,14 @@ class SunoApi {
       // is sleep(0.5) / sleep(2). Passing it 15_000 sleeps for four hours, which
       // silently wedges the whole request.
       await sleep(Math.min(delayMs, Math.max(0, deadline - Date.now())) / 1000);
+      // A released write must stop here, not retry its cancelled check until
+      // the budget runs out and then escalate into a browser.
+      throwIfWriteAborted();
       if (Date.now() > deadline) break;
       try {
         if (!await this.captchaRequired()) return true;
       } catch (e: any) {
+        throwIfWriteAborted();
         // A transient failure of the check shouldn't abandon the wait.
         logger.warn({ err: e?.message ?? String(e) }, 'captcha check failed during wait; retrying');
       }
@@ -959,9 +985,12 @@ class SunoApi {
      */
     let poll: any;
     let cap: any;
+    let onAbort: (() => void) | undefined;
+    const sig = writeSignal.getStore();
     const cleanup = () => {
       try { clearInterval(poll); } catch { /* not armed yet */ }
       try { clearTimeout(cap); } catch { /* not armed yet */ }
+      if (onAbort) sig?.removeEventListener('abort', onAbort);
       try { browser.browser()?.close(); } catch { /* already gone */ }
       try { controller.abort(); } catch { /* already aborted */ }
     };
@@ -1018,6 +1047,12 @@ class SunoApi {
           `request and without the requirement clearing. The solver was never reached, so a 2Captcha key ` +
           `cannot help here. Clear it by running one generation manually at suno.com.`));
       }, capMs);
+
+      // Exit 4 — the run cap released this write. Closing the browser alone
+      // left this flow waiting on its poll until the cap above.
+      onAbort = () => finish(reject, sig!.reason);
+      if (sig?.aborted) onAbort();
+      else sig?.addEventListener('abort', onAbort, { once: true });
     }));
   }
 
@@ -1707,24 +1742,34 @@ class SunoApi {
       duration: audio.metadata?.duration
     }));
   }
+
+  /**
+   * Run `fn` on the write queue with the queue's AbortSignal as the ambient
+   * write signal, so launchBrowser, the axios client and the captcha flows stop
+   * when the run cap releases the write. Every queued write must go through here.
+   */
+  private queued<T>(fn: () => Promise<T>): Promise<T> {
+    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, fn));
+  }
+
   /** Queued: runs after earlier writes finish. See {@link generateSongsNow}. */
   private generateSongs(...args: Parameters<SunoApi['generateSongsNow']>) {
-    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.generateSongsNow(...args)));
+    return this.queued(() => this.generateSongsNow(...args));
   }
 
   /** Queued: runs after earlier writes finish. See {@link concatenateNow}. */
   public concatenate(...args: Parameters<SunoApi['concatenateNow']>) {
-    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.concatenateNow(...args)));
+    return this.queued(() => this.concatenateNow(...args));
   }
 
   /** Queued: runs after earlier writes finish. See {@link generateStemsNow}. */
   public generateStems(...args: Parameters<SunoApi['generateStemsNow']>) {
-    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.generateStemsNow(...args)));
+    return this.queued(() => this.generateStemsNow(...args));
   }
 
   /** Queued: runs after earlier writes finish. See {@link generateInfillNow}. */
   public generateInfill(...args: Parameters<SunoApi['generateInfillNow']>) {
-    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.generateInfillNow(...args)));
+    return this.queued(() => this.generateInfillNow(...args));
   }
 
   /** @internal Unqueued. Call `remaster` instead; calling this inside a queued task would deadlock. */
@@ -1763,7 +1808,7 @@ class SunoApi {
 
   /** Queued: runs after earlier writes finish. See {@link remasterNow}. */
   public remaster(...args: Parameters<SunoApi['remasterNow']>) {
-    return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.remasterNow(...args)));
+    return this.queued(() => this.remasterNow(...args));
   }
 
   /**
@@ -1790,7 +1835,7 @@ class SunoApi {
     body?: any
   ): Promise<{ status: number; data: any }> {
     // Only GET is a read; any other method may change clips, so it queues.
-    if (method !== 'GET') return this.writes.run((signal: AbortSignal) => writeSignal.run(signal, () => this.rawNow(path, method, body)));
+    if (method !== 'GET') return this.queued(() => this.rawNow(path, method, body));
     return this.rawNow(path, method, body);
   }
 
