@@ -148,17 +148,17 @@ export default function StatusPage() {
       {err && <p className={STATUS_TEXT.error}>⚠ {err} — is the dev server running?</p>}
 
       <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" tabIndex={0} role="region" aria-label="Recent API activity">
-      <table className="min-w-[560px] w-full border-collapse text-[0.82rem]">
+      <table className="min-w-[560px] w-full border-collapse text-table">
         <caption className="sr-only">
           Recent API activity, newest first
         </caption>
         <thead>
           <tr className="text-left border-b border-foreground/40">
-            <th scope="col" className="px-2 py-[0.35rem] w-[90px]">when</th>
-            <th scope="col" className="px-2 py-[0.35rem] w-20">kind</th>
-            <th scope="col" className="px-2 py-[0.35rem]">what</th>
-            <th scope="col" className="px-2 py-[0.35rem] w-20">status</th>
-            <th scope="col" className="px-2 py-[0.35rem] w-[70px]">took</th>
+            <th scope="col" className="px-2 py-cell-head w-[90px]">when</th>
+            <th scope="col" className="px-2 py-cell-head w-20">kind</th>
+            <th scope="col" className="px-2 py-cell-head">what</th>
+            <th scope="col" className="px-2 py-cell-head w-20">status</th>
+            <th scope="col" className="px-2 py-cell-head w-[70px]">took</th>
           </tr>
         </thead>
         <tbody>
@@ -169,16 +169,16 @@ export default function StatusPage() {
           )}
           {events.map((e) => (
             <tr key={e.id} className="border-b border-foreground/20">
-              <td className="px-2 py-[0.3rem] opacity-70">{ago(e.at)}</td>
-              <td className="px-2 py-[0.3rem] opacity-80">{e.kind}</td>
-              <td className="px-2 py-[0.3rem]">
+              <td className="px-2 py-cell opacity-70">{ago(e.at)}</td>
+              <td className="px-2 py-cell opacity-80">{e.kind}</td>
+              <td className="px-2 py-cell">
                 {e.label}
                 {e.detail && <div className="opacity-60 text-xs">{e.detail}</div>}
               </td>
-              <td className={`px-2 py-[0.3rem] font-semibold ${STATUS_TEXT[e.status]}`}>
+              <td className={`px-2 py-cell font-semibold ${STATUS_TEXT[e.status]}`}>
                 {e.status === 'pending' ? '● running' : e.status}
               </td>
-              <td className="px-2 py-[0.3rem] opacity-70">
+              <td className="px-2 py-cell opacity-70">
                 {e.ms !== undefined ? `${(e.ms / 1000).toFixed(1)}s` : ''}
               </td>
             </tr>
@@ -203,8 +203,8 @@ function describeExpiry(iso: unknown, nowMs: number): { text: string; level: 'ok
 function Stat({ label, value, highlight, colour }: { label: string; value: string; highlight?: boolean; colour?: string }) {
   return (
     <div>
-      <div className="text-[0.7rem] opacity-60 uppercase">{label}</div>
-      <div className={`text-[1.1rem] font-semibold ${colour ?? (highlight ? STATUS_TEXT.pending : '')}`}>{value}</div>
+      <div className="text-label opacity-60 uppercase">{label}</div>
+      <div className={`text-stat font-semibold ${colour ?? (highlight ? STATUS_TEXT.pending : '')}`}>{value}</div>
     </div>
   );
 }
