@@ -15,6 +15,7 @@ import { createCursor, Cursor } from 'ghost-cursor-playwright';
 import { promises as fs } from 'fs';
 import path from 'node:path';
 import { rawPathError } from './rawPath.mjs';
+import { closeOnThrow } from './closeOnThrow.mjs';
 import { createWriteQueue } from './writeQueue.mjs';
 import { buildRemasterPayload } from './remaster.mjs';
 
@@ -419,27 +420,29 @@ class SunoApi {
       sig.addEventListener('abort', closeBrowser, { once: true });
       browser.on('disconnected', () => sig.removeEventListener('abort', closeBrowser));
     }
-    const context = await browser.newContext({ userAgent: this.userAgent, locale: process.env.BROWSER_LOCALE, viewport: null });
-    const cookies = [];
-    const lax: 'Lax' | 'Strict' | 'None' = 'Lax';
-    cookies.push({
-      name: '__session',
-      value: this.currentToken+'',
-      domain: '.suno.com',
-      path: '/',
-      sameSite: lax
-    });
-    for (const key in this.cookies) {
+    return closeOnThrow(() => browser.close(), async () => {
+      const context = await browser.newContext({ userAgent: this.userAgent, locale: process.env.BROWSER_LOCALE, viewport: null });
+      const cookies = [];
+      const lax: 'Lax' | 'Strict' | 'None' = 'Lax';
       cookies.push({
-        name: key,
-        value: this.cookies[key]+'',
+        name: '__session',
+        value: this.currentToken+'',
         domain: '.suno.com',
         path: '/',
         sameSite: lax
-      })
-    }
-    await context.addCookies(cookies);
-    return context;
+      });
+      for (const key in this.cookies) {
+        cookies.push({
+          name: key,
+          value: this.cookies[key]+'',
+          domain: '.suno.com',
+          path: '/',
+          sameSite: lax
+        })
+      }
+      await context.addCookies(cookies);
+      return context;
+    });
   }
 
   /**
@@ -465,9 +468,13 @@ class SunoApi {
       process.env.BROWSER_HEADLESS = prevHeadless;
     }
 
-    const page = await browser.newPage();
-    await page.goto('https://suno.com/create', { waitUntil: 'domcontentloaded', timeout: 0 });
-    try { await page.bringToFront(); } catch {} // force window to front on macOS
+    // A throw here would leave the visible browser running: nothing else owns it yet.
+    const page = await closeOnThrow(() => browser.browser()?.close(), async () => {
+      const p = await browser.newPage();
+      await p.goto('https://suno.com/create', { waitUntil: 'domcontentloaded', timeout: 0 });
+      try { await p.bringToFront(); } catch {} // force window to front on macOS
+      return p;
+    });
 
     logger.info('=================================================================');
     logger.info('ACTION REQUIRED IN THE BROWSER:');
@@ -832,49 +839,54 @@ class SunoApi {
 
     logger.info('CAPTCHA required. Launching browser...')
     const browser = await this.launchBrowser();
-    const page = await browser.newPage();
-    await page.goto('https://suno.com/create', { referer: 'https://www.google.com/', waitUntil: 'domcontentloaded', timeout: 0 });
+    // Any throw before the solver loop below owns the browser must close it.
+    let page: Page;
+    let createButton: Locator;
+    await closeOnThrow(() => browser.browser()?.close(), async () => {
+      page = await browser.newPage();
+      await page.goto('https://suno.com/create', { referer: 'https://www.google.com/', waitUntil: 'domcontentloaded', timeout: 0 });
 
-    logger.info('Waiting for Suno interface to load');
-    // await page.locator('.react-aria-GridList').waitFor({ timeout: 60000 });
-    await page.waitForResponse('**/api/project/**\\?**', { timeout: 60000 }); // wait for song list API call
+      logger.info('Waiting for Suno interface to load');
+      // await page.locator('.react-aria-GridList').waitFor({ timeout: 60000 });
+      await page.waitForResponse('**/api/project/**\\?**', { timeout: 60000 }); // wait for song list API call
 
-    if (this.ghostCursorEnabled)
-      this.cursor = await createCursor(page);
+      if (this.ghostCursorEnabled)
+        this.cursor = await createCursor(page);
     
-    logger.info('Triggering the CAPTCHA');
-    try {
-      await page.getByLabel('Close').click({ timeout: 2000 }); // close all popups
-      // await this.click(page, { x: 318, y: 13 });
-    } catch(e) {}
+      logger.info('Triggering the CAPTCHA');
+      try {
+        await page.getByLabel('Close').click({ timeout: 2000 }); // close all popups
+        // await this.click(page, { x: 318, y: 13 });
+      } catch(e) {}
 
-    // Suno removed `.custom-textarea` in the v5.5 UI redesign, which is what
-    // upstream issue #263 is: the flow times out here, 30s BEFORE it ever
-    // reaches the solver — so a funded TWOCAPTCHA_KEY changes nothing on its
-    // own. Try a list of candidates instead of betting on one class name.
-    const textarea = await this.firstVisible(page, [
-      '.custom-textarea',
-      'textarea[placeholder*="song" i]',
-      'textarea[placeholder*="describe" i]',
-      'textarea[placeholder*="lyric" i]',
-      '[data-testid*="prompt" i] textarea',
-      '[contenteditable="true"]',
-      'textarea'
-    ], 'prompt input');
-    await this.click(textarea);
-    await textarea.pressSequentially('Lorem ipsum', { delay: 80 });
+      // Suno removed `.custom-textarea` in the v5.5 UI redesign, which is what
+      // upstream issue #263 is: the flow times out here, 30s BEFORE it ever
+      // reaches the solver — so a funded TWOCAPTCHA_KEY changes nothing on its
+      // own. Try a list of candidates instead of betting on one class name.
+      const textarea = await this.firstVisible(page, [
+        '.custom-textarea',
+        'textarea[placeholder*="song" i]',
+        'textarea[placeholder*="describe" i]',
+        'textarea[placeholder*="lyric" i]',
+        '[data-testid*="prompt" i] textarea',
+        '[contenteditable="true"]',
+        'textarea'
+      ], 'prompt input');
+      await this.click(textarea);
+      await textarea.pressSequentially('Lorem ipsum', { delay: 80 });
 
-    const createButton = await this.firstVisible(page, [
-      'button[aria-label="Create"]',
-      'button:has-text("Create")',
-      '[data-testid*="create" i]',
-      'button[type="submit"]'
-    ], 'Create button');
-    // The original clicked an inner div.flex; go for that when it exists,
-    // since clicking the button's padding is sometimes a no-op.
-    const inner = createButton.locator('div.flex');
-    this.click((await inner.count()) > 0 ? inner.first() : createButton);
+      createButton = await this.firstVisible(page, [
+        'button[aria-label="Create"]',
+        'button:has-text("Create")',
+        '[data-testid*="create" i]',
+        'button[type="submit"]'
+      ], 'Create button');
+      // The original clicked an inner div.flex; go for that when it exists,
+      // since clicking the button's padding is sometimes a no-op.
+      const inner = createButton.locator('div.flex');
+      this.click((await inner.count()) > 0 ? inner.first() : createButton);
 
+    });
     const controller = new AbortController();
     new Promise<void>(async (resolve, reject) => {
       const frame = page.frameLocator('iframe[title*="hCaptcha"]');
