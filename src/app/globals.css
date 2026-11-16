@@ -25,6 +25,21 @@
   --color-status-ok: #157a3a; /* 5.42:1 */
   --color-status-error: #d02f2f; /* 5.09:1 */
   --color-status-info: #5b6472; /* 5.98:1 */
+  /* Text and lines drawn on an --color-accent surface. */
+  --color-on-accent: #fff;
+
+  /* Type. Only sizes that are not in the Tailwind scale. */
+  --text-label: 0.7rem;
+  --text-table: 0.82rem;
+  --text-stat: 1.1rem;
+
+  /* Spacing. Vertical padding of table cells. */
+  --spacing-cell: 0.3rem;
+  --spacing-cell-head: 0.35rem;
+
+  /* Radius and shadow of the hero card. */
+  --radius-card: var(--radius-2xl);
+  --shadow-card: var(--shadow-2xl);
 }
 
 @layer base {
