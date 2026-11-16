@@ -37,17 +37,17 @@ Licensed under LGPL-3.0 or later. See the
   return (
     <>
       <Section className="">
-        <div className="flex flex-col m-auto py-20 text-center items-center justify-center gap-4 my-8
+        <div className="flex flex-col m-auto py-12 md:py-20 text-center items-center justify-center gap-4 my-8
         lg:px-20 px-4
         bg-accent/90 rounded-card border shadow-card hover:shadow-none duration-200">
           <span className=" px-5 py-1 text-xs font-light border rounded-full 
-          border-on-accent/20 uppercase text-on-accent/50">
+          border-on-accent/40 uppercase text-on-accent">
             Unofficial
           </span>
-          <h1 className="font-bold text-7xl flex text-on-accent/90">
+          <h1 className="font-bold text-4xl sm:text-5xl md:text-7xl break-words max-w-full text-on-accent">
             Suno AI API
           </h1>
-          <p className="text-on-accent/80 text-lg">
+          <p className="text-on-accent text-lg">
             This is a homelab fork that runs your own Suno AI API.
           </p>
         </div>
