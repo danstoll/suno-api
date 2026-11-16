@@ -10,7 +10,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: var(--color-line, currentColor);
   }
 }
 
@@ -20,6 +20,7 @@
   --color-accent: var(--color-indigo-900);
   --color-accent-soft: var(--color-indigo-300);
   --color-muted: var(--color-gray-300);
+  --color-line: var(--color-gray-200);
   /* Status colours. Each is at least 4.5:1 as text on --color-background. */
   --color-status-pending: #9a5b00; /* 5.43:1 */
   --color-status-ok: #157a3a; /* 5.42:1 */
@@ -40,6 +41,42 @@
   /* Radius and shadow of the hero card. */
   --radius-card: var(--radius-2xl);
   --shadow-card: var(--shadow-2xl);
+}
+
+/* Dark theme: follows the phone. Same token names, new values. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-foreground: #e6e8ee; /* 15.42:1 on background */
+    --color-background: #0f1115;
+    --color-accent: var(--color-indigo-200); /* 11.6:1 as text */
+    --color-accent-soft: var(--color-indigo-900);
+    --color-muted: var(--color-gray-700);
+    --color-line: var(--color-gray-800);
+    --color-status-pending: #f0b44c; /* 10.20:1 */
+    --color-status-ok: #4ade80; /* 10.84:1 */
+    --color-status-error: #ff8a8a; /* 8.33:1 */
+    --color-status-info: #9aa3b2; /* 7.43:1 */
+    --color-on-accent: #000;
+  }
+
+  /* Typography plugin colours come from its own palette. Point them at tokens. */
+  .prose {
+    --tw-prose-body: var(--color-foreground);
+    --tw-prose-headings: var(--color-foreground);
+    --tw-prose-lead: var(--color-foreground);
+    --tw-prose-links: var(--color-accent);
+    --tw-prose-bold: var(--color-foreground);
+    --tw-prose-counters: var(--color-status-info);
+    --tw-prose-bullets: var(--color-status-info);
+    --tw-prose-hr: var(--color-line);
+    --tw-prose-quotes: var(--color-foreground);
+    --tw-prose-quote-borders: var(--color-line);
+    --tw-prose-captions: var(--color-status-info);
+    --tw-prose-code: var(--color-foreground);
+    --tw-prose-th-borders: var(--color-line);
+    --tw-prose-td-borders: var(--color-line);
+  }
 }
 
 @layer base {
