@@ -29,6 +29,9 @@ const STATUS_TEXT: Record<ActivityEvent['status'], string> = {
   info: 'text-status-info'
 };
 
+// Shared by pause and clear: border, hover, active and a visible focus ring.
+const BUTTON = 'cursor-pointer min-h-11 px-4 py-2 rounded-md border border-foreground/40 bg-background hover:bg-foreground/10 active:bg-foreground/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+
 export default function StatusPage() {
   const [now, setNow] = useState(0);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
@@ -122,7 +125,7 @@ export default function StatusPage() {
         <Stat label="captcha" value={captcha} highlight={captcha === 'CHALLENGING'} />
         <Stat label="credits" value={credits} />
         <Stat label="cookie expires" value={cookieExp.text} colour={cookieExp.level === 'ok' ? undefined : STATUS_TEXT[cookieExp.level === 'warn' ? 'pending' : 'error']} />
-        <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} className="ml-auto cursor-pointer min-h-11 px-4 py-2 rounded-md border border-foreground/40 bg-background hover:bg-foreground/10 active:bg-foreground/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+        <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Resume live updates' : 'Pause live updates'} className={`ml-auto ${BUTTON}`}>
           {paused ? 'resume' : 'pause'}
         </button>
         <button
@@ -138,13 +141,13 @@ export default function StatusPage() {
               setErr(e?.message ?? 'clear failed');
             }
           }}
-          className="cursor-pointer min-h-11 px-4 py-2 rounded-md border border-foreground/40 bg-background hover:bg-foreground/10 active:bg-foreground/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className={BUTTON}
         >clear</button>
       </div>
 
       {err && <p className={STATUS_TEXT.error}>⚠ {err} — is the dev server running?</p>}
 
-      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Recent API activity">
+      <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" tabIndex={0} role="region" aria-label="Recent API activity">
       <table className="min-w-[560px] w-full border-collapse text-[0.82rem]">
         <caption className="sr-only">
           Recent API activity, newest first
