@@ -2,48 +2,32 @@ import Link from "next/link";
 import Image from "next/image";
 import Logo from "./Logo";
 
+const GITHUB_URL = "https://github.com/danstoll/suno-api";
+
+const itemClass =
+    "px-1.5 sm:px-2 py-2 lg:px-6 lg:py-3 min-h-11 whitespace-nowrap rounded-full flex justify-center items-center gap-1 " +
+    "lg:hover:bg-accent-soft duration-200 " +
+    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+
 export default function Header() {
     return (
-        <nav className=" flex w-full justify-center py-4 items-center 
-        border-b border-muted  backdrop-blur-2xl font-mono text-sm px-4 lg:px-0">
+        <nav aria-label="Main" className="flex w-full justify-center py-4 items-center
+        border-b border-muted backdrop-blur-2xl font-mono text-sm px-3 sm:px-4 lg:px-0">
             <div className="max-w-3xl flex w-full items-center justify-between">
-                <div className="font-medium text-xl text-accent flex items-center gap-2">
+                <Link href="/"
+                    className="font-medium text-base sm:text-xl text-accent whitespace-nowrap flex items-center gap-2 rounded-full
+                    focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                     <Logo className="w-4 h-4" />
-                    <Link href='/'>
-                        Suno API
-                    </Link>
-                </div>
+                    Suno API
+                </Link>
                 <div className="flex items-center justify-center gap-1 text-sm font-light text-accent/90">
-                    <p className="p-2 lg:px-6 lg:py-3 rounded-full flex justify-center items-center
-                lg:hover:bg-accent-soft duration-200
-                ">
-                        <Link href="/">
-                            Get Started
-                        </Link>
-                    </p>
-                    <p className="p-2 lg:px-6 lg:py-3 rounded-full flex justify-center items-center
-                lg:hover:bg-accent-soft duration-200
-                ">
-                        <Link href="/docs">
-                            API Docs
-                        </Link>
-                    </p>
-                    <p className="p-2 lg:px-6 lg:py-3 rounded-full flex justify-center items-center
-                lg:hover:bg-accent-soft duration-200
-                ">
-                        <a href="https://github.com/gcui-art/suno-api/"
-                            target="_blank"
-                            className="flex items-center justify-center gap-1">
-                            <span className="">
-                                <Image src="/github-mark.png" alt="GitHub Logo" width={20} height={20} />
-                            </span>
-                            <span>Github</span>
-                        </a>
-                    </p>
+                    <Link href="/" className={itemClass}>Get Started</Link>
+                    <Link href="/docs" className={itemClass}>API Docs</Link>
+                    <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={itemClass}>
+                        <Image src="/github-mark.png" alt="" width={20} height={20} />
+                        <span className="sr-only sm:not-sr-only">GitHub</span>
+                    </a>
                 </div>
-
-
-
             </div>
         </nav>
     );
