@@ -24,7 +24,7 @@ export default function Header() {
                     <Link href="/" className={itemClass}>Get Started</Link>
                     <Link href="/docs" className={itemClass}>API Docs</Link>
                     <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={itemClass}>
-                        <Image src="/github-mark.png" alt="" width={20} height={20} />
+                        <Image src="/github-mark.png" alt="" width={20} height={20} className="dark:invert" />
                         <span className="sr-only sm:not-sr-only">GitHub</span>
                     </a>
                 </div>
