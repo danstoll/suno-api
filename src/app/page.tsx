@@ -39,7 +39,7 @@ Licensed under LGPL-3.0 or later. See the
       <Section className="">
         <div className="flex flex-col m-auto py-12 md:py-20 text-center items-center justify-center gap-4 my-8
         lg:px-20 px-4
-        bg-accent/90 rounded-card border shadow-card hover:shadow-none duration-200">
+        bg-accent/90 rounded-card border border-card-edge shadow-card hover:shadow-none duration-200">
           <span className=" px-5 py-1 text-xs font-light border rounded-full 
           border-on-accent/40 uppercase text-on-accent">
             Unofficial
