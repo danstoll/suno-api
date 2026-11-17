@@ -54,6 +54,8 @@ const COLOR = /^(#[0-9a-f]{3,8}|(rgb|hsl|oklch|oklab|lab|lch)\([0-9 .,%/-]+\))$/
 export function build() {
   const colors = read('colors.css');
   const dark = new Map(colors.dark.map((d) => [d.name, d.value]));
+  const known = new Set(colors.theme.map((d) => d.name));
+  for (const name of dark.keys()) if (!known.has(name)) throw new Error(`--${name} is in the dark block but not in @theme`);
   const colorTokens = colors.theme.map((d) => {
     for (const v of [d.value, dark.get(d.name)]) {
       if (v && !COLOR.test(v)) throw new Error(`--${d.name}: "${v}" cannot go in tokens.json`);

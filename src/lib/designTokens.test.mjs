@@ -30,6 +30,12 @@ test('the 36 standard token names exist', () => {
 });
 
 test('no app file uses an old token name', () => {
-  const css = fs.readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8');
-  assert.doesNotMatch(css, /color-(foreground|on-accent|status-|line\b)/);
+  const dir = new URL('../app/', import.meta.url);
+  const files = fs.readdirSync(dir, { recursive: true, withFileTypes: false })
+    .filter((f) => /\.(tsx|css)$/.test(f));
+  assert.ok(files.length > 5);
+  const old = /(color|text|bg|border|outline|ring)-(foreground|on-accent|accent-soft|card-edge|status-(ok|pending|error|info)|line)\b|color-muted\b|(text|bg|border)-muted\b/;
+  for (const f of files) {
+    assert.doesNotMatch(fs.readFileSync(new URL(f, dir), 'utf8'), old, f);
+  }
 });

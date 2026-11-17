@@ -21,7 +21,7 @@ interface ActivityEvent {
 }
 
 // Full class names, so Tailwind can see them. Colours come from the
-// --color-status-* tokens in globals.css.
+// --color-ok, --color-warn, --color-err and --color-ink-muted tokens in DesignSystem/tokens/colors.css.
 const STATUS_TEXT: Record<ActivityEvent['status'], string> = {
   pending: 'text-warn',
   ok: 'text-ok',
