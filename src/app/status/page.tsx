@@ -21,16 +21,16 @@ interface ActivityEvent {
 }
 
 // Full class names, so Tailwind can see them. Colours come from the
-// --color-status-* tokens in globals.css.
+// --color-ok, --color-warn, --color-err and --color-ink-muted tokens in DesignSystem/tokens/colors.css.
 const STATUS_TEXT: Record<ActivityEvent['status'], string> = {
-  pending: 'text-status-pending',
-  ok: 'text-status-ok',
-  error: 'text-status-error',
-  info: 'text-status-info'
+  pending: 'text-warn',
+  ok: 'text-ok',
+  error: 'text-err',
+  info: 'text-ink-muted'
 };
 
 // Shared by pause and clear: border, hover, active and a visible focus ring.
-const BUTTON = 'cursor-pointer min-h-11 px-4 py-2 rounded-md border border-foreground/40 bg-background hover:bg-foreground/10 active:bg-foreground/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+const BUTTON = 'cursor-pointer min-h-11 px-4 py-2 rounded-md border border-ink/40 bg-background hover:bg-ink/10 active:bg-ink/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 
 export default function StatusPage() {
   const [now, setNow] = useState(0);
@@ -120,7 +120,7 @@ export default function StatusPage() {
     <main className="font-[ui-monospace,SFMono-Regular,Menlo,monospace] p-4 sm:p-6 w-full min-w-0 max-w-[1100px] mx-auto">
       <h1 className="text-xl mb-3">suno-api · status</h1>
 
-      <div className="flex gap-6 flex-wrap px-4 py-3 border border-foreground/25 rounded-lg mb-4">
+      <div className="flex gap-6 flex-wrap px-4 py-3 border border-ink/25 rounded-lg mb-4">
         <Stat label="in flight" value={String(inFlight)} highlight={inFlight > 0} />
         <Stat label="captcha" value={captcha} highlight={captcha === 'CHALLENGING'} />
         <Stat label="credits" value={credits} />
@@ -147,13 +147,13 @@ export default function StatusPage() {
 
       {err && <p className={STATUS_TEXT.error}>⚠ {err} — is the dev server running?</p>}
 
-      <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" tabIndex={0} role="region" aria-label="Recent API activity">
+      <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0} role="region" aria-label="Recent API activity">
       <table className="min-w-[560px] w-full border-collapse text-table">
         <caption className="sr-only">
           Recent API activity, newest first
         </caption>
         <thead>
-          <tr className="text-left border-b border-foreground/40">
+          <tr className="text-left border-b border-ink/40">
             <th scope="col" className="px-2 py-cell-head w-[90px]">when</th>
             <th scope="col" className="px-2 py-cell-head w-20">kind</th>
             <th scope="col" className="px-2 py-cell-head">what</th>
@@ -168,7 +168,7 @@ export default function StatusPage() {
             </td></tr>
           )}
           {events.map((e) => (
-            <tr key={e.id} className="border-b border-foreground/20">
+            <tr key={e.id} className="border-b border-ink/20">
               <td className="px-2 py-cell opacity-70">{ago(e.at)}</td>
               <td className="px-2 py-cell opacity-80">{e.kind}</td>
               <td className="px-2 py-cell">

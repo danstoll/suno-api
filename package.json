@@ -13,6 +13,7 @@
     "build": "next build --webpack",
     "start": "next start -p 3060",
     "lint": "eslint src",
+    "tokens": "node scripts/build-design-tokens.mjs",
     "test": "node --test \"src/**/*.test.mjs\"",
     "check": "tsc --noEmit && npm run lint && npm test"
   },

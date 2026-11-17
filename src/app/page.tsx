@@ -39,15 +39,15 @@ Licensed under LGPL-3.0 or later. See the
       <Section className="">
         <div className="flex flex-col m-auto py-12 md:py-20 text-center items-center justify-center gap-4 my-8
         lg:px-20 px-4
-        bg-accent/90 rounded-card border border-card-edge shadow-card hover:shadow-none duration-200">
+        bg-primary/90 rounded-card border border-suno-card-edge shadow-card hover:shadow-none duration-200">
           <span className=" px-5 py-1 text-xs font-light border rounded-full 
-          border-on-accent/40 uppercase text-on-accent">
+          border-primary-ink/40 uppercase text-primary-ink">
             Unofficial
           </span>
-          <h1 className="font-bold text-4xl sm:text-5xl md:text-7xl break-words max-w-full text-on-accent">
+          <h1 className="font-bold text-4xl sm:text-5xl md:text-7xl break-words max-w-full text-primary-ink">
             Suno AI API
           </h1>
-          <p className="text-on-accent text-lg">
+          <p className="text-primary-ink text-lg">
             This is a homelab fork that runs your own Suno AI API.
           </p>
         </div>

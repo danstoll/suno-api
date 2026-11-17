@@ -6,9 +6,9 @@
     --sw-surface: #171a21;
     --sw-surface-2: #1f232c;
     --sw-border: #3a4150;
-    --sw-text: var(--color-foreground);
+    --sw-text: var(--color-ink);
     --sw-muted: #9aa3b2;
-    --sw-link: var(--color-accent);
+    --sw-link: var(--color-primary);
     --sw-get: #5aa9ff;
     --sw-post: #4ade80;
     --sw-put: #f0b44c;
@@ -204,7 +204,7 @@
   /* Buttons */
   .swagger-ui .btn { background: transparent; border-color: var(--sw-muted); box-shadow: none; }
   .swagger-ui .btn:hover { box-shadow: 0 0 0 1px var(--sw-muted); }
-  .swagger-ui .btn.execute { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+  .swagger-ui .btn.execute { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-primary-ink); }
   .swagger-ui .btn.try-out__btn { color: var(--sw-text); border-color: var(--sw-muted); }
   .swagger-ui .btn.cancel,
   .swagger-ui .btn.btn-clear { color: var(--sw-delete); border-color: var(--sw-delete); }
@@ -219,7 +219,7 @@
   .swagger-ui input:focus-visible,
   .swagger-ui select:focus-visible,
   .swagger-ui textarea:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
 
