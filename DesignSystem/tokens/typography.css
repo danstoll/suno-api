@@ -1,0 +1,29 @@
+/* Type tokens. The page font is Inter, loaded by next/font in layout.tsx. */
+@theme {
+  /* Headings. */
+  --font-display: Inter, ui-sans-serif, system-ui, sans-serif;
+  /* Body text. */
+  --font-body: Inter, ui-sans-serif, system-ui, sans-serif;
+  /* Captions. */
+  --text-xs: 0.75rem;
+  /* Small text. */
+  --text-sm: 0.875rem;
+  /* Body size. */
+  --text-base: 1rem;
+  /* Lead text. */
+  --text-lg: 1.125rem;
+  /* Small heading. */
+  --text-xl: 1.25rem;
+  /* Heading. */
+  --text-2xl: 1.5rem;
+  /* Large heading. */
+  --text-3xl: 1.875rem;
+
+  /* Project sizes that are not in the Tailwind scale. */
+  /* Small caps label. */
+  --text-label: 0.7rem;
+  /* Table body. */
+  --text-table: 0.82rem;
+  /* Stat number. */
+  --text-stat: 1.1rem;
+}

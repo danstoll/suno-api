@@ -1,0 +1,16 @@
+/* Shadow and motion tokens. Shadows are the same in light and dark. */
+@theme {
+  /* Small lift. */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  /* Medium lift. */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  /* Shadow of the hero card. */
+  --shadow-card: var(--shadow-2xl);
+
+  /* Hover and focus changes. */
+  --duration-fast: 150ms;
+  /* Panels and menus. */
+  --duration-base: 200ms;
+  /* The one easing curve. */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}

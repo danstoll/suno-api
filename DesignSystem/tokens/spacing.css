@@ -1,0 +1,31 @@
+/* Space and radius tokens. Space step 1 is 4 px. Tailwind makes p-4 from its own
+   --spacing, so the --space-* names are for var() use only. */
+@theme {
+  /* 4 px. */
+  --space-1: 0.25rem;
+  /* 8 px. */
+  --space-2: 0.5rem;
+  /* 12 px. */
+  --space-3: 0.75rem;
+  /* 16 px. */
+  --space-4: 1rem;
+  /* 24 px. */
+  --space-6: 1.5rem;
+  /* 32 px. */
+  --space-8: 2rem;
+
+  /* Small corners (Tailwind rounded-sm). */
+  --radius-sm: 0.25rem;
+  /* Buttons and inputs (Tailwind rounded-md). */
+  --radius-md: 0.375rem;
+  /* Panels (Tailwind rounded-lg). */
+  --radius-lg: 0.5rem;
+  /* Radius of the hero card. */
+  --radius-card: var(--radius-2xl);
+
+  /* Project spacing: vertical padding of table cells. */
+  /* Table body cell. */
+  --spacing-cell: 0.3rem;
+  /* Table head cell. */
+  --spacing-cell-head: 0.35rem;
+}

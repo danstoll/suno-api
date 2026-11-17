@@ -1,0 +1,74 @@
+/* Colour tokens. Light values in @theme, dark values in the media query.
+   Dark follows the phone (prefers-color-scheme): suno-api has no theme switch.
+   Values come from the old globals.css; Tailwind palette values are written out
+   so tokens.json can hold them. */
+@theme {
+  /* The page. */
+  --color-background: #fff;
+  /* A card on the page. Same as the page today. */
+  --color-surface: #fff;
+  /* A modal or menu. Same as the page today. */
+  --color-surface-raised: #fff;
+  /* Body text. */
+  --color-ink: #000;
+  /* Quiet text, captions, counters (was status-info). 5.98:1 on background. */
+  --color-ink-muted: #5b6472;
+  /* Lines and dividers (Tailwind gray-200). */
+  --color-border: oklch(92.8% 0.006 264.531);
+  /* The main action and links (Tailwind indigo-900). */
+  --color-primary: oklch(35.9% 0.144 278.697);
+  /* Text and lines drawn on a primary surface. */
+  --color-primary-ink: #fff;
+  /* The soft brand spark (Tailwind indigo-300). */
+  --color-accent: oklch(78.5% 0.115 274.713);
+  /* Focus ring. Same colour as primary, as the old outline was. */
+  --color-ring: oklch(35.9% 0.144 278.697);
+  /* Healthy or done. 5.42:1 as text on background. */
+  --color-ok: #157a3a;
+  /* Needs a look, or pending. 5.43:1 as text on background. */
+  --color-warn: #9a5b00;
+  /* Broken or failed. 5.09:1 as text on background. */
+  --color-err: #d02f2f;
+
+  /* Project tokens (suno prefix). */
+  /* Heavy rule colour (Tailwind gray-300). */
+  --color-suno-muted: oklch(87.2% 0.01 258.338);
+  /* Edge of the hero card. Light theme keeps the line colour. */
+  --color-suno-card-edge: oklch(92.8% 0.006 264.531);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    /* The page. */
+    --color-background: #0f1115;
+    /* A card on the page. Same as the page today. */
+    --color-surface: #0f1115;
+    /* A modal or menu. Same as the page today. */
+    --color-surface-raised: #0f1115;
+    /* Body text. 15.42:1 on background. */
+    --color-ink: #e6e8ee;
+    /* Quiet text. 7.43:1 on background. */
+    --color-ink-muted: #9aa3b2;
+    /* Lines and dividers (Tailwind gray-800). */
+    --color-border: oklch(27.8% 0.033 256.848);
+    /* The main action and links (Tailwind indigo-200). 11.6:1 as text. */
+    --color-primary: oklch(87% 0.065 274.039);
+    /* Text and lines drawn on a primary surface. */
+    --color-primary-ink: #000;
+    /* The soft brand spark (Tailwind indigo-900). */
+    --color-accent: oklch(35.9% 0.144 278.697);
+    /* Focus ring. Same colour as primary. */
+    --color-ring: oklch(87% 0.065 274.039);
+    /* Healthy or done. 10.84:1 as text. */
+    --color-ok: #4ade80;
+    /* Needs a look, or pending. 10.20:1 as text. */
+    --color-warn: #f0b44c;
+    /* Broken or failed. 8.33:1 as text. */
+    --color-err: #ff8a8a;
+    /* Heavy rule colour (Tailwind gray-700). */
+    --color-suno-muted: oklch(37.3% 0.034 259.733);
+    /* Edge of the hero card (Tailwind indigo-500). */
+    --color-suno-card-edge: oklch(58.5% 0.233 277.117);
+  }
+}
