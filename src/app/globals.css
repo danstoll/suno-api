@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "swagger-ui-react/swagger-ui.css" layer(components);
 @plugin "@tailwindcss/typography";
+@import "./swagger-dark.css";
 
 /* Tailwind 4 draws a border in currentColor. Tailwind 3 used gray-200.
    Keep the old look. */

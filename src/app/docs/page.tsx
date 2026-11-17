@@ -10,7 +10,7 @@ export default function Docs() {
         <>
             <Section className="my-10">
                 <article className="prose lg:prose-lg max-w-3xl pt-10">
-                    <h1 className=' text-center text-indigo-900'>
+                    <h1 className=' text-center text-accent'>
                         API Docs
                     </h1>
                     <Markdown>
@@ -46,7 +46,7 @@ Feel free to explore the detailed API parameters and conduct tests on this page.
                     <h2 className='text-center'>
                         Details of the API and testing it online
                     </h2>
-                    <p className='text-red-800 italic'>
+                    <p className='text-red-800 dark:text-status-error italic'>
                         This is just a demo, bound to a test account. Please do not use it frequently, so that more people can test online.
                     </p>
                 </article>
