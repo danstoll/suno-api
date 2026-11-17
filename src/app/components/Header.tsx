@@ -6,7 +6,7 @@ const GITHUB_URL = "https://github.com/danstoll/suno-api";
 
 const itemClass =
     "px-1.5 sm:px-2 py-2 lg:px-6 lg:py-3 min-h-11 whitespace-nowrap rounded-full flex justify-center items-center gap-1 " +
-    "lg:hover:bg-accent duration-200 " +
+    "lg:hover:bg-accent active:bg-accent duration-200 " +
     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 export default function Header() {

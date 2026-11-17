@@ -42,4 +42,4 @@ Tokens that belong only to suno-api carry the `suno` prefix: `color-suno-muted` 
 ## Known gaps
 1. `swagger-dark.css` has its own hex palette for Swagger UI, outside the tokens.
 2. No theme switch and no `.dark` class: dark follows the phone only.
-3. The 7 component states are not drawn yet (follow-up).
+3. The 7 component states are listed in `states.md` (picture: `states-preview.html`).
