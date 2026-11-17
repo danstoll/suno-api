@@ -131,7 +131,6 @@
   .swagger-ui .scheme-container { background: var(--sw-surface); box-shadow: none; }
   .swagger-ui .loading-container .loading::before { border-color: var(--sw-border); border-top-color: var(--sw-muted); }
   .swagger-ui .arrow,
-  .swagger-ui svg:not(:root),
   .swagger-ui .expand-methods svg,
   .swagger-ui .expand-operation svg { fill: var(--sw-text); }
 
@@ -184,6 +183,9 @@
   .swagger-ui input[type="file"],
   .swagger-ui input[type="password"],
   .swagger-ui input[type="search"],
+  .swagger-ui input[type="number"],
+  .swagger-ui input[type="url"],
+  .swagger-ui input[type="date"],
   .swagger-ui textarea,
   .swagger-ui select {
     background: #0b0d11;
@@ -191,6 +193,9 @@
     border: 1px solid var(--sw-border);
   }
   .swagger-ui select { background: var(--sw-surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%23e6e8ee' d='M13.418 7.859a.695.695 0 01.978 0 .68.68 0 010 .969l-3.908 3.83a.697.697 0 01-.979 0l-3.908-3.83a.68.68 0 010-.969.695.695 0 01.978 0L10 11l3.418-3.141z'/></svg>") right 10px center no-repeat; background-size: 20px; }
+  .swagger-ui input.invalid,
+  .swagger-ui select.invalid,
+  .swagger-ui textarea.invalid { background: color-mix(in srgb, var(--sw-delete) 18%, #0b0d11); border-color: var(--sw-delete); }
   .swagger-ui input[type="text"]::placeholder,
   .swagger-ui textarea::placeholder { color: var(--sw-muted); }
   .swagger-ui textarea.curl { background: #0b0d11; color: var(--sw-text); }
