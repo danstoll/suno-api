@@ -15,7 +15,9 @@ export default function Footer() {
              hover:text-primary-ink duration-200
                 ">
                 <span>© 2024</span>
-                <Link href="https://github.com/gcui-art/suno-api/">
+                <Link href="https://github.com/gcui-art/suno-api/"
+                    className="rounded-full underline-offset-4 lg:hover:underline
+                    focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-ink">
                     gcui-art/suno-api
                 </Link>
             </p>

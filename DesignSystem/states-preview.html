@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>suno-api component states</title>
+<link rel="stylesheet" href="tokens/colors.css">
+<meta name="color-scheme" content="light dark">
+<style>
+body{font:14px/1.4 Inter,system-ui,sans-serif;color:var(--color-ink);background:var(--color-background);margin:0;padding:16px}
+h2{font-size:14px;margin:20px 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cell{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--color-ink-muted)}
+.nav{padding:8px 16px;min-height:44px;border-radius:9999px;color:var(--color-primary);display:inline-flex;align-items:center;transition:background 200ms}
+.nav.hover,.nav.active{background:var(--color-accent)}
+.nav.focus{outline:2px solid var(--color-ring);outline-offset:2px}
+.foot{background:var(--color-primary);color:var(--color-primary-ink);padding:8px;border-radius:8px;display:inline-flex}
+.foot a{color:color-mix(in srgb,var(--color-primary-ink) 60%,transparent);padding:0 4px;min-height:44px;display:inline-flex;align-items:center;border-radius:9999px;text-underline-offset:4px;text-decoration:none}
+.foot a.hover{text-decoration:underline;color:var(--color-primary-ink)}
+.foot a.focus{outline:2px solid var(--color-primary-ink);outline-offset:2px}
+.na{color:var(--color-ink-muted);font-style:italic}
+</style>
+<h2>Header link</h2>
+<div class="row">
+<div class="cell"><span class="nav">API Docs</span>default</div>
+<div class="cell"><span class="nav hover">API Docs</span>hover</div>
+<div class="cell"><span class="nav focus">API Docs</span>focus</div>
+<div class="cell"><span class="nav active">API Docs</span>active</div>
+<div class="cell"><span class="na">disabled, loading, error: n/a</span></div>
+</div>
+<h2>Footer link (active = hover on desktop)</h2>
+<div class="row">
+<div class="cell"><span class="foot"><a href="#">gcui-art/suno-api</a></span>default</div>
+<div class="cell"><span class="foot"><a class="hover" href="#">gcui-art/suno-api</a></span>hover</div>
+<div class="cell"><span class="foot"><a class="focus" href="#">gcui-art/suno-api</a></span>focus</div>
+<div class="cell"><span class="na">disabled, loading, error: n/a</span></div>
+</div>
+<p class="na">Logo, Section, Swagger: see states.md.</p>
