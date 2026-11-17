@@ -41,6 +41,8 @@
   /* Radius and shadow of the hero card. */
   --radius-card: var(--radius-2xl);
   --shadow-card: var(--shadow-2xl);
+  /* Edge of the hero card. Light theme keeps the old line colour. */
+  --color-card-edge: var(--color-line);
 }
 
 /* Dark theme: follows the phone. Same token names, new values. */
@@ -53,6 +55,7 @@
     --color-accent-soft: var(--color-indigo-900);
     --color-muted: var(--color-gray-700);
     --color-line: var(--color-gray-800);
+    --color-card-edge: var(--color-indigo-300);
     --color-status-pending: #f0b44c; /* 10.20:1 */
     --color-status-ok: #4ade80; /* 10.84:1 */
     --color-status-error: #ff8a8a; /* 8.33:1 */
