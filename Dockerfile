@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1 
                                                                                                                                                                                                     
-FROM node:lts-bookworm AS builder                                                                                       
+# Pinned (LAV-1753): node:lts moves by itself.
+FROM node:24.22.3-bookworm AS builder                                                                                       
 WORKDIR /src                                                                                                            
 COPY package*.json ./                                                                                                   
 RUN npm install                                                                                                         
 COPY . .                                                                                                               
 RUN npm run build                                                                                                       
                                                                                                                     
-FROM node:lts-bookworm                                                                                                  
+FROM node:24.22.3-bookworm                                                                                                 
 WORKDIR /app                                                                                                            
 COPY package*.json ./                                                                                                   
                                                                                                                     
@@ -25,7 +26,10 @@ ENV BROWSER_DISABLE_GPU=true
 RUN npm install --only=production                                                                                       
                                                                                                                     
 # Install all supported browsers, else switching browsers requires an image rebuild                                     
-RUN npx playwright install chromium                                                                                     
+# The Chromium build that the locked rebrowser-playwright-core needs (LAV-1753).
+# "npx playwright install" fetched the newest playwright, whose Chromium
+# revision need not match the locked 1.52.0 that the app launches.
+RUN node node_modules/rebrowser-playwright-core/cli.js install chromium
 # RUN npx playwright install firefox                                                                                     
                                                                                                                     
 COPY --from=builder /src/.next ./.next                                                                                  
